@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased text-forest-950 bg-luxury-cream;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(244, 241, 234, 0.5) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(197, 168, 128, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(77, 128, 106, 0.03) 0%, transparent 60%);
+  }
+
+  /* Custom Scrollbar for Forest theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-luxury-sand;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-forest-600 rounded-full hover:bg-forest-700 transition-colors;
+  }
+}
+
+/* Glassmorphism custom classes */
+.glass-panel {
+  background: rgba(253, 251, 247, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(197, 168, 128, 0.2);
+}
+
+.glass-panel-dark {
+  background: rgba(12, 24, 20, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(77, 128, 106, 0.25);
+}
+
+/* Custom premium buttons */
+.luxury-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 0;
+  background: rgba(253, 251, 247, 0.1);
+  transform: translate(-50%, -50%) rotate(45deg);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+}
+
+.luxury-btn:hover::after {
+  height: 300%;
+  opacity: 1;
+}
