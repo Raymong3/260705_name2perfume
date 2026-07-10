@@ -15,7 +15,6 @@ const DEFAULT_INGREDIENT_NAMES = NOTES.reduce((acc, note) => {
 }, {} as Record<string, string>);
 
 export default function App() {
-  const [name, setName] = useState('');
   const [step, setStep] = useState<'input' | 'result'>('input');
   
   // Recommendations
@@ -35,16 +34,16 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'top' | 'middle' | 'base'>('top');
 
   // Handle recommendation request (직접 분석 및 추천 결과 생성)
-  const handleRecommend = (inputName: string) => {
+  const handleRecommend = (inputName: string, inputKeyword: string) => {
     try {
       setIsLoading(true);
-      const resultAnalysis = analyzeName(inputName);
-      setName(inputName);
-      setAnalysis(resultAnalysis);
+      const nameAnalysis = analyzeName(inputName);
+      const keywordAnalysis = analyzeName(inputKeyword);
+      setAnalysis(nameAnalysis);
 
       setTimeout(() => {
         try {
-          const recipes = recommendPerfumes(resultAnalysis);
+          const recipes = recommendPerfumes(nameAnalysis, keywordAnalysis);
           setRawRecipes(recipes);
           setActiveRecipeIndex(0);
           setStep('result');
@@ -86,18 +85,20 @@ export default function App() {
             <span className="font-serif text-xl md:text-2xl font-bold tracking-[0.15em] text-luxury-gold">
               훈민향음 (訓民香音)
             </span>
-            <span className="text-xs md:text-sm tracking-[0.2em] text-forest-300 font-serif font-medium mt-1">
+            <span className="text-xl md:text-3xl tracking-[0.2em] text-forest-300 font-serif font-bold mt-1.5">
               더 알
             </span>
           </div>
           
-          <button 
-            onClick={() => setIsEditingNames(!isEditingNames)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-luxury-gold/20 text-xs hover:bg-forest-900 transition-colors text-luxury-goldLight"
-          >
-            <Settings className="w-3.5 h-3.5" />
-            <span>향료명 관리</span>
-          </button>
+          {step === 'result' && (
+            <button 
+              onClick={() => setIsEditingNames(!isEditingNames)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-luxury-gold/20 text-xs hover:bg-forest-900 transition-colors text-luxury-goldLight"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span>향료명 관리</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -230,9 +231,7 @@ export default function App() {
             <div className="flex bg-white p-1.5 border border-luxury-gold/15 rounded-2xl shadow-sm gap-2">
               {rawRecipes.slice(0, 2).map((_, idx) => {
                 const isSelected = activeRecipeIndex === idx;
-                let rankLabel = '1순위 조합 (가장 추천)';
-                if (idx === 1) rankLabel = '2순위 조합 (대안 제안)';
-                if (idx === 2) rankLabel = '3순위 조합 (대안 제안)';
+                const rankLabel = idx === 0 ? '1안 (이름 분석 추천 향)' : '2안 (이름 + 연상 단어 분석 향)';
                 
                 return (
                   <button
@@ -262,7 +261,7 @@ export default function App() {
                         Scent Holder
                       </span>
                       <h2 className="font-serif text-2xl font-bold tracking-widest text-forest-950">
-                        {name}
+                        {activeRecipe.name}
                       </h2>
                     </div>
 
@@ -317,7 +316,7 @@ export default function App() {
                 </div>
 
                 {/* Right Column: Recipe Cards */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 flex flex-col justify-between space-y-6">
                   {/* 3 Note Section Cards */}
                   <div className="grid sm:grid-cols-3 gap-4">
                     <NoteSection 
@@ -344,7 +343,7 @@ export default function App() {
                   </div>
 
                   {/* Scent Development Narrative */}
-                  <div className="bg-forest-950 text-luxury-cream border border-forest-900 rounded-2xl p-6 shadow-md space-y-3">
+                  <div className="bg-forest-950 text-luxury-cream border border-forest-900 rounded-2xl p-6 shadow-md space-y-3 mt-auto">
                     <div className="flex items-center gap-2 text-luxury-gold">
                       <Sparkles className="w-4 h-4" />
                       <h3 className="font-serif text-sm font-bold tracking-wider uppercase">Scent Development (향의 변화)</h3>

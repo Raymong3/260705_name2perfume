@@ -161,45 +161,33 @@ export function recommendSingleRecipe(
   return rawRecipe;
 }
 
-// Recommends 3 distinct recipes sorted by matchScore descending
+// Recommends two recipes: 1안 (name only) and 2안 (combined name and keyword)
 export function recommendPerfumes(
-  analysis: NameAnalysis
+  nameAnalysis: NameAnalysis,
+  keywordAnalysis: NameAnalysis | null
 ): PerfumeRecipe[] {
-  const recipes: PerfumeRecipe[] = [];
-  const seenNotesKeySet = new Set<string>();
+  // 1안: 이름만 가지고 분석한 향
+  const recipe1 = recommendSingleRecipe(nameAnalysis, 0);
 
-  // Try generating with different seed offsets to get different combinations
-  let offset = 0;
-  let attempts = 0;
+  // 2안: 이름과 단어까지 포함해서 분석한 향
+  let combinedAnalysis = nameAnalysis;
+  if (keywordAnalysis) {
+    combinedAnalysis = {
+      ...nameAnalysis,
+      normalizedName: `${nameAnalysis.normalizedName} (+${keywordAnalysis.normalizedName})`,
+      choTags: [...(nameAnalysis.choTags || []), ...(keywordAnalysis.choTags || [])],
+      jungTags: [...(nameAnalysis.jungTags || []), ...(keywordAnalysis.jungTags || [])],
+      jongTags: [...(nameAnalysis.jongTags || []), ...(keywordAnalysis.jongTags || [])],
+      syllableTags: [...(nameAnalysis.syllableTags || []), ...(keywordAnalysis.syllableTags || [])],
+      lenTags: [...(nameAnalysis.lenTags || []), ...(keywordAnalysis.lenTags || [])],
+      rarityTags: [...(nameAnalysis.rarityTags || []), ...(keywordAnalysis.rarityTags || [])],
+      imageTags: Array.from(new Set([...nameAnalysis.imageTags, ...keywordAnalysis.imageTags])),
+      moodTags: Array.from(new Set([...nameAnalysis.moodTags, ...keywordAnalysis.moodTags])),
+    };
+  }
   
-  // We want to generate 3 unique recipes. If the note IDs in a recipe are identical to a previous one,
-  // we shift the offset and try again, up to 15 attempts.
-  while (recipes.length < 3 && attempts < 15) {
-    const recipe = recommendSingleRecipe(analysis, offset);
-    
-    // Create a unique key of selected note IDs (sorted) to detect duplicates
-    const noteIds = [
-      ...recipe.top.map(item => item.note.id),
-      ...recipe.middle.map(item => item.note.id),
-      ...recipe.base.map(item => item.note.id)
-    ].sort().join(',');
+  const recipe2 = recommendSingleRecipe(combinedAnalysis, 100);
 
-    if (!seenNotesKeySet.has(noteIds)) {
-      seenNotesKeySet.add(noteIds);
-      recipes.push(recipe);
-    }
-    
-    offset += 100; // Increment offset
-    attempts++;
-  }
-
-  // Fallback: If we couldn't get 3 unique ones, just fill up using incremental offsets
-  while (recipes.length < 3) {
-    const recipe = recommendSingleRecipe(analysis, offset);
-    recipes.push(recipe);
-    offset += 100;
-  }
-
-  // Sort by match score descending so that the most matching recipe is Rank 1, then Rank 2, then Rank 3
-  return recipes.sort((a, b) => b.matchScore - a.matchScore);
+  // Return the two recipes
+  return [recipe1, recipe2];
 }
