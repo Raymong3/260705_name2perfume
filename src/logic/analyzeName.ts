@@ -35,7 +35,8 @@ export function analyzeName(input: string): NameAnalysis {
     // Image tags
     '밝은', '차분한', '맑은', '부드러운', '단단한', '세련된', '또렷한', '도시적인', '가벼운', '간결한', '균형감', '개성',
     // Mood tags
-    '따뜻한', '활기찬', '자유로운', '안정감', '깊이감', '신비로운', '지적인', '자신감', '포근한', '깨끗한', '유연한', '개성있는', '활동적인', '산뜻한', '자연스러운', '특별한'
+    '따뜻한', '활기찬', '자유로운', '안정감', '깊이감', '신비로운', '지적인', '자신감', '포근한', '깨끗한', '유연한', '개성있는', '활동적인', '산뜻한', '자연스러운', '특별한',
+    '귀여운', '로맨틱한', '달콤한', '우아한', '코튼', '중성적인', '여성스러운', '화려한', '관능적인', '크리미', '단아한', '편안한', '풍성한', '캐주얼', '파우더리', '고급스러운', '드라이', '이국적인', '스모키', '얼씨', '숲', '신선한', '쌉쌀한', '아로마틱'
   ];
 
   // Initialize scores
@@ -61,12 +62,19 @@ export function analyzeName(input: string): NameAnalysis {
       if (strongConsonants.includes(cho)) {
         scores['단단한'] += conScore;
         scores['자신감'] += conScore;
+        scores['드라이'] += conScore;
       } else if (elegantConsonants.includes(cho)) {
         scores['세련된'] += conScore;
         scores['도시적인'] += conScore;
+        scores['우아한'] += conScore;
+        scores['고급스러운'] += conScore;
+        scores['화려한'] += conScore;
       } else if (warmConsonants.includes(cho)) {
         scores['포근한'] += conScore;
         scores['따뜻한'] += conScore;
+        scores['편안한'] += conScore;
+        scores['코튼'] += conScore;
+        scores['단아한'] += conScore;
       } else if (pureConsonants.includes(cho)) {
         scores['맑은'] += conScore;
         scores['깨끗한'] += conScore;
@@ -76,6 +84,9 @@ export function analyzeName(input: string): NameAnalysis {
       } else if (flexibleConsonants.includes(cho)) {
         scores['유연한'] += conScore;
         scores['부드러운'] += conScore;
+        scores['귀여운'] += conScore;
+        scores['로맨틱한'] += conScore;
+        scores['캐주얼'] += conScore;
       } else if (uniqueConsonants.includes(cho)) {
         scores['개성있는'] += conScore;
         scores['활동적인'] += conScore;
@@ -90,21 +101,34 @@ export function analyzeName(input: string): NameAnalysis {
       if (brightVowels.includes(jung)) {
         scores['밝은'] += vowScore;
         scores['따뜻한'] += vowScore;
+        scores['달콤한'] += vowScore;
+        scores['신선한'] += vowScore;
       } else if (energeticVowels.includes(jung)) {
         scores['활기찬'] += vowScore;
         scores['자유로운'] += vowScore;
       } else if (calmVowels.includes(jung)) {
         scores['차분한'] += vowScore;
         scores['안정감'] += vowScore;
+        scores['쌉쌀한'] += vowScore;
+        scores['아로마틱'] += vowScore;
       } else if (deepVowels.includes(jung)) {
         scores['깊이감'] += vowScore;
         scores['신비로운'] += vowScore;
+        scores['이국적인'] += vowScore;
+        scores['스모키'] += vowScore;
+        scores['얼씨'] += vowScore;
+        scores['숲'] += vowScore;
       } else if (clearVowels.includes(jung)) {
         scores['지적인'] += vowScore;
         scores['또렷한'] += vowScore;
       } else if (softVowels.includes(jung)) {
         scores['부드러운'] += vowScore;
         scores['세련된'] += vowScore;
+        scores['크리미'] += vowScore;
+        scores['파우더리'] += vowScore;
+        scores['중성적인'] += vowScore;
+        scores['여성스러운'] += vowScore;
+        scores['관능적인'] += vowScore;
       }
 
       // Track coda for overall ratio calculation
@@ -138,7 +162,10 @@ export function analyzeName(input: string): NameAnalysis {
 
   // Classify scored tags into Image vs Mood sets
   const imageTagCandidates = ['밝은', '차분한', '맑은', '부드러운', '단단한', '세련된', '또렷한', '도시적인', '가벼운', '간결한', '균형감', '개성'];
-  const moodTagCandidates = ['따뜻한', '활기찬', '자유로운', '안정감', '깊이감', '신비로운', '지적인', '자신감', '포근한', '깨끗한', '유연한', '개성있는', '활동적인', '산뜻한', '자연스러운', '특별한'];
+  const moodTagCandidates = [
+    '따뜻한', '활기찬', '자유로운', '안정감', '깊이감', '신비로운', '지적인', '자신감', '포근한', '깨끗한', '유연한', '개성있는', '활동적인', '산뜻한', '자연스러운', '특별한',
+    '귀여운', '로맨틱한', '달콤한', '우아한', '코튼', '중성적인', '여성스러운', '화려한', '관능적인', '크리미', '단아한', '편안한', '풍성한', '캐주얼', '파우더리', '고급스러운', '드라이', '이국적인', '스모키', '얼씨', '숲', '신선한', '쌉쌀한', '아로마틱'
+  ];
 
   // Sort candidates by score descending with alphabetical fallback for strict determinism
   const sortTags = (tags: string[]) => {

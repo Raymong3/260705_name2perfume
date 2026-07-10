@@ -17,8 +17,8 @@ export function scoreNote(
     }
   }
 
-  // Add seed-based noise to handle tie-breaking
-  score += rand() * 2;
+  // Add seed-based noise to handle tie-breaking (slightly increased for variety)
+  score += rand() * 5;
   return score;
 }
 
