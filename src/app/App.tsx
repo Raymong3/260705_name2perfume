@@ -188,7 +188,7 @@ export default function App() {
               <div className="hidden md:flex justify-center md:justify-start pt-4 relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-luxury-gold to-forest-500 rounded-2xl blur opacity-15 group-hover:opacity-25 transition duration-1000 group-hover:duration-200"></div>
                 <img 
-                  src="/perfume_hunmin.png" 
+                  src="/perfume_hunmin_v2.png" 
                   alt="훈민향음 향수" 
                   className="relative w-full max-w-lg h-72 md:h-80 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
                 />
