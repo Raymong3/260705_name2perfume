@@ -23,7 +23,7 @@ export type NameAnalysis = {
 
 export type RecommendedNote = {
   note: PerfumeNote;
-  ratio: number;
+  ratio?: number;
   reason: string;
 };
 
@@ -38,8 +38,3 @@ export type PerfumeRecipe = {
   matchScore: number; // Keep track of the match score of this recipe for sorting
 };
 
-export type SurveyAnswers = {
-  q1: number; // 1 ~ 5
-  q2: number; // 1 ~ 5
-  q3: number; // 1 ~ 5
-};

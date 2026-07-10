@@ -1,10 +1,8 @@
-import { NameAnalysis, PerfumeRecipe, RecommendedNote, PerfumeNote, SurveyAnswers } from '../types/perfume';
+import { NameAnalysis, PerfumeRecipe, RecommendedNote, PerfumeNote } from '../types/perfume';
 import { NOTES } from '../data/notes';
 import { seededRandom } from './nameSeed';
 import { scoreNote } from './scoreNote';
-import { calculateRatio } from './calculateRatio';
 import { generateResultText } from './generateResultText';
-import { SURVEY_QUESTIONS } from '../data/surveyQuestions';
 
 // Weighted count: 65% for 1 note, 25% for 2 notes, 10% for 3 notes
 function pickCountWeighted(rand: () => number): number {
@@ -25,7 +23,6 @@ export function pickNotesBySeed(notes: PerfumeNote[], count: number, rand: () =>
 // Recommends a single recipe given a specific seed (or offset)
 export function recommendSingleRecipe(
   analysis: NameAnalysis,
-  surveyAnswers: SurveyAnswers | undefined,
   seedOffset: number
 ): PerfumeRecipe {
   const rand = seededRandom(analysis.seed + seedOffset);
@@ -45,7 +42,7 @@ export function recommendSingleRecipe(
 
     const scored = activeNotes
       .map(note => {
-        const score = scoreNote(note, analysisTags, surveyAnswers, rand);
+        const score = scoreNote(note, analysisTags, rand);
         return { note, score };
       })
       .sort((a, b) => b.score - a.score);
@@ -112,27 +109,6 @@ export function recommendSingleRecipe(
         if (note.moodTags.includes(tag)) sum += 10;
         if (note.scentTags.includes(tag)) sum += 5;
       }
-      // 2. Survey match score
-      if (surveyAnswers) {
-        const answers = [surveyAnswers.q1, surveyAnswers.q2, surveyAnswers.q3];
-        for (let qIdx = 0; qIdx < 3; qIdx++) {
-          const qNum = qIdx + 1;
-          const answerVal = answers[qIdx];
-          const question = SURVEY_QUESTIONS.find(q => q.id === qNum);
-          if (question) {
-            const option = question.options.find(opt => opt.id === answerVal);
-            if (option) {
-              if (option.bonusNotes.some(name => name.toLowerCase() === note.nameEn.toLowerCase())) {
-                sum += 15;
-              }
-              for (const bTag of option.bonusTags) {
-                if (note.moodTags.includes(bTag)) sum += 6;
-                if (note.scentTags.includes(bTag)) sum += 3;
-              }
-            }
-          }
-        }
-      }
     }
     return sum;
   };
@@ -150,13 +126,12 @@ export function recommendSingleRecipe(
     matchScore
   };
 
-  return calculateRatio(rawRecipe);
+  return rawRecipe;
 }
 
 // Recommends 3 distinct recipes sorted by matchScore descending
 export function recommendPerfumes(
-  analysis: NameAnalysis,
-  surveyAnswers: SurveyAnswers | undefined
+  analysis: NameAnalysis
 ): PerfumeRecipe[] {
   const recipes: PerfumeRecipe[] = [];
   const seenNotesKeySet = new Set<string>();
@@ -168,7 +143,7 @@ export function recommendPerfumes(
   // We want to generate 3 unique recipes. If the note IDs in a recipe are identical to a previous one,
   // we shift the offset and try again, up to 15 attempts.
   while (recipes.length < 3 && attempts < 15) {
-    const recipe = recommendSingleRecipe(analysis, surveyAnswers, offset);
+    const recipe = recommendSingleRecipe(analysis, offset);
     
     // Create a unique key of selected note IDs (sorted) to detect duplicates
     const noteIds = [
@@ -188,7 +163,7 @@ export function recommendPerfumes(
 
   // Fallback: If we couldn't get 3 unique ones, just fill up using incremental offsets
   while (recipes.length < 3) {
-    const recipe = recommendSingleRecipe(analysis, surveyAnswers, offset);
+    const recipe = recommendSingleRecipe(analysis, offset);
     recipes.push(recipe);
     offset += 100;
   }

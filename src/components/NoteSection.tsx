@@ -45,11 +45,6 @@ export const NoteSection: React.FC<NoteSectionProps> = ({
                     </span>
                   )}
                 </div>
-                <div className="text-right">
-                  <span className="font-serif font-bold text-forest-900 text-sm">
-                    {item.ratio}%
-                  </span>
-                </div>
               </div>
 
               {/* Matching Reason */}

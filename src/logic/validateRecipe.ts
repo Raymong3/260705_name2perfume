@@ -32,18 +32,9 @@ export function validateRecipe(recipe: PerfumeRecipe): {
     errors.push(`Duplicate note IDs found in recipe: ${allIds.filter((item, index) => allIds.indexOf(item) !== index).join(', ')}`);
   }
 
-  // 3. Verify total ratio equals 100%
-  const topRatioSum = recipe.top.reduce((sum, item) => sum + item.ratio, 0);
-  const middleRatioSum = recipe.middle.reduce((sum, item) => sum + item.ratio, 0);
-  const baseRatioSum = recipe.base.reduce((sum, item) => sum + item.ratio, 0);
-  const totalRatioSum = topRatioSum + middleRatioSum + baseRatioSum;
-
-  if (totalRatioSum !== 100) {
-    errors.push(`Total recipe ratio sum must be exactly 100%. Current sum: ${totalRatioSum}% (Top: ${topRatioSum}%, Mid: ${middleRatioSum}%, Base: ${baseRatioSum}%)`);
-  }
-
   return {
     isValid: errors.length === 0,
     errors
   };
 }
+

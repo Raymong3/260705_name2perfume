@@ -51,7 +51,7 @@ export const NOTES: PerfumeNote[] = [
 
   // Middle Notes
   createNote('middle-peony', 'middle', 'Peony', '피오니', '맑고 하늘거리는 플로럴 향으로 비누처럼 뽀송하면서도 수분감이 느껴집니다. 대부분 플로럴 노트와 잘 어울려 블렌딩되며 로즈, 뮤게와 블렌딩 시 풍성한 향이 되도록 도와줍니다.', ['Pure', 'Pink', 'Watery', 'Light floral', 'soapy'], 'pink'),
-  createNote('middle-hyacinth', 'middle', 'Hyacinth', '하이아신스', '싱그러운 그린플로럴 향에 촉촉한 수분감과 은은한 스파이시함이 더해져 생기 있고 깨끗한 무드를 연출 합니다.', ['Green', 'Fresh', 'Floral', 'Watery', 'Slightly spicy'], 'pink to violet'),
+  createNote('middle-hyacinth', 'middle', 'Hyacinth', '히아신스', '싱그러운 그린플로럴 향에 촉촉한 수분감과 은은한 스파이시함이 더해져 생기 있고 깨끗한 무드를 연출 합니다.', ['Green', 'Fresh', 'Floral', 'Watery', 'Slightly spicy'], 'pink to violet'),
   createNote('middle-lilac', 'middle', 'Lilac', '라일락', '파우더리 하면서 소프트한 꽃 향기로 코튼 향같은 뽀송한 향취입니다.', ['Floral', 'Powdery', 'Cotton'], 'white violet'),
   createNote('middle-violet', 'middle', 'Violet', '바이올렛', '파우더리하고 소프트한 향으로 중성적인 향에도 잘 어울립니다.', ['Powdery', 'Floral', 'Cotton like'], 'Violet'),
   createNote('middle-rose', 'middle', 'Rose', '로즈', '맑은 로즈를 연상시키며 제라늄과 블렌딩할 경우 와일드한 로즈를 만들 수 있다.', ['Floral', 'Rosy', 'Clean'], 'white yellow'),
@@ -84,7 +84,7 @@ export const NOTES: PerfumeNote[] = [
   createNote('base-amber', 'base', 'amber', '앰버', '모든향취를 부드럽게 만들어주는 어코드로 대부분의 향과 잘 어울립니다.', ['resin', 'balsamic', 'sweet', 'warm'], 'Yellow'),
   createNote('base-sandal-wood', 'base', 'sandal wood', '샌달우드', '상딸보다 가벼운 샌달우드 향취입니다.', ['woody', 'lighter than santal', 'animalic'], 'brown'),
   createNote('base-cedar-wood', 'base', 'cedar wood', '시더우드', '시더우드의 드라이함과 발사믹함을 동시에 가지고 있는 어코드입니다.', ['dry', 'woody smoky'], 'gold'),
-  createNote('base-oud', 'base', 'oud', '우드', '아가우드의 고급스러움과 차분한 우디 노트를 잘 살린 어코드로 풍부한 우드향입니다.', ['woody', 'musculine'], 'brown'),
+  createNote('base-oud', 'base', 'oud', '오우드', '아가우드의 고급스러움과 차분한 우디 노트를 잘 살린 어코드로 풍부한 우드향입니다.', ['woody', 'musculine'], 'brown'),
   createNote('base-coconut', 'base', 'coconut', '코코넛', '크리미하고 풍부한 코코넛 향으로 우디노트, 프루티 노트와 블렌딩에 사용해보세요.', ['sweet', 'creamy', 'lactonic'], 'white'),
   createNote('base-lychee', 'base', 'lychee', '리치', '달콤하고 풍부한 열대과일 향으로 많은 느낌을 표현할 수 있습니다.', ['sweet', 'juicy', 'pear like'], 'red'),
   createNote('base-champaca', 'base', 'champaca', '참파카', '이국적인 향취로 관능적이거나 풍부한 플로럴 노트를 만들기 좋습니다.', ['flroal', 'soapy'], 'Yellow'),

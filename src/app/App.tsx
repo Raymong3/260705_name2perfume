@@ -1,14 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Sparkles, ChevronLeft, Settings, Check, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { Sparkles, ChevronLeft, Settings, Check } from 'lucide-react';
 import { NameInput } from '../components/NameInput';
-import { RatioBar } from '../components/RatioBar';
 import { NoteSection } from '../components/NoteSection';
 import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
-import { calculateRatio } from '../logic/calculateRatio';
-import { NameAnalysis, PerfumeRecipe, SurveyAnswers } from '../types/perfume';
+import { NameAnalysis, PerfumeRecipe } from '../types/perfume';
 import { NOTES } from '../data/notes';
-import { SURVEY_QUESTIONS } from '../data/surveyQuestions';
 
 // Build default name mappings dynamically from 61 NOTES
 const DEFAULT_INGREDIENT_NAMES = NOTES.reduce((acc, note) => {
@@ -18,23 +15,13 @@ const DEFAULT_INGREDIENT_NAMES = NOTES.reduce((acc, note) => {
 
 export default function App() {
   const [name, setName] = useState('');
-  const [step, setStep] = useState<'input' | 'survey' | 'result'>('input');
+  const [step, setStep] = useState<'input' | 'result'>('input');
   
-  // Survey states
-  const [surveyAnswers, setSurveyAnswers] = useState<SurveyAnswers>({ q1: 1, q2: 1, q3: 1 });
-  const [currentQIndex, setCurrentQIndex] = useState(0);
-
-  // Recommendations and Ratios
+  // Recommendations
   const [analysis, setAnalysis] = useState<NameAnalysis | null>(null);
   const [rawRecipes, setRawRecipes] = useState<PerfumeRecipe[]>([]);
   const [activeRecipeIndex, setActiveRecipeIndex] = useState(0);
   
-  const [customRatios, setCustomRatios] = useState<Array<{top: number, middle: number, base: number}>>([
-    { top: 25, middle: 45, base: 30 },
-    { top: 25, middle: 45, base: 30 },
-    { top: 25, middle: 45, base: 30 }
-  ]);
-
   const [isLoading, setIsLoading] = useState(false);
 
   // Ingredient Names State (initialized from localStorage or defaults)
@@ -46,82 +33,34 @@ export default function App() {
   const [isEditingNames, setIsEditingNames] = useState(false);
   const [activeTab, setActiveTab] = useState<'top' | 'middle' | 'base'>('top');
 
-  // Handle recommendation request (1단계 완료 -> 2단계 설문 진입)
-  const handleStartSurvey = (inputName: string) => {
+  // Handle recommendation request (직접 분석 및 추천 결과 생성)
+  const handleRecommend = (inputName: string) => {
     try {
+      setIsLoading(true);
       const resultAnalysis = analyzeName(inputName);
       setName(inputName);
       setAnalysis(resultAnalysis);
-      setCurrentQIndex(0);
-      setStep('survey');
+
+      setTimeout(() => {
+        try {
+          const recipes = recommendPerfumes(resultAnalysis);
+          setRawRecipes(recipes);
+          setActiveRecipeIndex(0);
+          setStep('result');
+        } catch (err) {
+          alert('추천 레시피 생성 과정에서 오류가 발생했습니다.');
+        } finally {
+          setIsLoading(false);
+        }
+      }, 800);
     } catch (err) {
       alert(err instanceof Error ? err.message : '분석 중 오류가 발생했습니다.');
+      setIsLoading(false);
     }
   };
 
-  // Submit survey and get 3 recipes (2단계 완료 -> 3단계 결과 진입)
-  const handleGenerateRecipe = () => {
-    if (!analysis) return;
-    setIsLoading(true);
+  const activeRecipe = rawRecipes[activeRecipeIndex] || null;
 
-    setTimeout(() => {
-      try {
-        const recipes = recommendPerfumes(analysis, surveyAnswers);
-        setRawRecipes(recipes);
-        setActiveRecipeIndex(0);
-        // Reset custom ratios to defaults
-        setCustomRatios([
-          { top: 25, middle: 45, base: 30 },
-          { top: 25, middle: 45, base: 30 },
-          { top: 25, middle: 45, base: 30 }
-        ]);
-        setStep('result');
-      } catch (err) {
-        alert('추천 레시피 생성 과정에서 오류가 발생했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    }, 800);
-  };
-
-  // Get currently displayed recipe by applying customized ratios
-  const getDisplayedRecipe = (idx: number): PerfumeRecipe | null => {
-    const raw = rawRecipes[idx];
-    if (!raw) return null;
-    const ratio = customRatios[idx] || { top: 25, middle: 45, base: 30 };
-    try {
-      return calculateRatio(raw, ratio.top, ratio.middle, ratio.base);
-    } catch (err) {
-      return raw;
-    }
-  };
-
-  const activeRecipe = getDisplayedRecipe(activeRecipeIndex);
-  const activeRatio = customRatios[activeRecipeIndex] || { top: 25, middle: 45, base: 30 };
-
-  const handleRatioSliderChange = (type: 'top' | 'middle', value: number) => {
-    setCustomRatios(prev => {
-      const next = [...prev];
-      const current = { ...next[activeRecipeIndex] };
-      if (type === 'top') {
-        current.top = value;
-        current.base = 100 - value - current.middle;
-      } else {
-        current.middle = value;
-        current.base = 100 - current.top - value;
-      }
-      next[activeRecipeIndex] = current;
-      return next;
-    });
-  };
-
-  const applyPreset = (t: number, m: number, b: number) => {
-    setCustomRatios(prev => {
-      const next = [...prev];
-      next[activeRecipeIndex] = { top: t, middle: m, base: b };
-      return next;
-    });
-  };
 
   // Save customized ingredient names
   const handleNameChange = (id: string, value: string) => {
@@ -242,7 +181,7 @@ export default function App() {
                 <span className="text-forest-700 italic font-medium">어떤 향기</span>를 품었나요?
               </h1>
               <p className="text-sm md:text-base leading-relaxed text-forest-600">
-                한글 이름의 어감과 문자 구조를 분석하는 1단계 분석 후, 평소 좋아하는 공간과 매력에 대한 간단한 2단계 설문을 조합하여 당신만의 시그니처 향수를 매칭합니다.
+                한글 이름의 어감과 문자 구조를 분석하여 당신만의 시그니처 향수를 매칭합니다.
               </p>
               
               {/* Premium Bottle Illustration Graphic */}
@@ -271,17 +210,17 @@ export default function App() {
                 </svg>
               </div>
             </div>
-
+ 
             {/* Input container */}
             <div className="bg-white border border-luxury-gold/15 rounded-2xl p-8 shadow-xl flex flex-col justify-center space-y-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-forest-50 to-transparent opacity-50 -z-10 rounded-tr-2xl"></div>
               
               <div className="space-y-2 text-center md:text-left">
-                <h3 className="font-serif text-lg font-semibold text-forest-900">1단계: 이름 분석 의뢰</h3>
+                <h3 className="font-serif text-lg font-semibold text-forest-900">이름 분석 의뢰</h3>
                 <p className="text-xs text-forest-500">당신의 한글 이름을 입력하여 향수 매칭 여정을 시작해 보세요.</p>
               </div>
               
-              <NameInput onRecommend={handleStartSurvey} isLoading={isLoading} />
+              <NameInput onRecommend={handleRecommend} isLoading={isLoading} />
               
               <div className="border-t border-luxury-sand pt-4 flex items-center justify-between text-[11px] text-forest-400">
                 <span className="flex items-center gap-1">
@@ -295,105 +234,8 @@ export default function App() {
               </div>
             </div>
           </div>
-        ) : step === 'survey' ? (
-          /* STEP 2: Interactive Survey View */
-          <div className="w-full max-w-xl bg-white border border-luxury-gold/20 rounded-2xl shadow-xl p-6 md:p-8 animate-slide-up relative">
-            <button
-              onClick={() => setStep('input')}
-              className="absolute top-6 left-6 text-xs text-forest-500 hover:text-forest-800 flex items-center gap-1"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              이름 재입력
-            </button>
-            <div className="text-center mt-6 mb-8">
-              <span className="text-[10px] tracking-[0.25em] font-serif text-luxury-goldDark uppercase block mb-1">
-                Step 2: Preference Profile
-              </span>
-              <h2 className="font-serif text-xl font-bold text-forest-950">
-                {name}님의 향 선호도 설문 ({currentQIndex + 1}/3)
-              </h2>
-              {/* Gold progress bar */}
-              <div className="w-full bg-luxury-sand/50 h-1 mt-4 rounded-full overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-luxury-gold to-forest-800 h-full transition-all duration-300"
-                  style={{ width: `${((currentQIndex + 1) / 3) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Active Question Display */}
-            <div className="space-y-6">
-              <div className="p-4 bg-luxury-cream/40 border border-luxury-gold/10 rounded-xl">
-                <p className="font-serif text-sm font-semibold text-forest-900">
-                  {SURVEY_QUESTIONS[currentQIndex].question}
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {SURVEY_QUESTIONS[currentQIndex].options.map((opt) => {
-                  const key = `q${currentQIndex + 1}` as keyof SurveyAnswers;
-                  const isSelected = surveyAnswers[key] === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      onClick={() => {
-                        setSurveyAnswers(prev => ({
-                          ...prev,
-                          [key]: opt.id
-                        }));
-                      }}
-                      className={`w-full text-left p-4 rounded-xl border text-xs transition-all flex justify-between items-center ${
-                        isSelected 
-                          ? 'border-forest-800 bg-forest-50/50 font-bold text-forest-900 shadow-sm' 
-                          : 'border-luxury-sand bg-white text-forest-700 hover:bg-luxury-cream/20 hover:border-luxury-gold/30'
-                      }`}
-                    >
-                      <span>{opt.text}</span>
-                      {isSelected && <Check className="w-4 h-4 text-forest-800" />}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Navigation buttons */}
-              <div className="flex justify-between items-center border-t border-luxury-sand pt-6 mt-6">
-                <button
-                  disabled={currentQIndex === 0}
-                  onClick={() => setCurrentQIndex(prev => prev - 1)}
-                  className="px-4 py-2 border border-luxury-sand rounded text-xs text-forest-600 hover:bg-forest-50 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                >
-                  이전 질문
-                </button>
-
-                {currentQIndex < 2 ? (
-                  <button
-                    onClick={() => setCurrentQIndex(prev => prev + 1)}
-                    className="px-6 py-2.5 bg-forest-800 text-luxury-cream rounded text-xs font-semibold hover:bg-forest-900 transition-colors flex items-center gap-1.5"
-                  >
-                    <span>다음 질문</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleGenerateRecipe}
-                    disabled={isLoading}
-                    className="px-6 py-2.5 bg-luxury-goldDark text-luxury-cream rounded text-xs font-bold hover:bg-luxury-goldDark/90 transition-colors flex items-center gap-1.5 shadow"
-                  >
-                    {isLoading ? (
-                      <span>분석하는 중...</span>
-                    ) : (
-                      <>
-                        <span>시그니처 향수 생성</span>
-                        <Sparkles className="w-3.5 h-3.5" />
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
         ) : (
-          /* STEP 3: Scent Analysis Results View (3 Recipes Tab) */
+          /* STEP 2: Scent Analysis Results View (3 Recipes Tab) */
           <div className="max-w-4xl w-full space-y-8 animate-slide-up">
             {/* Top Back Nav */}
             <div className="flex justify-between items-center">
@@ -494,89 +336,14 @@ export default function App() {
                     )}
                   </div>
 
-                  {/* Advanced Slider controls at the bottom */}
-                  <div className="border-t border-luxury-sand pt-6 mt-6 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h4 className="text-xs font-bold tracking-widest text-forest-400 uppercase">
-                        Advanced Ratios
-                      </h4>
-                      <span className="text-[10px] text-forest-400 font-semibold text-luxury-goldDark">
-                        Match Score: {activeRecipe.matchScore}점
-                      </span>
-                    </div>
-                    
-                    {/* Preset quick buttons */}
-                    <div className="grid grid-cols-3 gap-1">
-                      <button
-                        onClick={() => applyPreset(40, 40, 20)}
-                        className={`text-[9px] py-1 border rounded transition-colors ${
-                          activeRatio.top === 40 && activeRatio.middle === 40 ? 'bg-forest-800 border-forest-800 text-white' : 'border-forest-200 text-forest-600 hover:bg-forest-50'
-                        }`}
-                      >
-                        상큼한 탑 강조
-                      </button>
-                      <button
-                        onClick={() => applyPreset(25, 45, 30)}
-                        className={`text-[9px] py-1 border rounded transition-colors ${
-                          activeRatio.top === 25 && activeRatio.middle === 45 ? 'bg-forest-800 border-forest-800 text-white' : 'border-forest-200 text-forest-600 hover:bg-forest-50'
-                        }`}
-                      >
-                        기본 하모니
-                      </button>
-                      <button
-                        onClick={() => applyPreset(15, 40, 45)}
-                        className={`text-[9px] py-1 border rounded transition-colors ${
-                          activeRatio.top === 15 && activeRatio.middle === 40 ? 'bg-forest-800 border-forest-800 text-white' : 'border-forest-200 text-forest-600 hover:bg-forest-50'
-                        }`}
-                      >
-                        은은한 잔향
-                      </button>
-                    </div>
-
-                    {/* Manual sliders */}
-                    <div className="space-y-3 pt-1">
-                      <div>
-                        <div className="flex justify-between text-[11px] text-forest-700 font-medium mb-1">
-                          <span>Top Note Target</span>
-                          <span>{activeRatio.top}%</span>
-                        </div>
-                        <input 
-                          type="range" 
-                          min="10" 
-                          max="40" 
-                          step="5"
-                          value={activeRatio.top} 
-                          onChange={(e) => handleRatioSliderChange('top', parseInt(e.target.value))}
-                          className="w-full accent-forest-700 h-1 bg-luxury-sand rounded-lg appearance-none cursor-pointer"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-[11px] text-forest-700 font-medium mb-1">
-                          <span>Middle Note Target</span>
-                          <span>{activeRatio.middle}%</span>
-                        </div>
-                        <input 
-                          type="range" 
-                          min="30" 
-                          max="60" 
-                          step="5"
-                          value={activeRatio.middle} 
-                          onChange={(e) => handleRatioSliderChange('middle', parseInt(e.target.value))}
-                          className="w-full accent-forest-700 h-1 bg-luxury-sand rounded-lg appearance-none cursor-pointer"
-                        />
-                      </div>
-                    </div>
+                  <div className="border-t border-luxury-sand pt-4 mt-2 flex justify-between items-center text-[10px] text-forest-400 font-semibold">
+                    <span>이름 기반 향 추천</span>
+                    <span>매치 점수: {activeRecipe.matchScore}점</span>
                   </div>
                 </div>
 
                 {/* Right Column: Recipe Cards */}
                 <div className="md:col-span-2 space-y-6">
-                  {/* Visual Ratio Bar Card */}
-                  <div className="bg-white border border-luxury-gold/15 rounded-2xl p-6 shadow-md">
-                    <RatioBar top={activeRecipe.top} middle={activeRecipe.middle} base={activeRecipe.base} />
-                  </div>
-
                   {/* 3 Note Section Cards */}
                   <div className="grid sm:grid-cols-3 gap-4">
                     <NoteSection 
