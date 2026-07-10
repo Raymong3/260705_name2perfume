@@ -3,10 +3,10 @@ import { NOTES } from '../data/notes';
 import { seededRandom } from './nameSeed';
 import { generateResultText } from './generateResultText';
 
-// Weighted count: 65% for 1 note, 25% for 2 notes, 10% for 3 notes
+// Weighted count: 2 notes by default (80%), with 10% for 1 and 10% for 3 for subtle variety
 function pickCountWeighted(rand: () => number): number {
   const r = rand();
-  if (r < 0.65) return 1;
+  if (r < 0.10) return 1;
   if (r < 0.90) return 2;
   return 3;
 }
