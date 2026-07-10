@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Sparkles, ChevronLeft, Settings } from 'lucide-react';
+import { Sparkles, ChevronLeft } from 'lucide-react';
 import { NameInput } from '../components/NameInput';
+import { Header } from '../components/Header';
 import perfumeImgUrl from '../assets/perfume_hunmin_v2.png';
 import { NoteSection } from '../components/NoteSection';
 import { analyzeName } from '../logic/analyzeName';
@@ -79,28 +80,11 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col justify-between selection:bg-forest-100">
       {/* Luxury Header */}
-      <header className="border-b border-luxury-gold/10 bg-forest-950 text-luxury-cream py-6 px-4 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div className="flex flex-col">
-            <span className="font-serif text-xl md:text-2xl font-bold tracking-[0.15em] text-luxury-gold">
-              훈민향음 (訓民香音)
-            </span>
-            <span className="text-xl md:text-3xl tracking-[0.2em] text-forest-300 font-serif font-bold mt-1.5">
-              더 알
-            </span>
-          </div>
-          
-          {step === 'result' && (
-            <button 
-              onClick={() => setIsEditingNames(!isEditingNames)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-luxury-gold/20 text-xs hover:bg-forest-900 transition-colors text-luxury-goldLight"
-            >
-              <Settings className="w-3.5 h-3.5" />
-              <span>향료명 관리</span>
-            </button>
-          )}
-        </div>
-      </header>
+      <Header 
+        step={step} 
+        isEditingNames={isEditingNames} 
+        setIsEditingNames={setIsEditingNames} 
+      />
 
       {/* Main Content */}
       <main className="flex-grow flex items-center justify-center py-10 px-4 bg-luxury-cream/10">
