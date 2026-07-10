@@ -86,7 +86,7 @@ export default function App() {
               훈민향음 (訓民香音)
             </span>
             <span className="text-[10px] tracking-wider text-forest-300 font-serif">
-              L'atelier de Parfum
+              더 알
             </span>
           </div>
           
@@ -190,7 +190,7 @@ export default function App() {
                 <img 
                   src="/perfume_hunmin.png" 
                   alt="훈민향음 향수" 
-                  className="relative w-80 h-80 object-contain drop-shadow-2xl rounded-2xl hover:scale-[1.03] transition-transform duration-500" 
+                  className="relative w-[400px] h-80 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
                 />
               </div>
             </div>
