@@ -1,7 +1,6 @@
-import { NameAnalysis, PerfumeRecipe, RecommendedNote, PerfumeNote } from '../types/perfume';
+import { NameAnalysis, PerfumeRecipe, RecommendedNote } from '../types/perfume';
 import { NOTES } from '../data/notes';
 import { seededRandom } from './nameSeed';
-import { scoreNote } from './scoreNote';
 import { generateResultText } from './generateResultText';
 
 // Weighted count: 65% for 1 note, 25% for 2 notes, 10% for 3 notes
@@ -10,14 +9,6 @@ function pickCountWeighted(rand: () => number): number {
   if (r < 0.65) return 1;
   if (r < 0.90) return 2;
   return 3;
-}
-
-export function pickNotesBySeed(notes: PerfumeNote[], count: number, rand: () => number) {
-  return [...notes]
-    .map(note => ({ note, sort: rand() }))
-    .sort((a, b) => a.sort - b.sort)
-    .slice(0, count)
-    .map(item => item.note);
 }
 
 // Recommends a single recipe given a specific seed (or offset)
@@ -32,7 +23,22 @@ export function recommendSingleRecipe(
   const middleCount = pickCountWeighted(rand);
   const baseCount = pickCountWeighted(rand);
 
-  const analysisTags = [...analysis.imageTags, ...analysis.moodTags];
+  const choTags = analysis.choTags || [];
+  const jungTags = analysis.jungTags || [];
+  const jongTags = analysis.jongTags || [];
+  const syllableTags = analysis.syllableTags || [];
+  const lenTags = analysis.lenTags || [];
+  const rarityTags = analysis.rarityTags || [];
+
+  const scoreComponent = (noteTags: string[], noteScentTags: string[], targetTags: string[]): number => {
+    let match = 0;
+    const uniqueTargets = Array.from(new Set(targetTags));
+    for (const tag of uniqueTargets) {
+      if (noteTags.includes(tag)) match += 10;
+      if (noteScentTags.includes(tag)) match += 5;
+    }
+    return match;
+  };
 
   const selectNotesForCategory = (
     type: 'top' | 'middle' | 'base',
@@ -40,29 +46,36 @@ export function recommendSingleRecipe(
   ): RecommendedNote[] => {
     const activeNotes = NOTES.filter(n => n.type === type && n.active);
 
-    const scored = activeNotes
-      .map(note => {
-        const score = scoreNote(note, analysisTags, rand);
-        return { note, score };
-      })
-      .sort((a, b) => b.score - a.score);
+    const scored = activeNotes.map(note => {
+      // Calculate Weighted Scores
+      const sSyllable = scoreComponent(note.moodTags, note.scentTags, syllableTags); // 40%
+      const sCho = scoreComponent(note.moodTags, note.scentTags, choTags);           // 15%
+      const sJung = scoreComponent(note.moodTags, note.scentTags, jungTags);         // 20%
+      const sJong = scoreComponent(note.moodTags, note.scentTags, jongTags);         // 10%
+      const sLen = scoreComponent(note.moodTags, note.scentTags, lenTags);           // 5%
+      const sRarity = scoreComponent(note.moodTags, note.scentTags, rarityTags);     // 10%
 
-    // Select candidate pool (top 30% to 50%)
-    const candidateCount = Math.max(count + 3, Math.ceil(scored.length * 0.4));
-    const candidates = scored.slice(0, candidateCount);
+      const finalMatchScore = (
+        sSyllable * 0.40 +
+        sCho * 0.15 +
+        sJung * 0.20 +
+        sJong * 0.10 +
+        sLen * 0.05 +
+        sRarity * 0.10
+      );
 
-    const selected = pickNotesBySeed(candidates.map(c => c.note), count, rand);
+      // Add seed-based noise (noise limit = 25)
+      const finalScore = finalMatchScore + rand() * 25;
+      return { note, finalScore };
+    });
 
-    const finalSelected = selected
-      .map(note => {
-        const originalScored = scored.find(s => s.note.id === note.id);
-        return { note, score: originalScored ? originalScored.score : 0 };
-      })
-      .sort((a, b) => b.score - a.score)
-      .map(item => item.note);
+    scored.sort((a, b) => b.finalScore - a.finalScore);
+    const selected = scored.slice(0, count);
 
-    return finalSelected.map(note => {
-      const matchingTags = note.moodTags.filter(t => analysisTags.includes(t));
+    return selected.map(item => {
+      const note = item.note;
+      const allTags = [...syllableTags, ...choTags, ...jungTags, ...jongTags, ...lenTags, ...rarityTags];
+      const matchingTags = note.moodTags.filter(t => allTags.includes(t));
       const reason = matchingTags.length > 0
         ? `이름의 ${matchingTags.slice(0, 2).join(', ')} 분위기와 잘 어울립니다.`
         : `이름의 전반적인 분위기와 세련되게 어우러집니다.`;
@@ -104,13 +117,24 @@ export function recommendSingleRecipe(
     let sum = 0;
     const allNotes = [...top, ...middle, ...base].map(item => item.note);
     for (const note of allNotes) {
-      // 1. Name tag match score
-      for (const tag of analysisTags) {
-        if (note.moodTags.includes(tag)) sum += 10;
-        if (note.scentTags.includes(tag)) sum += 5;
-      }
+      const sSyllable = scoreComponent(note.moodTags, note.scentTags, syllableTags); // 40%
+      const sCho = scoreComponent(note.moodTags, note.scentTags, choTags);           // 15%
+      const sJung = scoreComponent(note.moodTags, note.scentTags, jungTags);         // 20%
+      const sJong = scoreComponent(note.moodTags, note.scentTags, jongTags);         // 10%
+      const sLen = scoreComponent(note.moodTags, note.scentTags, lenTags);           // 5%
+      const sRarity = scoreComponent(note.moodTags, note.scentTags, rarityTags);     // 10%
+
+      const finalMatchScore = (
+        sSyllable * 0.40 +
+        sCho * 0.15 +
+        sJung * 0.20 +
+        sJong * 0.10 +
+        sLen * 0.05 +
+        sRarity * 0.10
+      );
+      sum += finalMatchScore;
     }
-    return sum;
+    return Math.round(sum);
   };
 
   const matchScore = calculateMatchScore(selectedTop, selectedMiddle, selectedBase);

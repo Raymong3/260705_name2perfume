@@ -45,6 +45,23 @@ export function analyzeName(input: string): NameAnalysis {
     scores[tag] = 0;
   }
 
+  // --- Initialize lists for structured weighted profile ---
+  const syllables = normalized.split('');
+  const choTags: string[] = [];
+  const jungTags: string[] = [];
+  const jongTags: string[] = [];
+  const syllableTags: string[] = [];
+
+  let openSyllableCount = 0;
+  let nasalLiquidCodaCount = 0;
+  let plosiveCodaCount = 0;
+
+  const COMMON_SYLLABLES = new Set([
+    '김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '전', '홍',
+    '민', '서', '예', '지', '하', '주', '은', '현', '우', '정', '재', '성', '태', '진', '다', '도', '동', '시', '연', '채',
+    '준', '우', '원', '아', '은', '빈', '율', '현', '지', '윤', '진', '서', '영', '하', '민', '호', '훈', '희', '주', '경'
+  ]);
+
   let codaCount = 0;
 
   // Process syllable-by-syllable scoring
@@ -63,33 +80,47 @@ export function analyzeName(input: string): NameAnalysis {
         scores['단단한'] += conScore;
         scores['자신감'] += conScore;
         scores['드라이'] += conScore;
+        choTags.push('단단한', '자신감', '드라이');
+        choTags.push('우디', '레더');
       } else if (elegantConsonants.includes(cho)) {
         scores['세련된'] += conScore;
         scores['도시적인'] += conScore;
         scores['우아한'] += conScore;
         scores['고급스러운'] += conScore;
         scores['화려한'] += conScore;
+        choTags.push('세련된', '도시적인', '우아한', '고급스러운', '화려한');
+        choTags.push('플로럴', '스파이시');
       } else if (warmConsonants.includes(cho)) {
         scores['포근한'] += conScore;
         scores['따뜻한'] += conScore;
         scores['편안한'] += conScore;
         scores['코튼'] += conScore;
         scores['단아한'] += conScore;
+        choTags.push('포근한', '따뜻한', '편안한', '코튼', '단아한');
+        choTags.push('머스크', '앰버');
       } else if (pureConsonants.includes(cho)) {
         scores['맑은'] += conScore;
         scores['깨끗한'] += conScore;
+        choTags.push('맑은', '깨끗한');
+        choTags.push('워터리', '머스크');
       } else if (lightConsonants.includes(cho)) {
         scores['가벼운'] += conScore;
         scores['자유로운'] += conScore;
+        choTags.push('가벼운', '자유로운');
+        choTags.push('시트러스', '그린', '허브');
       } else if (flexibleConsonants.includes(cho)) {
         scores['유연한'] += conScore;
         scores['부드러운'] += conScore;
         scores['귀여운'] += conScore;
         scores['로맨틱한'] += conScore;
         scores['캐주얼'] += conScore;
+        choTags.push('유연한', '부드러운', '귀여운', '로맨틱한', '캐주얼');
+        choTags.push('프루티', '스윗');
       } else if (uniqueConsonants.includes(cho)) {
         scores['개성있는'] += conScore;
         scores['활동적인'] += conScore;
+        choTags.push('개성있는', '활동적인');
+        choTags.push('스파이시', '허브', '티');
       }
 
       // --- 2. Vowel (모음) Scoring (25% weight base) ---
@@ -103,14 +134,20 @@ export function analyzeName(input: string): NameAnalysis {
         scores['따뜻한'] += vowScore;
         scores['달콤한'] += vowScore;
         scores['신선한'] += vowScore;
+        jungTags.push('밝은', '따뜻한', '달콤한', '신선한');
+        jungTags.push('시트러스', '프루티');
       } else if (energeticVowels.includes(jung)) {
         scores['활기찬'] += vowScore;
         scores['자유로운'] += vowScore;
+        jungTags.push('활기찬', '자유로운');
+        jungTags.push('시트러스', '프루티', '스윗');
       } else if (calmVowels.includes(jung)) {
         scores['차분한'] += vowScore;
         scores['안정감'] += vowScore;
         scores['쌉쌀한'] += vowScore;
         scores['아로마틱'] += vowScore;
+        jungTags.push('차분한', '안정감', '쌉쌀한', '아로마틱');
+        jungTags.push('티', '허브');
       } else if (deepVowels.includes(jung)) {
         scores['깊이감'] += vowScore;
         scores['신비로운'] += vowScore;
@@ -118,9 +155,13 @@ export function analyzeName(input: string): NameAnalysis {
         scores['스모키'] += vowScore;
         scores['얼씨'] += vowScore;
         scores['숲'] += vowScore;
+        jungTags.push('깊이감', '신비로운', '이국적인', '스모키', '얼씨', '숲');
+        jungTags.push('우디', '발삼', '얼씨');
       } else if (clearVowels.includes(jung)) {
         scores['지적인'] += vowScore;
         scores['또렷한'] += vowScore;
+        jungTags.push('지적인', '또렷한');
+        jungTags.push('워터리', '그린');
       } else if (softVowels.includes(jung)) {
         scores['부드러운'] += vowScore;
         scores['세련된'] += vowScore;
@@ -129,11 +170,34 @@ export function analyzeName(input: string): NameAnalysis {
         scores['중성적인'] += vowScore;
         scores['여성스러운'] += vowScore;
         scores['관능적인'] += vowScore;
+        jungTags.push('부드러운', '세련된', '크리미', '파우더리', '중성적인', '여성스러운', '관능적인');
+        jungTags.push('플로럴', '스윗');
       }
 
-      // Track coda for overall ratio calculation
-      if (decomp.hasFinal) {
+      // Track coda for overall ratio calculation & profile
+      const jong = decomp.jong;
+      if (!jong) {
+        openSyllableCount++;
+      } else if (['ㄴ', 'ㄹ', 'ㅁ', 'ㅇ'].includes(jong)) {
+        nasalLiquidCodaCount++;
         codaCount++;
+      } else {
+        plosiveCodaCount++;
+        codaCount++;
+      }
+
+      // Syllable phonetic properties
+      if (['ㅁ', 'ㄴ', 'ㄹ'].includes(cho) || ['ㄴ', 'ㄹ', 'ㅁ'].includes(jong)) {
+        syllableTags.push('부드러운', '크리미', '파우더리', '코튼', '편안한');
+      }
+      if (['ㅏ', 'ㅑ'].includes(jung) && ['ㅇ', 'ㅎ', 'ㅂ', 'ㅁ'].includes(cho)) {
+        syllableTags.push('밝은', '따뜻한', '달콤한', '신선한');
+      }
+      if (['ㅜ', 'ㅠ', 'ㅡ'].includes(jung) || ['ㄱ', 'ㅂ', 'ㄷ', 'ㄹ'].includes(jong)) {
+        syllableTags.push('깊이감', '숲', '얼씨', '스모키', '안정감');
+      }
+      if (['ㅈ', 'ㅊ', 'ㅅ', 'ㅆ'].includes(cho) || ['ㅣ', 'ㅐ', 'ㅔ'].includes(jung)) {
+        syllableTags.push('맑은', '깨끗한', '지적인', '또렷한', '세련된', '도시적인');
       }
     }
   }
@@ -148,16 +212,56 @@ export function analyzeName(input: string): NameAnalysis {
     scores['가벼운'] += 2.0;
   }
 
+  if (plosiveCodaCount > 0) {
+    jongTags.push('단단한', '또렷한', '드라이');
+  }
+  if (nasalLiquidCodaCount > openSyllableCount) {
+    jongTags.push('부드러운', '편안한', '포근한', '코튼');
+  }
+  if (openSyllableCount >= L * 0.5) {
+    jongTags.push('맑은', '깨끗한', '가벼운', '자연스러운');
+  }
+
   // --- 4. Length (글자수) Scoring (10% weight base) ---
+  const lenTags: string[] = [];
   if (L === 2) {
     scores['또렷한'] += 1.0;
     scores['간결한'] += 1.0;
+    lenTags.push('간결한', '또렷한', '단아한');
   } else if (L === 3) {
     scores['균형감'] += 1.0;
     scores['자연스러운'] += 1.0;
+    lenTags.push('균형감', '자연스러운');
   } else if (L >= 4) {
     scores['개성'] += 1.0;
     scores['특별한'] += 1.0;
+    lenTags.push('풍성한', '이국적인', '특별한');
+  }
+
+  let hasRepetition = false;
+  const uniqueChars = new Set(syllables);
+  if (uniqueChars.size < L) {
+    hasRepetition = true;
+  }
+  if (hasRepetition) {
+    lenTags.push('활기찬', '귀여운', '캐주얼', '자유로운');
+  } else {
+    lenTags.push('차분한', '안정감');
+  }
+
+  // --- Rarity Scoring ---
+  const rarityTags: string[] = [];
+  let rareCount = 0;
+  for (const char of syllables) {
+    if (!COMMON_SYLLABLES.has(char)) {
+      rareCount++;
+    }
+  }
+  const rareRatio = rareCount / L;
+  if (rareRatio >= 0.5) {
+    rarityTags.push('개성', '이국적인', '특별한', '신비로운', '개성있는');
+  } else {
+    rarityTags.push('따뜻한', '부드러운', '자연스러운', '편안한', '안정감');
   }
 
   // Classify scored tags into Image vs Mood sets
@@ -197,6 +301,12 @@ export function analyzeName(input: string): NameAnalysis {
     seed,
     imageTags: sortedImageTags,
     moodTags: sortedMoodTags,
-    description
+    description,
+    choTags,
+    jungTags,
+    jongTags,
+    syllableTags,
+    lenTags,
+    rarityTags
   };
 }
