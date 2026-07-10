@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Sparkles, ChevronLeft, Settings } from 'lucide-react';
 import { NameInput } from '../components/NameInput';
+import perfumeImgUrl from '../assets/perfume_hunmin_v2.png';
 import { NoteSection } from '../components/NoteSection';
 import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
@@ -85,7 +86,7 @@ export default function App() {
             <span className="font-serif text-xl md:text-2xl font-bold tracking-[0.15em] text-luxury-gold">
               훈민향음 (訓民香音)
             </span>
-            <span className="text-[10px] tracking-wider text-forest-300 font-serif">
+            <span className="text-xs md:text-sm tracking-[0.2em] text-forest-300 font-serif font-medium mt-1">
               더 알
             </span>
           </div>
@@ -188,7 +189,7 @@ export default function App() {
               <div className="hidden md:flex justify-center md:justify-start pt-4 relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-luxury-gold to-forest-500 rounded-2xl blur opacity-15 group-hover:opacity-25 transition duration-1000 group-hover:duration-200"></div>
                 <img 
-                  src="/perfume_hunmin_v2.png" 
+                  src={perfumeImgUrl} 
                   alt="훈민향음 향수" 
                   className="relative w-full max-w-lg h-72 md:h-80 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
                 />
