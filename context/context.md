@@ -122,13 +122,10 @@ const note = {
 1. Top Notes는 최소 1개 이상 포함한다.
 2. Middle Notes는 최소 1개 이상 포함한다.
 3. Base Notes는 최소 1개 이상 포함한다.
-4. 각 노트 그룹별 최대 선택 개수는 5개다.
+4. 각 노트 그룹별 최대 선택 개수는 3개이며, 기본적으로는 1개를 추천하는 것을 우선으로 분배한다.
 5. 한 레시피 안에서 같은 향료가 중복 선택되면 안 된다.
-6. 기본 추천 개수는 다음을 우선한다.
-   - Top: 2~3개
-   - Middle: 2~4개
-   - Base: 2~3개
-7. 총 향료 개수는 너무 많지 않게 기본 7~9개를 권장한다.
+6. 단일 조합이 아닌 서로 다른 3가지 조합(레시피)을 생성하며, 가장 점수가 높은(어울리는) 조합부터 순서대로(1순위, 2순위, 3순위) 정렬하여 제공한다.
+7. 총 향료 개수는 최소 3개에서 최대 9개 사이를 만족하도록 조율한다.
 8. 총 비율은 항상 100%여야 한다.
 
 ---
@@ -385,30 +382,30 @@ const LENGTH_RULES = {
 ### 8.1 입력
 
 ```ts
+type SurveyAnswers = {
+  q1: number; // 1 ~ 5
+  q2: number; // 1 ~ 5
+  q3: number; // 1 ~ 5
+};
+
 type RecommendInput = {
   name: string;
-  options?: {
-    topCount?: number;
-    middleCount?: number;
-    baseCount?: number;
-  };
+  surveyAnswers: SurveyAnswers;
 };
 ```
 
 ### 8.2 처리 단계
 
-1. 이름 정규화
-2. 이름이 비어 있으면 오류 표시
-3. 한글 이름이 아니어도 동작은 가능하게 하되, 한글 이름을 권장 표시
-4. 이름을 시드로 변환
-5. 시드 기반 난수 함수 생성
-6. 이름 어감 분석으로 감성 태그 생성
-7. 향료별 점수 계산
-8. 각 노트 그룹에서 점수 높은 향료 후보 추출
-9. 동점 또는 비슷한 점수에서는 시드 기반 난수로 정렬 보정
-10. Top / Middle / Base를 각각 선택
-11. 비율 계산
-12. 결과 문장 생성
+1. **1단계**: 이름 입력 및 정규화
+2. **2단계**: 3가지 질문(5지선다)에 대한 답변 입력
+3. 이름을 시드로 변환 및 시드 기반 난수 함수 생성
+4. 이름 어감 분석으로 기초 감성 태그 생성
+5. 설문 응답 정보를 기반으로 각 질문의 선호 향료/태그 가중치를 합산
+6. 향료별 종합 점수 계산 (이름 분석 점수 + 설문 선호도 가중치)
+7. 각 노트 그룹(Top, Middle, Base)에서 점수 높은 향료 후보군 추출
+8. 시드 다원화(예: `seed + offset` 또는 서로 다른 난수 노이즈 적용)를 통해 3개의 고유한 대안 레시피 세트를 생성
+9. 각 레시피의 총 매칭 점수 합계를 기준으로 가장 어울리는 순서(1순위, 2순위, 3순위)대로 정렬하여 3가지 조합 출력
+10. 각 레시피별 최종 비율 계산 및 결과 설명 문장 생성
 
 ---
 
@@ -496,32 +493,23 @@ const selected = pickNotesBySeed(candidates.map(c => c.note), count, rand);
 
 ## 11. 추천 개수 결정
 
-추천 개수도 시드 기반으로 결정한다.
+각 노트별 추천 향료 개수는 시드 기반으로 결정한다.
 
-기본 범위:
-
-```ts
-const TOP_COUNT_RANGE = [2, 3];
-const MIDDLE_COUNT_RANGE = [2, 4];
-const BASE_COUNT_RANGE = [2, 3];
-```
-
-함수:
+범위:
 
 ```ts
-function pickCount(min: number, max: number, rand: () => number) {
-  return min + Math.floor(rand() * (max - min + 1));
-}
+const TOP_COUNT_RANGE = [1, 3];
+const MIDDLE_COUNT_RANGE = [1, 3];
+const BASE_COUNT_RANGE = [1, 3];
 ```
 
-단, 사용자 옵션이 있으면 다음 조건으로 제한한다.
+기본적으로는 **1개 추천**을 유도하기 위해 난수 분포의 가중치를 조절한다.
+예를 들어, 난수 `r` (0~1)에 대해:
+- `r < 0.65`: 1개
+- `0.65 <= r < 0.90`: 2개
+- `r >= 0.90`: 3개
 
-```ts
-function clampNoteCount(value: number, fallback: number) {
-  if (!Number.isFinite(value)) return fallback;
-  return Math.min(5, Math.max(1, Math.floor(value)));
-}
-```
+이를 통해 대부분의 노트에서 기본 1개가 골고루 매칭되고, 간헐적으로 2~3개의 향료가 조화롭게 제안되도록 유도한다.
 
 ---
 

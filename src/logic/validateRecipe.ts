@@ -6,19 +6,19 @@ export function validateRecipe(recipe: PerfumeRecipe): {
 } {
   const errors: string[] = [];
 
-  // 1. Verify note counts
+  // 1. Verify note counts (1 to 3 notes per section)
   const topCount = recipe.top.length;
   const middleCount = recipe.middle.length;
   const baseCount = recipe.base.length;
 
-  if (topCount < 1 || topCount > 5) {
-    errors.push(`Top note count must be between 1 and 5. Current count: ${topCount}`);
+  if (topCount < 1 || topCount > 3) {
+    errors.push(`Top note count must be between 1 and 3. Current count: ${topCount}`);
   }
-  if (middleCount < 1 || middleCount > 5) {
-    errors.push(`Middle note count must be between 1 and 5. Current count: ${middleCount}`);
+  if (middleCount < 1 || middleCount > 3) {
+    errors.push(`Middle note count must be between 1 and 3. Current count: ${middleCount}`);
   }
-  if (baseCount < 1 || baseCount > 5) {
-    errors.push(`Base note count must be between 1 and 5. Current count: ${baseCount}`);
+  if (baseCount < 1 || baseCount > 3) {
+    errors.push(`Base note count must be between 1 and 3. Current count: ${baseCount}`);
   }
 
   // 2. Verify unique note IDs
