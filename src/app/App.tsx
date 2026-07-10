@@ -80,11 +80,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col justify-between selection:bg-forest-100">
       {/* Luxury Header */}
-      <Header 
-        step={step} 
-        isEditingNames={isEditingNames} 
-        setIsEditingNames={setIsEditingNames} 
-      />
+      <Header />
 
       {/* Main Content */}
       <main className="flex-grow flex items-center justify-center py-10 px-4 bg-luxury-cream/10">
@@ -204,7 +200,7 @@ export default function App() {
                   setAnalysis(null);
                   setRawRecipes([]);
                 }}
-                className="flex items-center gap-1.5 text-xs font-semibold text-forest-700 hover:text-forest-950 transition-colors uppercase tracking-wider"
+                className="flex items-center gap-1.5 text-xs font-semibold text-forest-700 hover:text-forest-950 transition-colors uppercase tracking-wider print:hidden"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>다시 입력하기</span>
@@ -212,7 +208,7 @@ export default function App() {
             </div>
 
             {/* Recipe Priority Tab Navigation */}
-            <div className="flex bg-white p-1.5 border border-luxury-gold/15 rounded-2xl shadow-sm gap-2">
+            <div className="flex bg-white p-1.5 border border-luxury-gold/15 rounded-2xl shadow-sm gap-2 print:hidden">
               {rawRecipes.slice(0, 2).map((_, idx) => {
                 const isSelected = activeRecipeIndex === idx;
                 const rankLabel = idx === 0 ? '1안 (이름 분석 추천 향)' : '2안 (이름 + 연상 단어 분석 향)';
@@ -295,7 +291,6 @@ export default function App() {
 
                   <div className="border-t border-luxury-sand pt-4 mt-2 flex justify-between items-center text-[10px] text-forest-400 font-semibold">
                     <span>이름 기반 향 추천</span>
-                    <span>매치 점수: {activeRecipe.matchScore}점</span>
                   </div>
                 </div>
 
@@ -327,14 +322,22 @@ export default function App() {
                   </div>
 
                   {/* Scent Development Narrative */}
-                  <div className="bg-forest-950 text-luxury-cream border border-forest-900 rounded-2xl p-6 shadow-md space-y-3 mt-auto">
+                  <div className="bg-forest-950 text-luxury-cream border border-forest-900 rounded-2xl p-6 shadow-md space-y-4 mt-auto">
                     <div className="flex items-center gap-2 text-luxury-gold">
                       <Sparkles className="w-4 h-4" />
                       <h3 className="font-serif text-sm font-bold tracking-wider uppercase">Scent Development (향의 변화)</h3>
                     </div>
                     <p className="text-xs leading-relaxed text-forest-200 text-justify">
-                      {activeRecipe.description}
+                      이름을 기반으로 향료 추천이 완료되었습니다. 출력 후 원하시는 향료를 가감하여 나만의 향수를 만들어 보세요!
                     </p>
+                    <div className="pt-2 print:hidden">
+                      <button
+                        onClick={() => window.print()}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-luxury-gold text-forest-950 font-bold text-xs rounded-xl hover:bg-luxury-goldLight transition-colors shadow active:scale-[0.98]"
+                      >
+                        <span>레시피 출력하기 (Print)</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -344,7 +347,7 @@ export default function App() {
       </main>
 
       {/* Luxury Footer */}
-      <footer className="border-t border-luxury-gold/10 bg-forest-950 text-forest-300 py-6 text-center text-xs">
+      <footer className="border-t border-luxury-gold/10 bg-forest-950 text-forest-300 py-6 text-center text-xs print:hidden">
         <div className="max-w-6xl mx-auto px-4 space-y-2">
           <p className="font-serif tracking-widest text-[10px] text-luxury-gold/70">
             © 2026 훈민향음 (訓民香音). ALL RIGHTS RESERVED.

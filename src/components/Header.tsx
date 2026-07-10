@@ -1,20 +1,9 @@
 import React from 'react';
-import { Settings } from 'lucide-react';
 
-interface HeaderProps {
-  step: 'input' | 'result';
-  isEditingNames: boolean;
-  setIsEditingNames: (value: boolean) => void;
-}
-
-export const Header: React.FC<HeaderProps> = ({
-  step,
-  isEditingNames,
-  setIsEditingNames,
-}) => {
+export const Header: React.FC = () => {
   return (
     <header 
-      className="border-b border-[#C9A46C]/10 px-6 sticky top-0 z-40 shadow-lg flex items-center h-[85px] animate-fade-in w-full"
+      className="border-b border-[#C9A46C]/10 px-6 sticky top-0 z-40 shadow-lg flex items-center h-[85px] animate-fade-in w-full print:hidden"
       style={{
         background: 'radial-gradient(circle at 20% 50%, #0d2820 0%, #081A15 100%)',
       }}
@@ -44,17 +33,8 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Center: Empty Space for layout elegance */}
         <div className="hidden md:block flex-grow"></div>
 
-        {/* Right Side: Scent Ingredient Customization Button */}
+        {/* Right Side: Settings hidden as requested */}
         <div className="flex items-center">
-          {step === 'result' && (
-            <button 
-              onClick={() => setIsEditingNames(!isEditingNames)}
-              className="flex items-center gap-1.5 px-4.5 py-1.5 rounded-full border border-[#C9A46C]/25 text-xs text-[#C9A46C] bg-transparent hover:bg-[#C9A46C]/10 hover:border-[#C9A46C]/40 hover:text-[#F8F6F1] transition-all duration-300 shadow-sm font-medium tracking-wide active:scale-[0.97]"
-            >
-              <Settings className="w-3.5 h-3.5 transition-transform duration-500 group-hover:rotate-45" />
-              <span>향료 관리</span>
-            </button>
-          )}
         </div>
       </div>
     </header>
