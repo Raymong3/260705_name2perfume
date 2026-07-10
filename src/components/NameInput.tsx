@@ -51,7 +51,7 @@ export const NameInput: React.FC<NameInputProps> = ({ onRecommend, isLoading }) 
               setName(e.target.value);
               if (error) setError('');
             }}
-            placeholder="이름을 입력하세요 (예: 이해성)"
+            placeholder="이름을 입력하세요 (예: 홍길동)"
             disabled={isLoading}
             className={`w-full px-5 py-4 bg-luxury-cream border ${
               error ? 'border-red-400 focus:ring-red-200' : 'border-forest-200 focus:border-forest-600 focus:ring-forest-100'

@@ -29,7 +29,7 @@ export default {
         }
       },
       fontFamily: {
-        serif: ['Cinzel', 'Playfair Display', 'Didot', 'Georgia', 'serif'],
+        serif: ['Song Myung', 'Nanum Myeongjo', 'Cinzel', 'Playfair Display', 'Didot', 'Georgia', 'serif'],
         sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
       },
       animation: {

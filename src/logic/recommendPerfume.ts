@@ -3,13 +3,6 @@ import { NOTES } from '../data/notes';
 import { seededRandom } from './nameSeed';
 import { generateResultText } from './generateResultText';
 
-// Weighted count: 2 notes by default (80%), with 10% for 1 and 10% for 3 for subtle variety
-function pickCountWeighted(rand: () => number): number {
-  const r = rand();
-  if (r < 0.10) return 1;
-  if (r < 0.90) return 2;
-  return 3;
-}
 
 // Recommends a single recipe given a specific seed (or offset)
 export function recommendSingleRecipe(
@@ -18,10 +11,25 @@ export function recommendSingleRecipe(
 ): PerfumeRecipe {
   const rand = seededRandom(analysis.seed + seedOffset);
 
-  // 1. Determine note counts (weighted: 1~3, default 1)
-  const topCount = pickCountWeighted(rand);
-  const middleCount = pickCountWeighted(rand);
-  const baseCount = pickCountWeighted(rand);
+  // 1. Determine note counts (summing to exactly 5)
+  const r = rand();
+  let topCount = 1;
+  let middleCount = 2;
+  let baseCount = 2;
+  
+  if (r < 0.4) {
+    topCount = 1;
+    middleCount = 2;
+    baseCount = 2;
+  } else if (r < 0.8) {
+    topCount = 2;
+    middleCount = 2;
+    baseCount = 1;
+  } else {
+    topCount = 1;
+    middleCount = 3;
+    baseCount = 1;
+  }
 
   const choTags = analysis.choTags || [];
   const jungTags = analysis.jungTags || [];

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, ChevronLeft, Settings, Check } from 'lucide-react';
+import { Sparkles, ChevronLeft, Settings } from 'lucide-react';
 import { NameInput } from '../components/NameInput';
 import { NoteSection } from '../components/NoteSection';
 import { analyzeName } from '../logic/analyzeName';
@@ -82,8 +82,8 @@ export default function App() {
       <header className="border-b border-luxury-gold/10 bg-forest-950 text-luxury-cream py-6 px-4 sticky top-0 z-40 shadow-sm">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex flex-col">
-            <span className="font-serif text-xl md:text-2xl font-bold tracking-[0.25em] text-luxury-gold">
-              NAME 2 PERFUME
+            <span className="font-serif text-xl md:text-2xl font-bold tracking-[0.15em] text-luxury-gold">
+              훈민향음 (訓民香音)
             </span>
             <span className="text-[10px] tracking-wider text-forest-300 font-serif">
               L'atelier de Parfum
@@ -174,40 +174,24 @@ export default function App() {
             {/* Visual branding block */}
             <div className="text-center md:text-left space-y-6 md:pr-6 animate-slide-up">
               <div className="inline-block px-3 py-1 rounded-full border border-forest-200 text-[11px] font-semibold tracking-widest text-forest-600 uppercase bg-forest-50/50">
-                1:1 Private Scent Matching
+                이름 분석 시그니처 향 매칭
               </div>
-              <h1 className="font-serif text-3xl md:text-5xl font-bold leading-tight text-forest-950">
-                당신의 이름은<br />
-                <span className="text-forest-700 italic font-medium">어떤 향기</span>를 품었나요?
+              <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight text-forest-950">
+                훈민향음<br />
+                <span className="text-forest-700 font-medium text-2xl md:text-3xl font-serif">(訓民香音)</span>
               </h1>
-              <p className="text-sm md:text-base leading-relaxed text-forest-600">
-                한글 이름의 어감과 문자 구조를 분석하여 당신만의 시그니처 향수를 매칭합니다.
+              <p className="text-sm md:text-base leading-relaxed text-forest-600 font-medium">
+                세종대왕이 글자를 만들었듯,<br className="hidden md:inline" /> 당신의 이름을 읽어 하나의 향을 만듭니다.
               </p>
               
-              {/* Premium Bottle Illustration Graphic */}
-              <div className="hidden md:flex justify-center md:justify-start pt-4">
-                <svg className="w-48 h-48 drop-shadow-xl hover:rotate-1 transition-transform duration-500" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Glass bottle outer */}
-                  <rect x="50" y="70" width="100" height="100" rx="16" fill="rgba(77, 128, 106, 0.05)" stroke="#c5a880" strokeWidth="2.5" />
-                  <rect x="47" y="67" width="106" height="106" rx="19" stroke="rgba(197, 168, 128, 0.15)" strokeWidth="1" />
-                  {/* Cap */}
-                  <rect x="80" y="32" width="40" height="28" rx="4" fill="#0c1814" stroke="#c5a880" strokeWidth="2" />
-                  <rect x="75" y="60" width="50" height="10" fill="#c5a880" />
-                  {/* Liquid inside */}
-                  <path d="M53 100 C 70 95, 130 105, 147 100 L 147 154 C 147 162, 141 167, 134 167 L 66 167 C 59 167, 53 162, 53 154 Z" fill="rgba(197, 168, 128, 0.12)" />
-                  {/* Forest Green Label */}
-                  <rect x="65" y="90" width="70" height="50" rx="4" fill="#0c1814" stroke="#c5a880" strokeWidth="1" />
-                  <line x1="72" y1="102" x2="128" y2="102" stroke="rgba(197, 168, 128, 0.4)" strokeWidth="0.5" />
-                  <text x="100" y="118" fill="#c5a880" fontSize="8" fontWeight="bold" fontFamily="Cinzel, serif" letterSpacing="1.5" textAnchor="middle">L'ATELIER</text>
-                  <text x="100" y="128" fill="rgba(253, 251, 247, 0.7)" fontSize="6" fontFamily="Inter, sans-serif" letterSpacing="1" textAnchor="middle">N° 260705</text>
-                  <line x1="72" y1="133" x2="128" y2="133" stroke="rgba(197, 168, 128, 0.4)" strokeWidth="0.5" />
-                  
-                  {/* Spray tube */}
-                  <line x1="100" y1="65" x2="100" y2="155" stroke="rgba(197, 168, 128, 0.3)" strokeWidth="1.5" />
-                  {/* Subtle shine/sparkle */}
-                  <circle cx="138" cy="85" r="3" fill="#c5a880" className="animate-pulse" />
-                  <path d="M165 45 L168 50 L173 51 L169 55 L170 60 L165 57 L160 60 L161 55 L157 51 L162 50 Z" fill="#c5a880" opacity="0.6" className="animate-pulse-slow" />
-                </svg>
+              {/* Premium Perfume Bottle Graphic with Hangul Background */}
+              <div className="hidden md:flex justify-center md:justify-start pt-4 relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-luxury-gold to-forest-500 rounded-2xl blur opacity-15 group-hover:opacity-25 transition duration-1000 group-hover:duration-200"></div>
+                <img 
+                  src="/perfume_hunmin.png" 
+                  alt="훈민향음 향수" 
+                  className="relative w-80 h-80 object-contain drop-shadow-2xl rounded-2xl hover:scale-[1.03] transition-transform duration-500" 
+                />
               </div>
             </div>
  
@@ -221,17 +205,6 @@ export default function App() {
               </div>
               
               <NameInput onRecommend={handleRecommend} isLoading={isLoading} />
-              
-              <div className="border-t border-luxury-sand pt-4 flex items-center justify-between text-[11px] text-forest-400">
-                <span className="flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5 text-forest-600" />
-                  이름 + 취향 분석 조합
-                </span>
-                <span className="flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5 text-forest-600" />
-                  3가지 대안 조합 제안
-                </span>
-              </div>
             </div>
           </div>
         ) : (
@@ -390,7 +363,7 @@ export default function App() {
       <footer className="border-t border-luxury-gold/10 bg-forest-950 text-forest-300 py-6 text-center text-xs">
         <div className="max-w-6xl mx-auto px-4 space-y-2">
           <p className="font-serif tracking-widest text-[10px] text-luxury-gold/70">
-            © 2026 NAME 2 PERFUME. ALL RIGHTS RESERVED.
+            © 2026 훈민향음 (訓民香音). ALL RIGHTS RESERVED.
           </p>
           <p className="text-[9px] text-forest-500">
             이름 감성 매핑 추천 기능은 향수 제조 기획용 감성 분류를 제공하며, 실제 원료 배합 시 가이드로 사용될 수 있습니다.
