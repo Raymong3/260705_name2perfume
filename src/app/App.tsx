@@ -170,7 +170,7 @@ export default function App() {
           </div>
         ) : step === 'input' ? (
           /* STEP 1: Main Name Input View */
-          <div className="max-w-4xl w-full grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div className="max-w-5xl xl:max-w-6xl w-full grid lg:grid-cols-2 grid-cols-1 gap-8 lg:gap-12 items-center">
             {/* Visual branding block */}
             <div className="text-center md:text-left space-y-6 md:pr-6 animate-slide-up">
               <div className="inline-block px-3 py-1 rounded-full border border-forest-200 text-[11px] font-semibold tracking-widest text-forest-600 uppercase bg-forest-50/50">
@@ -236,7 +236,7 @@ export default function App() {
           </div>
         ) : (
           /* STEP 2: Scent Analysis Results View (3 Recipes Tab) */
-          <div className="max-w-4xl w-full space-y-8 animate-slide-up">
+          <div className="max-w-5xl xl:max-w-6xl w-full space-y-8 animate-slide-up">
             {/* Top Back Nav */}
             <div className="flex justify-between items-center">
               <button
@@ -254,7 +254,7 @@ export default function App() {
 
             {/* Recipe Priority Tab Navigation */}
             <div className="flex bg-white p-1.5 border border-luxury-gold/15 rounded-2xl shadow-sm gap-2">
-              {rawRecipes.map((_, idx) => {
+              {rawRecipes.slice(0, 2).map((_, idx) => {
                 const isSelected = activeRecipeIndex === idx;
                 let rankLabel = '1순위 조합 (가장 추천)';
                 if (idx === 1) rankLabel = '2순위 조합 (대안 제안)';
@@ -278,9 +278,9 @@ export default function App() {
 
             {/* Results Grid for Active Recipe */}
             {activeRecipe && (
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid lg:grid-cols-3 grid-cols-1 gap-6">
                 {/* Left Column: Scent Concept and Analysis Description */}
-                <div className="md:col-span-1 bg-white border border-luxury-gold/15 rounded-2xl p-6 md:p-8 space-y-6 shadow-md flex flex-col justify-between">
+                <div className="lg:col-span-1 bg-white border border-luxury-gold/15 rounded-2xl p-6 md:p-8 space-y-6 shadow-md flex flex-col justify-between">
                   <div className="space-y-6">
                     {/* Name Tag Box */}
                     <div className="text-center py-4 px-2 border-2 border-double border-luxury-gold/40 rounded-lg bg-luxury-cream/40">
@@ -343,7 +343,7 @@ export default function App() {
                 </div>
 
                 {/* Right Column: Recipe Cards */}
-                <div className="md:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-6">
                   {/* 3 Note Section Cards */}
                   <div className="grid sm:grid-cols-3 gap-4">
                     <NoteSection 
