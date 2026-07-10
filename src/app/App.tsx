@@ -190,7 +190,7 @@ export default function App() {
                 <img 
                   src="/perfume_hunmin.png" 
                   alt="훈민향음 향수" 
-                  className="relative w-[400px] h-80 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
+                  className="relative w-full max-w-lg h-72 md:h-80 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
                 />
               </div>
             </div>
