@@ -57,6 +57,7 @@ export type SejongStory = {
 export type FinalRecipe = {
   id: string;
   guestName: string;
+  status: string;
   selectedType: 'name_only' | 'name_sejong';
   originalRecipe: PerfumeRecipe;
   top: RecommendedNote[];

@@ -131,6 +131,7 @@ export default function App() {
       }
 
       setIsLoggedIn(true);
+      setLoginId(idTrimmed); // Ensure sanitized loginId is saved to state
       // 로그인 후 즉시 이름 적는 1단계 화면으로 이행
       setStep('input');
       setGuestNameForRecipe('');
@@ -249,6 +250,7 @@ export default function App() {
       };
 
       await dbCreateRecord(guestNameForRecipe.trim(), loginId, mockFinalRecipe);
+      await loadGuestRecords(loginId); // Prefetch records to sync MyPage state
       setStep('submit_done');
     } catch (err) {
       alert('의뢰 제출 중 오류가 발생했습니다.');

@@ -132,6 +132,7 @@ class LocalScentDB {
     return {
       id: r.id,
       guestName: r.guest_name,
+      status: r.status,
       selectedType: r.selected_type,
       originalRecipe: {
         name: r.guest_name,
@@ -234,6 +235,7 @@ export async function dbCreateRecord(
     return {
       id: created.id,
       guestName: created.guest_name,
+      status: created.status,
       selectedType: created.selected_type,
       originalRecipe: {
         name: created.guest_name,
@@ -287,6 +289,7 @@ export async function dbGetRecords(loginId?: string): Promise<FinalRecipe[]> {
       return {
         id: r.id,
         guestName: r.guest_name,
+        status: r.status,
         selectedType: r.selected_type,
         originalRecipe: {
           name: r.guest_name,
