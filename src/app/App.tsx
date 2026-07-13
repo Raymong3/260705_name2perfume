@@ -346,13 +346,17 @@ export default function App() {
 
   // 신규 향수 만들기 시작 (Guest)
   const handleStartNewJourney = () => {
-    if (analysis) {
+    const currentAnalysis = analysis || (guestName ? analyzeName(guestName) : null);
+    if (currentAnalysis) {
+      setAnalysis(currentAnalysis);
       setSelectedStory(null);
       setSurveyAnswers([]);
       setRecommended1(null);
       setRecommended2(null);
       setSelectedRecipeType(null);
       setStep('sejong');
+    } else {
+      alert('사용자 정보를 찾을 수 없습니다. 다시 로그인해 주세요.');
     }
   };
 
