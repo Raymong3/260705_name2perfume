@@ -63,3 +63,70 @@
   height: 300%;
   opacity: 1;
 }
+
+/* A6 Premium Record Card & Printing Style */
+.record-card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.record-card {
+  width: 105mm;
+  height: 148mm;
+  padding: 10mm 8mm;
+  box-sizing: border-box;
+  background-color: #fdfbf7;
+  border: 2px double rgba(197, 168, 128, 0.6);
+  box-shadow: 0 10px 30px rgba(77, 128, 106, 0.08);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  color: #0c1814;
+}
+
+/* Classic double-border print ornament */
+.record-card::before {
+  content: '';
+  position: absolute;
+  top: 1.5mm;
+  left: 1.5mm;
+  right: 1.5mm;
+  bottom: 1.5mm;
+  border: 1px solid rgba(197, 168, 128, 0.35);
+  pointer-events: none;
+}
+
+@media print {
+  /* Hide everything except the print-area */
+  body {
+    background: none !important;
+    background-image: none !important;
+  }
+  header, footer, main > div:not(.print-area), .print-exclude {
+    display: none !important;
+  }
+  .print-area {
+    visibility: visible !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 105mm !important;
+    height: 148mm !important;
+    border: 2px double rgba(197, 168, 128, 0.6) !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 10mm 8mm !important;
+    background-color: #fdfbf7 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page {
+    size: 105mm 148mm;
+    margin: 0;
+  }
+}
+
