@@ -101,16 +101,33 @@
 }
 
 @media print {
-  /* Hide everything except the print-area */
-  body {
-    background: none !important;
+  /* 인쇄 시 배경 제거 및 초기화 */
+  body, html {
+    background: #ffffff !important;
     background-image: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
-  header, footer, main > div:not(.print-area), .print-exclude {
+
+  /* 인쇄 비대상 요소 완전히 숨김 */
+  .print-exclude {
     display: none !important;
   }
+
+  /* 부모 레이아웃이 인쇄를 방해하지 않도록 display 방식을 초기화 */
+  #root, main, .record-card-container, div.max-w-xl {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* A6 카드 인쇄 레이아웃 강제 최적화 */
   .print-area {
-    visibility: visible !important;
+    display: flex !important;
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
@@ -123,6 +140,7 @@
     background-color: #fdfbf7 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    page-break-inside: avoid !important;
   }
   @page {
     size: 105mm 148mm;
