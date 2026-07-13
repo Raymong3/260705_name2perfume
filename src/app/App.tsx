@@ -1416,6 +1416,7 @@ export default function App() {
                               <div>
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-[10px] font-bold text-forest-900">{r.guestName}</span>
+                                  <span className="text-[9px] text-forest-500 font-mono">({r.loginId})</span>
                                   {recordStatus === 'completed' ? (
                                     <span className="px-1.5 py-0.2 bg-green-50 border border-green-200 text-green-700 text-[8px] font-bold rounded">완료</span>
                                   ) : (
@@ -1453,7 +1454,10 @@ export default function App() {
                   <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-forest-800 pb-4 gap-4">
                     <div className="space-y-1">
                       <span className="text-[10px] text-luxury-gold font-bold uppercase tracking-widest font-mono">Formulation (조향 상담 의뢰)</span>
-                      <h3 className="font-serif text-xl font-bold text-white">이름: {selectedRecordForAdmin.guestName} 님</h3>
+                      <h3 className="font-serif text-xl font-bold text-white">
+                        이름: {selectedRecordForAdmin.guestName} 님{' '}
+                        <span className="text-xs font-mono text-luxury-gold">({selectedRecordForAdmin.loginId})</span>
+                      </h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <label className="text-xs font-bold text-luxury-gold w-20 font-serif">향수 이름 :</label>

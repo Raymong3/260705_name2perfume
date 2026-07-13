@@ -50,7 +50,7 @@ class LocalScentDB {
     const data = this.getRawData();
     const newId = 'local_' + Date.now();
     const today = new Date();
-    const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}.`;
+    const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}. ${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
 
     const newRecord = {
       id: newId,
@@ -128,10 +128,11 @@ class LocalScentDB {
   // Mapper helper
   private static mapToFinalRecipe(r: any): FinalRecipe {
     const today = new Date(r.created_at);
-    const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}.`;
+    const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}. ${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
     return {
       id: r.id,
       guestName: r.guest_name,
+      loginId: r.password_pin,
       status: r.status,
       selectedType: r.selected_type,
       originalRecipe: {
@@ -202,7 +203,7 @@ export async function dbCreateRecord(
   }
 
   const today = new Date();
-  const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}.`;
+  const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}. ${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
 
   const insertData = {
     guest_name: guestName,
@@ -235,6 +236,7 @@ export async function dbCreateRecord(
     return {
       id: created.id,
       guestName: created.guest_name,
+      loginId: created.password_pin,
       status: created.status,
       selectedType: created.selected_type,
       originalRecipe: {
@@ -285,10 +287,11 @@ export async function dbGetRecords(loginId?: string): Promise<FinalRecipe[]> {
 
     return data.map(r => {
       const today = new Date(r.created_at);
-      const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}.`;
+      const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}. ${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
       return {
         id: r.id,
         guestName: r.guest_name,
+        loginId: r.password_pin,
         status: r.status,
         selectedType: r.selected_type,
         originalRecipe: {
