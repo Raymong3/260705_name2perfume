@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Sparkles, ChevronLeft } from 'lucide-react';
 import { NameInput } from '../components/NameInput';
 import { Header } from '../components/Header';
-import perfumeImgUrl from '../assets/perfume_hunmin_v2.png';
+import perfumeImgUrl from '../assets/perfume_hunmin_v3.png';
 import { NoteSection } from '../components/NoteSection';
 import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
