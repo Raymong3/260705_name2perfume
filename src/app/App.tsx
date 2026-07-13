@@ -513,7 +513,7 @@ export default function App() {
                   <label className="block text-[10px] font-bold text-forest-700 uppercase mb-1">나의 로그인 코드</label>
                   <input 
                     type="text" 
-                    maxLength={5}
+                    maxLength={10}
                     value={loginId}
                     onChange={(e) => setLoginId(e.target.value)}
                     placeholder="예: 1234a"
