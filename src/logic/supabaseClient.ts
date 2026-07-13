@@ -27,28 +27,24 @@ class LocalScentDB {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
   }
 
-  // Verify guest password PIN or register a new one
-  static async verifyPin(guestName: string, passwordPin: string): Promise<{ success: boolean; isNewUser: boolean; error?: string }> {
+  // Login a guest with single loginId (4 digits + 1 char)
+  static async loginGuest(loginId: string): Promise<{ success: boolean; isNewUser: boolean; error?: string }> {
     const data = this.getRawData();
-    const existingUser = data.find(r => r.guest_name.trim() === guestName.trim());
+    const existingRecord = data.find(r => r.password_pin === loginId.trim());
 
-    if (!existingUser) {
-      // New user
+    if (!existingRecord) {
+      // New login ID -> register on first submission
       return { success: true, isNewUser: true };
     }
 
-    // Existing user: check pin
-    if (existingUser.password_pin === passwordPin) {
-      return { success: true, isNewUser: false };
-    } else {
-      return { success: false, isNewUser: false, error: '비밀번호가 일치하지 않습니다.' };
-    }
+    // Existing login ID
+    return { success: true, isNewUser: false };
   }
 
   // Create a new record (Draft or Submitted status)
   static async createRecord(
     guestName: string,
-    passwordPin: string,
+    loginId: string,
     recipeData: any
   ): Promise<any> {
     const data = this.getRawData();
@@ -59,8 +55,8 @@ class LocalScentDB {
     const newRecord = {
       id: newId,
       guest_name: guestName,
-      password_pin: passwordPin,
-      status: 'submitted', // initial status
+      password_pin: loginId, // store loginId in password_pin field
+      status: 'submitted',
       selected_type: recipeData.selectedType,
       perfume_name: recipeData.perfumeName || `${guestName}의 향`,
       top: recipeData.top || [],
@@ -83,13 +79,13 @@ class LocalScentDB {
     return this.mapToFinalRecipe(newRecord);
   }
 
-  // Get records for a specific guest or all if guestName is admin
-  static async getRecords(guestName?: string): Promise<FinalRecipe[]> {
+  // Get records for a specific loginId or all if loginId is admin
+  static async getRecords(loginId?: string): Promise<FinalRecipe[]> {
     const data = this.getRawData();
     let filtered = data;
 
-    if (guestName && guestName !== 'admin') {
-      filtered = data.filter(r => r.guest_name.trim() === guestName.trim());
+    if (loginId && loginId !== 'admin9') {
+      filtered = data.filter(r => r.password_pin === loginId.trim());
     }
 
     // Sort by created_at descending
@@ -98,7 +94,7 @@ class LocalScentDB {
     return filtered.map(r => this.mapToFinalRecipe(r));
   }
 
-  // Update a record to completed with final formulation details
+  // Update a record to completed
   static async completeRecord(id: string, updates: any): Promise<void> {
     const data = this.getRawData();
     const idx = data.findIndex(r => r.id === id);
@@ -122,10 +118,10 @@ class LocalScentDB {
     this.saveRawData(data);
   }
 
-  // Delete a record
-  static async deleteRecord(id: string): Promise<void> {
+  // Delete records (batch)
+  static async deleteRecords(ids: string[]): Promise<void> {
     const data = this.getRawData();
-    const filtered = data.filter(r => r.id !== id);
+    const filtered = data.filter(r => !ids.includes(r.id));
     this.saveRawData(filtered);
   }
 
@@ -156,7 +152,6 @@ class LocalScentDB {
       perfumeName: r.perfume_name,
       makerMemo: r.maker_memo,
       createdDate: r.createdDate || formattedDate,
-      // Backup states
       analysis: r.analysis,
       selectedStory: r.selected_story,
       surveyAnswers: r.survey_answers
@@ -165,21 +160,20 @@ class LocalScentDB {
 }
 
 // ==========================================
-// 2. Exported Database Access Methods (V2)
+// 2. Exported Database Access Methods
 // ==========================================
 
-export async function dbVerifyPin(guestName: string, passwordPin: string): Promise<{ success: boolean; isNewUser: boolean; error?: string }> {
+export async function dbLoginGuest(loginId: string): Promise<{ success: boolean; isNewUser: boolean; error?: string }> {
   if (!isSupabaseConfigured || !supabase) {
     console.log('[Hunmin DB] Running in LocalStorage Fallback mode.');
-    return LocalScentDB.verifyPin(guestName, passwordPin);
+    return LocalScentDB.loginGuest(loginId);
   }
 
   try {
-    // Query records to find if this guest exists
     const { data, error } = await supabase
       .from('hunmin_scent_records')
-      .select('guest_name, password_pin')
-      .eq('guest_name', guestName.trim())
+      .select('password_pin')
+      .eq('password_pin', loginId.trim())
       .limit(1);
 
     if (error) throw error;
@@ -189,25 +183,21 @@ export async function dbVerifyPin(guestName: string, passwordPin: string): Promi
       return { success: true, isNewUser: true };
     }
 
-    const existingUser = data[0];
-    if (existingUser.password_pin === passwordPin) {
-      return { success: true, isNewUser: false };
-    } else {
-      return { success: false, isNewUser: false, error: '비밀번호가 일치하지 않습니다.' };
-    }
+    // Existing user
+    return { success: true, isNewUser: false };
   } catch (err) {
     console.error('[Hunmin DB] Supabase login error:', err);
-    return { success: false, isNewUser: false, error: '서버와 연결하는 중 오류가 발생했습니다. (로컬모드로 작동 중입니다)' };
+    return { success: false, isNewUser: false, error: '서버와 연결하는 중 오류가 발생했습니다. (로컬모드로 우회 작동 중)' };
   }
 }
 
 export async function dbCreateRecord(
   guestName: string,
-  passwordPin: string,
+  loginId: string,
   recipeData: Partial<FinalRecipe>
 ): Promise<FinalRecipe> {
   if (!isSupabaseConfigured || !supabase) {
-    return LocalScentDB.createRecord(guestName, passwordPin, recipeData);
+    return LocalScentDB.createRecord(guestName, loginId, recipeData);
   }
 
   const today = new Date();
@@ -215,7 +205,7 @@ export async function dbCreateRecord(
 
   const insertData = {
     guest_name: guestName,
-    password_pin: passwordPin,
+    password_pin: loginId, // store loginId in password_pin field
     status: 'submitted',
     selected_type: recipeData.selectedType,
     perfume_name: recipeData.perfumeName || `${guestName}의 향`,
@@ -270,20 +260,20 @@ export async function dbCreateRecord(
     } as unknown as FinalRecipe;
   } catch (err) {
     console.error('[Hunmin DB] Supabase create error, writing to LocalStorage instead:', err);
-    return LocalScentDB.createRecord(guestName, passwordPin, recipeData);
+    return LocalScentDB.createRecord(guestName, loginId, recipeData);
   }
 }
 
-export async function dbGetRecords(guestName?: string): Promise<FinalRecipe[]> {
+export async function dbGetRecords(loginId?: string): Promise<FinalRecipe[]> {
   if (!isSupabaseConfigured || !supabase) {
-    return LocalScentDB.getRecords(guestName);
+    return LocalScentDB.getRecords(loginId);
   }
 
   try {
     let query = supabase.from('hunmin_scent_records').select('*');
 
-    if (guestName && guestName !== 'admin') {
-      query = query.eq('guest_name', guestName.trim());
+    if (loginId && loginId !== 'admin9') {
+      query = query.eq('password_pin', loginId.trim()); // query by loginId
     }
 
     const { data, error } = await query.order('created_at', { ascending: false });
@@ -324,7 +314,7 @@ export async function dbGetRecords(guestName?: string): Promise<FinalRecipe[]> {
     });
   } catch (err) {
     console.error('[Hunmin DB] Supabase get records error, loading from LocalStorage:', err);
-    return LocalScentDB.getRecords(guestName);
+    return LocalScentDB.getRecords(loginId);
   }
 }
 
@@ -358,20 +348,22 @@ export async function dbCompleteRecord(id: string, updates: Partial<FinalRecipe>
   }
 }
 
-export async function dbDeleteRecord(id: string): Promise<void> {
-  if (!isSupabaseConfigured || !supabase || id.startsWith('local_')) {
-    return LocalScentDB.deleteRecord(id);
+export async function dbDeleteRecords(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  
+  if (!isSupabaseConfigured || !supabase || ids.some(id => id.startsWith('local_'))) {
+    return LocalScentDB.deleteRecords(ids);
   }
 
   try {
     const { error } = await supabase
       .from('hunmin_scent_records')
       .delete()
-      .eq('id', id);
+      .in('id', ids);
 
     if (error) throw error;
   } catch (err) {
-    console.error('[Hunmin DB] Supabase delete error, modifying LocalStorage:', err);
-    return LocalScentDB.deleteRecord(id);
+    console.error('[Hunmin DB] Supabase delete records error, modifying LocalStorage:', err);
+    return LocalScentDB.deleteRecords(ids);
   }
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, ChevronLeft, ArrowRight, Printer, Trash2, LogIn, Shield, Search, CheckCircle, RefreshCw } from 'lucide-react';
+import { Sparkles, ChevronLeft, ArrowRight, Printer, Trash2, LogIn, Shield, Search, CheckCircle, RefreshCw, ClipboardList, CheckSquare, Square } from 'lucide-react';
 import perfumeImgUrl from '../assets/perfume_hunmin_v3.png';
 import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
@@ -7,20 +7,22 @@ import { NameAnalysis, PerfumeRecipe, SejongStory, FinalRecipe, RecommendedNote 
 import { SEJONG_STORIES } from '../data/sejongStories';
 import { SURVEY_QUESTIONS } from '../data/surveyQuestions';
 import { NOTES } from '../data/notes';
-import { dbVerifyPin, dbCreateRecord, dbGetRecords, dbCompleteRecord, dbDeleteRecord } from '../logic/supabaseClient';
+import { dbLoginGuest, dbCreateRecord, dbGetRecords, dbCompleteRecord, dbDeleteRecords } from '../logic/supabaseClient';
 
 export default function App() {
   // 전체 플로우 상태: 'input' | 'mypage' | 'sejong' | 'survey' | 'result' | 'submit_done' | 'record'
   const [step, setStep] = useState<'input' | 'mypage' | 'sejong' | 'survey' | 'result' | 'submit_done' | 'record'>('input');
   
   // 인증 관련 상태
-  const [guestName, setGuestName] = useState('');
-  const [passwordPin, setPasswordPin] = useState('');
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [loginId, setLoginId] = useState(''); // 휴대폰 번호 뒷자리 4자리 + 영문 1자리
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authError, setAuthError] = useState('');
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  // 일반 손님 의뢰용 상태
+  const [guestNameForRecipe, setGuestNameForRecipe] = useState(''); // 의뢰인 성함 (대리조향 가능)
+  const [nameError, setNameError] = useState('');
 
   // 일반 손님 마이페이지 상태
   const [guestRecords, setGuestRecords] = useState<FinalRecipe[]>([]);
@@ -31,6 +33,9 @@ export default function App() {
   const [adminSearchTerm, setAdminSearchTerm] = useState('');
   const [adminActiveTab, setAdminActiveTab] = useState<'submitted' | 'completed'>('submitted');
   const [selectedRecordForAdmin, setSelectedRecordForAdmin] = useState<FinalRecipe | null>(null);
+
+  // 관리자 일괄 선택 삭제 대상 ID 리스트
+  const [selectedAdminRecordIds, setSelectedAdminRecordIds] = useState<string[]>([]);
 
   // 1~3단계 진행용 임시 상태
   const [analysis, setAnalysis] = useState<NameAnalysis | null>(null);
@@ -62,7 +67,7 @@ export default function App() {
   // 관리자 모드 레코드 목록 실시간 리로딩용
   const loadAdminRecords = async () => {
     try {
-      const records = await dbGetRecords('admin');
+      const records = await dbGetRecords('admin9');
       setAdminRecords(records);
     } catch (err) {
       console.error('관리자 기록 로드 실패:', err);
@@ -70,10 +75,10 @@ export default function App() {
   };
 
   // 일반 손님 기록 리로딩용
-  const loadGuestRecords = async (name: string) => {
+  const loadGuestRecords = async (id: string) => {
     setIsRecordsLoading(true);
     try {
-      const records = await dbGetRecords(name);
+      const records = await dbGetRecords(id);
       setGuestRecords(records);
     } catch (err) {
       console.error('손님 기록 로드 실패:', err);
@@ -82,53 +87,53 @@ export default function App() {
     }
   };
 
-  // 로그인 및 인증 핸들러 (1단계)
+  // 로그인 및 인증 핸들러 (1단계 이전)
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    const nameTrimmed = guestName.trim();
-    if (!nameTrimmed) {
-      setAuthError('이름을 입력해주세요.');
+    const idTrimmed = loginId.trim();
+
+    if (!idTrimmed) {
+      setAuthError('로그인 코드를 입력해주세요.');
       return;
     }
-    if (!/^\d{4}$/.test(passwordPin)) {
-      setAuthError('숫자 4자리 비밀번호를 입력해주세요.');
+
+    // 관리자 마스터 로그인 체크 (예: admin9)
+    if (idTrimmed.toLowerCase() === 'admin9') {
+      setIsAuthLoading(true);
+      try {
+        setIsAdmin(true);
+        setIsLoggedIn(true);
+        setStep('mypage'); // 관리자는 보관소 대시보드로 진입
+        await loadAdminRecords();
+      } catch (err) {
+        setAuthError('관리자 데이터를 불러오는 데 실패했습니다.');
+      } finally {
+        setIsAuthLoading(false);
+      }
+      return;
+    }
+
+    // 일반 로그인 코드 유효성 검사 (휴대폰 뒷자리 4개 + 영문 1자)
+    const loginRegEx = /^\d{4}[a-zA-Z]$/;
+    if (!loginRegEx.test(idTrimmed)) {
+      setAuthError('휴대폰 뒷자리 4개와 영문 1글자를 입력해주세요. (예: 1234a)');
       return;
     }
 
     setIsAuthLoading(true);
     try {
-      // 1. 관리자 마스터 로그인 체크
-      if (nameTrimmed.toLowerCase() === 'admin' && passwordPin === '9999') {
-        setIsAdmin(true);
-        setIsLoggedIn(true);
-        setStep('mypage'); // 관리자는 보관소 대시보드로 진입
-        await loadAdminRecords();
-        setIsAuthLoading(false);
-        return;
-      }
-
-      // 2. 일반 손님 로그인 PIN 인증
-      const res = await dbVerifyPin(nameTrimmed, passwordPin);
+      const res = await dbLoginGuest(idTrimmed);
       if (!res.success) {
-        setAuthError(res.error || '비밀번호가 일치하지 않습니다.');
+        setAuthError(res.error || '로그인 인증 실패');
         setIsAuthLoading(false);
         return;
       }
 
       setIsLoggedIn(true);
-      if (res.isNewUser) {
-        // 신규 사용자 -> 즉시 새 제작 흐름 시작
-        setIsNewUser(true);
-        const nameAnalysis = analyzeName(nameTrimmed);
-        setAnalysis(nameAnalysis);
-        setStep('sejong');
-      } else {
-        // 기존 사용자 -> 마이페이지로 진입
-        setIsNewUser(false);
-        setStep('mypage');
-        await loadGuestRecords(nameTrimmed);
-      }
+      // 로그인 후 즉시 이름 적는 1단계 화면으로 이행
+      setStep('input');
+      setGuestNameForRecipe('');
     } catch (err) {
       setAuthError('로그인 처리 중 에러가 발생했습니다.');
     } finally {
@@ -138,13 +143,12 @@ export default function App() {
 
   // 로그아웃
   const handleLogout = () => {
-    setGuestName('');
-    setPasswordPin('');
+    setLoginId('');
     setIsLoggedIn(false);
     setIsAdmin(false);
-    setIsNewUser(false);
     setGuestRecords([]);
     setAdminRecords([]);
+    setSelectedAdminRecordIds([]);
     setSelectedRecordForAdmin(null);
     setAnalysis(null);
     setSelectedStory(null);
@@ -153,10 +157,45 @@ export default function App() {
     setRecommended2(null);
     setSelectedRecipeType(null);
     setFinalRecipe(null);
+    setGuestNameForRecipe('');
+    setNameError('');
     setStep('input');
   };
 
-  // 2단계 완료
+  // 1단계 이름 입력 완료 -> 감성 분석 진행 및 2단계 이동 (Guest)
+  const handleNameNext = (e: React.FormEvent) => {
+    e.preventDefault();
+    setNameError('');
+    const trimmedName = guestNameForRecipe.trim();
+    
+    if (!trimmedName) {
+      setNameError('이름을 입력해주세요.');
+      return;
+    }
+    if (!/^[가-힣]+$/.test(trimmedName)) {
+      setNameError('공백 없는 한글 이름만 입력 가능합니다.');
+      return;
+    }
+    if (trimmedName.length < 2 || trimmedName.length > 5) {
+      setNameError('이름은 2자에서 5자 사이로 입력해주세요.');
+      return;
+    }
+
+    setIsAuthLoading(true);
+    try {
+      const nameAnalysis = analyzeName(trimmedName);
+      setAnalysis(nameAnalysis);
+      setTimeout(() => {
+        setIsAuthLoading(false);
+        setStep('sejong');
+      }, 600);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '이름 분석 오류');
+      setIsAuthLoading(false);
+    }
+  };
+
+  // 2단계 완료 -> 3단계 이동
   const handleSejongSubmit = () => {
     if (!selectedStory) {
       alert('세종의 이야기를 하나 선택해주세요.');
@@ -186,7 +225,7 @@ export default function App() {
     }
   };
 
-  // 추천 향수 중 손님이 1가지를 선택하여 제출 (Guest)
+  // 추천 향 선택하여 조향 의뢰서 최종 제출
   const handleGuestSubmitRecipe = async () => {
     if (!selectedRecipeType) return;
     const targetRecipe = selectedRecipeType === 'name_only' ? recommended1 : recommended2;
@@ -209,7 +248,7 @@ export default function App() {
         surveyAnswers: surveyAnswers
       };
 
-      await dbCreateRecord(guestName.trim(), passwordPin, mockFinalRecipe);
+      await dbCreateRecord(guestNameForRecipe.trim(), loginId, mockFinalRecipe);
       setStep('submit_done');
     } catch (err) {
       alert('의뢰 제출 중 오류가 발생했습니다.');
@@ -218,7 +257,7 @@ export default function App() {
     }
   };
 
-  // 관리자 대기 의뢰 클릭 시 수정용 폼 정보 셋팅
+  // 관리자 의뢰 클릭 시 폼 정보 로드
   const handleSelectAdminRecord = (record: FinalRecipe) => {
     setSelectedRecordForAdmin(record);
     setFinalTop(JSON.parse(JSON.stringify(record.top)));
@@ -285,7 +324,7 @@ export default function App() {
     }
   };
 
-  // 조향사 최종 조향 완료 및 DB 갱신 ➔ A6 인쇄 화면 진입
+  // 조향사 확정 ➔ A6 인쇄 화면 진입
   const handleConfirmAdminRecipe = async () => {
     if (!selectedRecordForAdmin) return;
 
@@ -312,7 +351,6 @@ export default function App() {
 
       await dbCompleteRecord(selectedRecordForAdmin.id, updates);
       
-      // 상태 갱신
       const updatedRecipe: FinalRecipe = {
         ...selectedRecordForAdmin,
         ...updates,
@@ -320,9 +358,9 @@ export default function App() {
       };
       
       setFinalRecipe(updatedRecipe);
-      await loadAdminRecords(); // 관리자 목록 새로고침
+      await loadAdminRecords(); // 관리자 목록 리로딩
       setSelectedRecordForAdmin(null);
-      setStep('record'); // 인쇄 단계로 이동
+      setStep('record'); // 인쇄로 이동
     } catch (err) {
       alert('레시피 저장 중 오류가 발생했습니다.');
     } finally {
@@ -330,43 +368,69 @@ export default function App() {
     }
   };
 
-  // 관리자 기록 개별 삭제
-  const handleDeleteRecord = async (id: string) => {
-    if (!window.confirm('이 상담 기록을 영구적으로 삭제하시겠습니까?')) return;
+  // 관리자 일괄 선택 삭제
+  const handleBatchDeleteRecords = async () => {
+    if (selectedAdminRecordIds.length === 0) return;
+    if (!window.confirm(`선택한 ${selectedAdminRecordIds.length}개의 상담 기록을 영구 삭제하시겠습니까?`)) return;
+
     try {
-      await dbDeleteRecord(id);
+      await dbDeleteRecords(selectedAdminRecordIds);
+      setSelectedAdminRecordIds([]);
       await loadAdminRecords();
-      if (selectedRecordForAdmin?.id === id) {
+      if (selectedRecordForAdmin && selectedAdminRecordIds.includes(selectedRecordForAdmin.id)) {
         setSelectedRecordForAdmin(null);
       }
     } catch (err) {
-      alert('기록 삭제에 실패했습니다.');
+      alert('선택 삭제 중 오류가 발생했습니다.');
     }
   };
 
-  // 신규 향수 만들기 시작 (Guest)
-  const handleStartNewJourney = () => {
-    const currentAnalysis = analysis || (guestName ? analyzeName(guestName) : null);
-    if (currentAnalysis) {
-      setAnalysis(currentAnalysis);
-      setSelectedStory(null);
-      setSurveyAnswers([]);
-      setRecommended1(null);
-      setRecommended2(null);
-      setSelectedRecipeType(null);
-      setStep('sejong');
+  // 개별 체크박스 토글
+  const handleToggleRecordSelect = (id: string) => {
+    if (selectedAdminRecordIds.includes(id)) {
+      setSelectedAdminRecordIds(selectedAdminRecordIds.filter(item => item !== id));
     } else {
-      alert('사용자 정보를 찾을 수 없습니다. 다시 로그인해 주세요.');
+      setSelectedAdminRecordIds([...selectedAdminRecordIds, id]);
     }
+  };
+
+  // 전체 선택 토글
+  const handleToggleAllSelect = (recordsOnView: FinalRecipe[]) => {
+    const recordIdsOnView = recordsOnView.map(r => r.id);
+    const allSelected = recordIdsOnView.every(id => selectedAdminRecordIds.includes(id));
+
+    if (allSelected) {
+      // 해당 탭 목록 ID들 모두 해제
+      setSelectedAdminRecordIds(selectedAdminRecordIds.filter(id => !recordIdsOnView.includes(id)));
+    } else {
+      // 해당 탭 목록 ID들 모두 추가
+      const newSelected = Array.from(new Set([...selectedAdminRecordIds, ...recordIdsOnView]));
+      setSelectedAdminRecordIds(newSelected);
+    }
+  };
+
+  // 신규 향수 만들기 시작 (이전 진행 데이터 리셋 후 세종의 이야기로)
+  const handleStartNewJourney = () => {
+    setSelectedStory(null);
+    setSurveyAnswers([]);
+    setRecommended1(null);
+    setRecommended2(null);
+    setSelectedRecipeType(null);
+    setGuestNameForRecipe('');
+    setNameError('');
+    setStep('input'); // 로그인된 상태에서 1단계(이름 입력)로 이동
+  };
+
+  // 마이페이지(과거기록서) 이동 전 기록 fetch
+  const handleGoToMyPage = async () => {
+    setStep('mypage');
+    await loadGuestRecords(loginId);
   };
 
   const currentTotalRatio = [...finalTop, ...finalMiddle, ...finalBase].reduce((sum, item) => sum + (item.ratio || 0), 0);
 
   // 관리자 목록 필터링
   const filteredAdminRecords = adminRecords.filter(r => {
-    // DB의 status 컬럼이 있는 경우에 대응하도록 supabaseClient에서 맵핑한 status 활용
-    // 여기서는 status 값을 r.originalRecipe.description에 넣어주지 않고 record 자체 필드로 관리
-    // type casting을 방지하기 위해 status 매칭을 정교화
     const recordStatus = (r as any).status || (r.makerMemo ? 'completed' : 'submitted');
     const statusOk = recordStatus === adminActiveTab;
 
@@ -387,7 +451,7 @@ export default function App() {
         {isLoggedIn && (
           <div className="flex items-center gap-3">
             <span className="text-xs text-forest-300 font-medium">
-              {isAdmin ? '조향사(관리자)' : `${guestName}님`}
+              {isAdmin ? '조향사(관리자)' : `로그인 코드: ${loginId}`}
             </span>
             <button 
               onClick={handleLogout}
@@ -402,8 +466,8 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-grow flex items-center justify-center py-10 px-4 bg-luxury-cream/10 print:py-0 print:px-0 print:bg-white">
         
-        {/* 1단계: PIN 로그인 및 가입 */}
-        {step === 'input' && !isLoggedIn && (
+        {/* 1단계 이전: 5자리 로그인 ID 입력 */}
+        {!isLoggedIn && (
           <div className="max-w-5xl xl:max-w-6xl w-full grid lg:grid-cols-2 grid-cols-1 gap-8 lg:gap-12 items-center print-exclude">
             {/* Visual branding block */}
             <div className="text-center md:text-left space-y-6 md:pr-6 animate-slide-up">
@@ -434,38 +498,25 @@ export default function App() {
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-forest-50 to-transparent opacity-50 -z-10 rounded-tr-2xl"></div>
               
               <div className="text-center md:text-left space-y-2">
-                <span className="text-[10px] tracking-widest text-luxury-goldDark font-serif uppercase block">Login / Register</span>
+                <span className="text-[10px] tracking-widest text-luxury-goldDark font-serif uppercase block">Login Code</span>
                 <h2 className="font-serif text-2xl font-bold text-forest-950">조향 의뢰 로그인</h2>
                 <p className="text-xs text-forest-500">
-                  이름과 숫자 4자리 비밀번호를 입력해주세요.<br />
-                  처음 오신 분은 사용할 비밀번호가 새로 설정됩니다.
+                  휴대폰 번호 뒷자리 4자리와 원하는 영문 1글자를 조합해 입력해주세요.<br />
+                  (예: 1234a)
                 </p>
               </div>
 
               <form onSubmit={handleAuthSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-forest-700 uppercase mb-1">손님 성함 (한글)</label>
+                  <label className="block text-[10px] font-bold text-forest-700 uppercase mb-1">나의 로그인 코드</label>
                   <input 
                     type="text" 
-                    value={guestName}
-                    onChange={(e) => setGuestName(e.target.value)}
-                    placeholder="예: 홍길동"
+                    maxLength={5}
+                    value={loginId}
+                    onChange={(e) => setLoginId(e.target.value)}
+                    placeholder="예: 1234a"
                     disabled={isAuthLoading}
-                    className="w-full px-4 py-3 bg-luxury-cream border border-forest-200 rounded-lg text-sm text-forest-900 placeholder-forest-300 focus:outline-none focus:border-forest-600 focus:ring-1 focus:ring-forest-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-forest-700 uppercase mb-1">비밀번호 숫자 4자리 (PIN)</label>
-                  <input 
-                    type="password" 
-                    maxLength={4}
-                    pattern="\d*"
-                    value={passwordPin}
-                    onChange={(e) => setPasswordPin(e.target.value)}
-                    placeholder="숫자 4자리 입력"
-                    disabled={isAuthLoading}
-                    className="w-full px-4 py-3 bg-luxury-cream border border-forest-200 rounded-lg text-sm text-forest-900 placeholder-forest-300 focus:outline-none focus:border-forest-600 focus:ring-1 focus:ring-forest-600 tracking-widest text-center text-lg font-bold"
+                    className="w-full px-4 py-3 bg-luxury-cream border border-forest-200 rounded-lg text-sm text-forest-900 placeholder-forest-300 focus:outline-none focus:border-forest-600 focus:ring-1 focus:ring-forest-600 text-center text-lg font-bold tracking-widest"
                   />
                 </div>
 
@@ -492,75 +543,84 @@ export default function App() {
           </div>
         )}
 
-        {/* 2단계: 일반 손님 마이페이지 (과거 기록 확인 및 신규 만들기 버튼) */}
-        {step === 'mypage' && isLoggedIn && !isAdmin && (
-          <div className="max-w-2xl w-full space-y-6 animate-slide-up print-exclude">
-            <div className="bg-white border border-luxury-gold/15 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
-              
-              <div className="text-center space-y-1.5 border-b border-luxury-sand pb-4">
-                <span className="text-[10px] tracking-widest text-luxury-goldDark font-serif uppercase">Guest Portal</span>
-                <h2 className="font-serif text-2xl font-bold text-forest-950">안녕하세요, {guestName}님</h2>
-                <p className="text-xs text-forest-500">훈민향음 공방에 머무셨던 아름다운 향의 기억들입니다.</p>
-              </div>
-
-              {/* 과거 조향 기록 목록 */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-forest-400 uppercase tracking-wider">나의 조향 기록 목록</h3>
-                
-                {isRecordsLoading ? (
-                  <div className="text-center py-8 text-xs text-forest-400">상담 이력을 불러오는 중입니다...</div>
-                ) : guestRecords.length === 0 ? (
-                  <div className="text-center py-10 bg-luxury-cream/30 rounded-xl border border-dashed border-luxury-gold/20 text-xs text-forest-500">
-                    아직 생성된 향수 기록이 없습니다. 새로운 조향을 시작해 보세요!
-                  </div>
-                ) : (
-                  <div className="max-h-[220px] overflow-y-auto space-y-2 pr-1">
-                    {guestRecords.map(rec => {
-                      const recordStatus = (rec as any).status || (rec.makerMemo ? 'completed' : 'submitted');
-                      return (
-                        <div key={rec.id} className="flex justify-between items-center p-3.5 bg-luxury-cream/40 border border-luxury-gold/10 rounded-xl hover:border-forest-400 transition-all">
-                          <div className="space-y-1">
-                            <h4 className="text-xs font-bold text-forest-950">{rec.perfumeName}</h4>
-                            <div className="flex gap-2 text-[9px] text-forest-400 font-mono">
-                              <span>{rec.createdDate}</span>
-                              <span>•</span>
-                              <span>{rec.selectedType === 'name_only' ? '이름 분석' : '세종의 이야기'}</span>
-                              <span>•</span>
-                              <span className={recordStatus === 'completed' ? 'text-green-600 font-bold' : 'text-amber-600'}>
-                                {recordStatus === 'completed' ? '조향 완성' : '접수 대기'}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {recordStatus === 'completed' && (
-                            <button
-                              onClick={() => {
-                                setFinalRecipe(rec);
-                                setStep('record');
-                              }}
-                              className="px-3 py-1.5 bg-forest-900 text-luxury-cream text-[10px] font-bold rounded-lg hover:bg-forest-950 transition-colors flex items-center gap-1"
-                            >
-                              <Printer className="w-3 h-3 text-luxury-gold" /> 기록서 보기
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* 거대한 새 향수 만들기 시작 버튼 */}
-              <div className="pt-2 border-t border-luxury-sand">
+        {/* 1단계: 나를 읽다 (이름 입력 - 로그인 직후 진입) */}
+        {step === 'input' && isLoggedIn && !isAdmin && (
+          <div className="max-w-5xl xl:max-w-6xl w-full grid lg:grid-cols-2 grid-cols-1 gap-8 lg:gap-12 items-center print-exclude">
+            <div className="text-center md:text-left space-y-6 md:pr-6 animate-slide-up">
+              <div className="flex flex-col md:flex-row md:items-center gap-3 justify-center md:justify-start">
+                <div className="inline-block px-3 py-1 rounded-full border border-forest-200 text-[11px] font-semibold tracking-widest text-forest-600 uppercase bg-forest-50/50">
+                  조향사 상담 플로우 - 1단계
+                </div>
                 <button
-                  onClick={handleStartNewJourney}
-                  className="luxury-btn w-full flex items-center justify-center gap-2 py-4 bg-forest-800 text-luxury-cream font-bold rounded-xl hover:bg-forest-900 shadow-md active:scale-[0.98]"
+                  onClick={handleGoToMyPage}
+                  className="text-xs font-bold text-luxury-goldDark hover:underline flex items-center gap-1 justify-center"
                 >
-                  <Sparkles className="w-4 h-4 text-luxury-gold animate-pulse" />
-                  <span>새로운 나만의 향수 만들기 시작</span>
+                  <ClipboardList className="w-3.5 h-3.5" /> 나의 과거 기록서 보기
                 </button>
               </div>
+              <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight text-forest-950">
+                훈민향음<br />
+                <span className="text-forest-700 font-medium text-2xl md:text-3xl font-serif">(訓民香音)</span>
+              </h1>
+              <p className="text-sm md:text-base leading-relaxed text-forest-600 font-medium">
+                의뢰하실 이름을 입력해 주세요. <br />
+                가족, 친구 등 다른 사람들의 이름으로도 언제든 새로 향수를 조향할 수 있습니다.
+              </p>
+              
+              <div className="hidden md:flex justify-center md:justify-start pt-4 relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-luxury-gold to-forest-500 rounded-2xl blur opacity-15 group-hover:opacity-25 transition duration-1000 group-hover:duration-200"></div>
+                <img 
+                  src={perfumeImgUrl} 
+                  alt="훈민향음 향수" 
+                  className="relative w-full max-w-lg h-72 md:h-80 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
+                />
+              </div>
+            </div>
+ 
+            <div className="bg-white border border-luxury-gold/15 rounded-2xl p-8 shadow-xl flex flex-col justify-center space-y-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-forest-50 to-transparent opacity-50 -z-10 rounded-tr-2xl"></div>
+              <div className="space-y-2 text-center md:text-left">
+                <h3 className="font-serif text-lg font-semibold text-forest-900">의뢰 대상자 성함</h3>
+                <p className="text-xs text-forest-500">향수를 소유할 분의 이름을 공백 없이 입력해주세요.</p>
+              </div>
 
+              <form onSubmit={handleNameNext} className="space-y-6">
+                <div className="relative">
+                  <label htmlFor="guestName" className="block text-xs font-semibold tracking-wider text-forest-700 uppercase mb-2">Guest Name (한글 이름)</label>
+                  <input
+                    type="text"
+                    id="guestName"
+                    value={guestNameForRecipe}
+                    onChange={(e) => {
+                      setGuestNameForRecipe(e.target.value);
+                      if (nameError) setNameError('');
+                    }}
+                    placeholder="이름을 입력하세요 (예: 홍길동)"
+                    disabled={isAuthLoading}
+                    className="w-full px-5 py-4 bg-luxury-cream border border-forest-200 focus:border-forest-600 focus:ring-forest-100 rounded-lg text-forest-900 placeholder-forest-300 focus:outline-none focus:ring-4 transition-all duration-300 text-lg tracking-wide"
+                  />
+                  {nameError && (
+                    <div className="flex items-center gap-1.5 mt-2.5 text-xs text-red-600 font-medium animate-fade-in">
+                      <span>{nameError}</span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isAuthLoading}
+                  className="luxury-btn w-full flex items-center justify-center gap-2 px-6 py-4 bg-forest-800 text-luxury-cream font-medium rounded-lg hover:bg-forest-900 transition-all duration-300 shadow-md active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isAuthLoading ? (
+                    <div className="w-5 h-5 border-2 border-luxury-cream border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-luxury-gold" />
+                      <span>이름 분석 및 조향 시작</span>
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
           </div>
         )}
@@ -572,7 +632,7 @@ export default function App() {
               <span className="text-xs font-bold tracking-widest text-luxury-goldDark uppercase">Step 02</span>
               <h2 className="font-serif text-3xl font-bold text-forest-950">세종의 이야기를 담다</h2>
               <p className="text-sm text-forest-600 max-w-lg mx-auto">
-                향에 녹여내고 싶은 세종대왕의 역사 속 이야기를 하나 선택해 주세요. 향기에 따뜻한 백성 사랑의 마음이 깃듭니다.
+                이름 '{analysis?.normalizedName}'의 향에 녹여내고 싶은 세종대왕의 역사 속 이야기를 하나 선택해 주세요.
               </p>
             </div>
 
@@ -620,7 +680,7 @@ export default function App() {
 
             <div className="flex justify-between items-center pt-4">
               <button 
-                onClick={() => setStep(isNewUser ? 'input' : 'mypage')}
+                onClick={() => setStep('input')}
                 className="flex items-center gap-1 text-sm font-bold text-forest-600 hover:text-forest-900"
               >
                 <ChevronLeft className="w-4 h-4" /> 이전으로
@@ -690,14 +750,14 @@ export default function App() {
           </div>
         )}
 
-        {/* 4단계: 향을 완성하다 (추천 결과 확인 및 손님 제출) */}
+        {/* 4단계: 향을 완성하다 (추천 결과 선택 및 손님 제출) */}
         {step === 'result' && isLoggedIn && (
           <div className="max-w-6xl w-full space-y-8 animate-slide-up print-exclude">
             <div className="text-center space-y-2">
               <span className="text-xs font-bold tracking-widest text-luxury-goldDark uppercase">Step 04</span>
               <h2 className="font-serif text-3xl font-bold text-forest-950">당신의 향을 완성하다</h2>
               <p className="text-xs text-forest-600">
-                아래 두 제안 향 중, 마음에 닿는 테마 하나를 골라 조향사에게 조향 의뢰서를 제출해 주세요.
+                '{guestNameForRecipe}' 님의 이름을 위해 도출된 두 가지 제안 향 중 하나를 선택해 의뢰서를 제출해 주세요.
               </p>
             </div>
 
@@ -863,20 +923,105 @@ export default function App() {
                 조향 의뢰서가 성공적으로 전달되었습니다!
               </p>
               <p className="text-xs text-forest-400 leading-relaxed">
-                공방의 조향사에게 성함 **'{guestName}'**을 말씀해 주시면, 시향과 조율을 거쳐 나만의 최종 레시피 카드를 인쇄해 드립니다.
+                공방의 조향사에게 제출 완료 소식을 말씀해 주시면, 시향과 조율을 거쳐 나만의 최종 레시피 카드를 인쇄해 드립니다.
               </p>
             </div>
 
-            <div className="pt-2 border-t border-luxury-sand flex gap-2">
+            <div className="pt-2 border-t border-luxury-sand flex flex-col gap-2">
               <button
-                onClick={async () => {
-                  setStep('mypage');
-                  await loadGuestRecords(guestName);
-                }}
-                className="flex-1 py-3 bg-forest-800 hover:bg-forest-900 text-white text-xs font-bold rounded-xl"
+                onClick={handleStartNewJourney}
+                className="w-full py-3 bg-forest-900 hover:bg-forest-950 text-white text-xs font-bold rounded-xl"
               >
-                나의 기록목록으로 이동
+                다른 이름으로 새 향수 만들기
               </button>
+              <button
+                onClick={handleGoToMyPage}
+                className="w-full py-3 bg-luxury-cream border border-luxury-gold/20 text-forest-800 text-xs font-bold rounded-xl hover:bg-luxury-cream/60"
+              >
+                나의 전체 조향기록 보관소로 이동
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 일반 손님 마이페이지 (과거 기록 확인 및 신규 만들기 버튼) */}
+        {step === 'mypage' && isLoggedIn && !isAdmin && (
+          <div className="max-w-2xl w-full space-y-6 animate-slide-up print-exclude">
+            <div className="bg-white border border-luxury-gold/15 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+              
+              <div className="text-center space-y-1.5 border-b border-luxury-sand pb-4">
+                <span className="text-[10px] tracking-widest text-luxury-goldDark font-serif uppercase">Guest Portal</span>
+                <h2 className="font-serif text-2xl font-bold text-forest-950">조향 기록 보관소</h2>
+                <p className="text-xs text-forest-500">본인 로그인 계정({loginId})으로 생성된 역대 조향 내역입니다.</p>
+              </div>
+
+              {/* 과거 조향 기록 목록 */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-forest-400 uppercase tracking-wider">나의 조향 기록 목록</h3>
+                
+                {isRecordsLoading ? (
+                  <div className="text-center py-8 text-xs text-forest-400">상담 이력을 불러오는 중입니다...</div>
+                ) : guestRecords.length === 0 ? (
+                  <div className="text-center py-10 bg-luxury-cream/30 rounded-xl border border-dashed border-luxury-gold/20 text-xs text-forest-500">
+                    아직 생성된 향수 기록이 없습니다. 새로운 조향을 시작해 보세요!
+                  </div>
+                ) : (
+                  <div className="max-h-[260px] overflow-y-auto space-y-2 pr-1">
+                    {guestRecords.map(rec => {
+                      const recordStatus = (rec as any).status || (rec.makerMemo ? 'completed' : 'submitted');
+                      return (
+                        <div key={rec.id} className="flex justify-between items-center p-3.5 bg-luxury-cream/40 border border-luxury-gold/10 rounded-xl hover:border-forest-400 transition-all">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-forest-950">{rec.guestName}</span>
+                              <span className="text-[10px] text-forest-500 font-serif">({rec.perfumeName})</span>
+                            </div>
+                            <div className="flex gap-2 text-[9px] text-forest-400 font-mono">
+                              <span>{rec.createdDate}</span>
+                              <span>•</span>
+                              <span>{rec.selectedType === 'name_only' ? '이름 분석' : '세종의 이야기'}</span>
+                              <span>•</span>
+                              <span className={recordStatus === 'completed' ? 'text-green-600 font-bold' : 'text-amber-600'}>
+                                {recordStatus === 'completed' ? '조향 완성' : '접수 대기'}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {recordStatus === 'completed' && (
+                            <button
+                              onClick={() => {
+                                setFinalRecipe(rec);
+                                setStep('record');
+                              }}
+                              className="px-3 py-1.5 bg-forest-900 text-luxury-cream text-[10px] font-bold rounded-lg hover:bg-forest-950 transition-colors flex items-center gap-1"
+                            >
+                              <Printer className="w-3 h-3 text-luxury-gold" /> 기록서 보기
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* 거대한 새 향수 만들기 시작 버튼 */}
+              <div className="pt-2 border-t border-luxury-sand flex gap-2">
+                <button
+                  onClick={() => setStep('input')}
+                  className="flex-1 py-3 bg-luxury-cream border border-luxury-gold/20 text-forest-800 text-xs font-bold rounded-xl hover:bg-luxury-cream/60 text-center"
+                >
+                  뒤로 가기
+                </button>
+                <button
+                  onClick={handleStartNewJourney}
+                  className="flex-1 luxury-btn flex items-center justify-center gap-2 py-3 bg-forest-800 text-luxury-cream font-bold rounded-xl hover:bg-forest-900 shadow-md active:scale-[0.98]"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-luxury-gold animate-pulse" />
+                  <span>새 향수 만들기</span>
+                </button>
+              </div>
+
             </div>
           </div>
         )}
@@ -888,10 +1033,11 @@ export default function App() {
             {/* 좌측: 실시간 의뢰 목록 관리 */}
             <div className="lg:col-span-1 bg-white border border-luxury-gold/15 rounded-2xl p-6 shadow-xl space-y-6 h-[580px] flex flex-col justify-between">
               <div className="space-y-4">
+                
                 <div className="flex justify-between items-center border-b border-luxury-sand pb-3">
                   <div className="flex items-center gap-1.5 text-forest-950">
                     <Shield className="w-4 h-4 text-luxury-gold" />
-                    <h3 className="font-serif text-base font-bold">의뢰 현황 대시보드</h3>
+                    <h3 className="font-serif text-base font-bold">의뢰 관리자 대시보드</h3>
                   </div>
                   <button 
                     onClick={loadAdminRecords}
@@ -920,6 +1066,7 @@ export default function App() {
                     onClick={() => {
                       setAdminActiveTab('submitted');
                       setSelectedRecordForAdmin(null);
+                      setSelectedAdminRecordIds([]);
                     }}
                     className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors ${
                       adminActiveTab === 'submitted' 
@@ -933,6 +1080,7 @@ export default function App() {
                     onClick={() => {
                       setAdminActiveTab('completed');
                       setSelectedRecordForAdmin(null);
+                      setSelectedAdminRecordIds([]);
                     }}
                     className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors ${
                       adminActiveTab === 'completed' 
@@ -944,45 +1092,80 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* 의뢰 리스트 */}
-                <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1">
+                {/* 일괄 선택 제어 툴바 */}
+                {filteredAdminRecords.length > 0 && (
+                  <div className="flex items-center justify-between bg-luxury-cream/80 px-2.5 py-1.5 rounded-lg border border-luxury-sand/50 text-[10px] text-forest-700">
+                    <button 
+                      onClick={() => handleToggleAllSelect(filteredAdminRecords)}
+                      className="flex items-center gap-1 hover:text-forest-950 font-bold"
+                    >
+                      {filteredAdminRecords.map(r => r.id).every(id => selectedAdminRecordIds.includes(id)) ? (
+                        <CheckSquare className="w-3.5 h-3.5 text-forest-800" />
+                      ) : (
+                        <Square className="w-3.5 h-3.5 text-forest-400" />
+                      )}
+                      <span>전체 선택</span>
+                    </button>
+                    
+                    {selectedAdminRecordIds.length > 0 && (
+                      <button 
+                        onClick={handleBatchDeleteRecords}
+                        className="text-red-600 hover:text-red-700 font-bold flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>선택 삭제 ({selectedAdminRecordIds.length})</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* 의뢰 리스트 (체크박스 탑재) */}
+                <div className="max-h-[220px] overflow-y-auto space-y-2 pr-1">
                   {filteredAdminRecords.length === 0 ? (
                     <div className="text-center py-16 text-[10px] text-forest-400">조회된 의뢰서가 없습니다.</div>
                   ) : (
                     filteredAdminRecords.map(r => {
                       const isSelected = selectedRecordForAdmin?.id === r.id;
+                      const isChecked = selectedAdminRecordIds.includes(r.id);
                       return (
                         <div 
                           key={r.id}
                           onClick={() => handleSelectAdminRecord(r)}
-                          className={`p-3 border rounded-xl cursor-pointer transition-all flex flex-col justify-between ${
+                          className={`p-3 border rounded-xl cursor-pointer transition-all flex items-center gap-2.5 ${
                             isSelected 
                               ? 'bg-forest-50 border-luxury-gold ring-1 ring-luxury-gold/20' 
                               : 'bg-white border-luxury-gold/10 hover:border-forest-400'
                           }`}
                         >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <span className="text-[10px] font-bold text-forest-900">{r.guestName}</span>
-                              <h4 className="text-[11px] font-serif font-bold text-forest-950 mt-0.5 line-clamp-1">{r.perfumeName}</h4>
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteRecord(r.id);
-                              }}
-                              className="text-forest-300 hover:text-red-600 transition-colors p-0.5 rounded"
-                              title="기록 삭제"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
+                          {/* 개별 선택 체크박스 */}
+                          <div 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleRecordSelect(r.id);
+                            }}
+                            className="p-1 hover:bg-forest-100/50 rounded transition-colors text-forest-600"
+                          >
+                            {isChecked ? (
+                              <CheckSquare className="w-4 h-4 text-forest-800" />
+                            ) : (
+                              <Square className="w-4 h-4 text-forest-300" />
+                            )}
                           </div>
-                          
-                          <div className="flex justify-between items-center text-[8px] text-forest-400 font-mono mt-2 border-t border-luxury-sand/50 pt-1.5">
-                            <span>{r.createdDate}</span>
-                            <span className="font-semibold text-luxury-goldDark">
-                              {r.selectedType === 'name_only' ? '이름 분석' : '세종 테마'}
-                            </span>
+
+                          <div className="flex-grow">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <span className="text-[10px] font-bold text-forest-900">{r.guestName}</span>
+                                <h4 className="text-[11px] font-serif font-bold text-forest-950 mt-0.5 line-clamp-1">{r.perfumeName}</h4>
+                              </div>
+                            </div>
+                            
+                            <div className="flex justify-between items-center text-[8px] text-forest-400 font-mono mt-2 border-t border-luxury-sand/50 pt-1">
+                              <span>{r.createdDate}</span>
+                              <span className="font-semibold text-luxury-goldDark">
+                                {r.selectedType === 'name_only' ? '이름 분석' : '세종 테마'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       );
@@ -992,7 +1175,7 @@ export default function App() {
               </div>
 
               <div className="text-[9px] text-forest-400 leading-normal border-t border-luxury-sand pt-3 font-medium">
-                * 손님이 본인 폰이나 태블릿으로 의뢰를 제출하면 이 목록에 실시간 등록됩니다.
+                * 손님이 모바일/태블릿으로 의뢰를 제출하면 이 목록에 실시간 등록됩니다.
               </div>
             </div>
 
@@ -1193,7 +1376,7 @@ export default function App() {
                     loadAdminRecords();
                   } else {
                     setStep('mypage');
-                    loadGuestRecords(guestName);
+                    loadGuestRecords(loginId);
                   }
                 }}
                 className="flex items-center gap-1.5 text-xs font-bold text-forest-700 hover:text-forest-950"
@@ -1203,7 +1386,7 @@ export default function App() {
               <div className="flex gap-2">
                 <button 
                   onClick={() => window.print()}
-                  className="flex items-center gap-1 px-5 py-2.5 bg-forest-900 text-luxury-cream rounded-xl text-xs font-bold hover:bg-forest-950 shadow active:scale-[0.98]"
+                  className="flex items-center gap-1 px-5 py-2.5 bg-forest-900 text-luxury-cream rounded-xl text-xs font-bold hover:bg-forest-955 shadow active:scale-[0.98]"
                 >
                   <Printer className="w-3.5 h-3.5 text-luxury-gold" /> 기록서 출력 (Print)
                 </button>
@@ -1231,7 +1414,7 @@ export default function App() {
                 <div className="grid grid-cols-2 gap-4 text-[9px] pt-1">
                   <div className="space-y-1">
                     <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider">Guest (손님 이름)</span>
-                    <span className="font-serif font-bold text-forest-950 text-[11px]">{finalRecipe.guestName || guestName}</span>
+                    <span className="font-serif font-bold text-forest-950 text-[11px]">{finalRecipe.guestName || guestNameForRecipe}</span>
                   </div>
                   <div className="space-y-1 text-right">
                     <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider">Scent Name (향수 이름)</span>
