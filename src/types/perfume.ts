@@ -55,6 +55,8 @@ export type SejongStory = {
 };
 
 export type FinalRecipe = {
+  id: string;
+  guestName: string;
   selectedType: 'name_only' | 'name_sejong';
   originalRecipe: PerfumeRecipe;
   top: RecommendedNote[];
@@ -66,6 +68,9 @@ export type FinalRecipe = {
   perfumeName: string;
   makerMemo: string;
   createdDate: string;
+  analysis: NameAnalysis;
+  selectedStory: SejongStory | null;
+  surveyAnswers: { questionId: number; optionId: number }[];
 };
 
 
