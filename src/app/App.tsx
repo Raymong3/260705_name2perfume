@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, ChevronLeft, ArrowRight, Printer, Trash2, LogIn, Shield, Search, CheckCircle, RefreshCw, ClipboardList, CheckSquare, Square, Sliders } from 'lucide-react';
 import perfumeImgUrl from '../assets/perfume_hunmin_v3.png';
 import { analyzeName } from '../logic/analyzeName';
@@ -47,8 +47,12 @@ function normalizeRatios(
 }
 
 export default function App() {
-  // 전체 플로우 상태: 'input' | 'mypage' | 'sejong' | 'result' | 'submit_done' | 'record'
-  const [step, setStep] = useState<'input' | 'mypage' | 'sejong' | 'result' | 'submit_done' | 'record'>('input');
+  // 전체 플로우 상태: 'input' | 'mypage' | 'sejong' | 'analyzing' | 'result' | 'submit_done' | 'record'
+  const [step, setStep] = useState<'input' | 'mypage' | 'sejong' | 'analyzing' | 'result' | 'submit_done' | 'record'>('input');
+  
+  // 분석 중 화면 프로그래스 상태
+  const [analyzingProgress, setAnalyzingProgress] = useState(0);
+  const [analyzingTextIdx, setAnalyzingTextIdx] = useState(0);
   
   // 인증 관련 상태
   const [loginId, setLoginId] = useState(''); // 휴대폰 번호 뒷자리 4자리 + 영문 1자리
@@ -249,7 +253,46 @@ export default function App() {
     }
   };
 
-  // 2단계 완료 -> 추천 결과(result)로 바로 이동 (설문 제거)
+  const analyzingMessages = [
+    `의뢰인 이름 '${analysis?.normalizedName || ''}'의 한글 자모음 감성 분석 중...`,
+    `선택하신 세종시 '${selectedStory?.title || ''}'의 공간적 무드와 결합 중...`,
+    `Top, Middle, Base 최적 향료 포뮬러 매칭 중...`,
+    `훈민향음 시그니처 맞춤 추천 테마 2종 생성 완료!`
+  ];
+
+  // 분석 중(analyzing) 타이머 & 텍스트 전환 애니메이션 처리
+  useEffect(() => {
+    if (step !== 'analyzing') return;
+
+    setAnalyzingProgress(0);
+    setAnalyzingTextIdx(0);
+
+    const progressInterval = setInterval(() => {
+      setAnalyzingProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + 2; // ~2.5초 간 (50ms * 50 = 2500ms) 100%까지 증가
+      });
+    }, 50);
+
+    const textInterval = setInterval(() => {
+      setAnalyzingTextIdx(prev => (prev + 1) % 4);
+    }, 600);
+
+    const finishTimeout = setTimeout(() => {
+      setStep('result');
+    }, 2600);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(textInterval);
+      clearTimeout(finishTimeout);
+    };
+  }, [step]);
+
+  // 2단계 완료 -> 분석 중(analyzing) 페이지 거쳐 추천 결과(result)로 이동
   const handleSejongSubmit = () => {
     if (!selectedStory) {
       alert('세종시의 명소 이야기를 하나 선택해주세요.');
@@ -259,8 +302,8 @@ export default function App() {
       const { recipe1, recipe2 } = recommendPerfumes(analysis, selectedStory);
       setRecommended1(recipe1);
       setRecommended2(recipe2);
-      setStep('result');
       setSelectedRecipeType(null);
+      setStep('analyzing');
     }
   };
 
@@ -825,6 +868,54 @@ export default function App() {
                 <span>향 추천 제안 보기</span> <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+          </div>
+        )}
+
+        {/* 분석 중 애니메이션 페이지 (스텝 2 세종시 이야기 선택 후 스텝 3 결과 이동 전) */}
+        {step === 'analyzing' && isLoggedIn && (
+          <div className="max-w-xl w-full bg-white/90 backdrop-blur-md border border-luxury-gold/30 rounded-3xl p-8 md:p-12 shadow-2xl text-center space-y-8 animate-fade-in print-exclude my-auto">
+            
+            {/* 회전하는 로고 엠블럼 & 아우라 */}
+            <div className="relative w-32 h-32 mx-auto flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-4 border-luxury-gold/20 border-t-luxury-gold animate-spin"></div>
+              <div className="absolute inset-2 rounded-full border-2 border-forest-200 border-b-forest-700 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '3s' }}></div>
+              <div className="w-20 h-20 bg-forest-900 rounded-full flex items-center justify-center text-luxury-gold shadow-xl animate-pulse">
+                <Sparkles className="w-10 h-10 animate-bounce text-luxury-gold" />
+              </div>
+            </div>
+
+            {/* 헤더 및 실시간 메시지 */}
+            <div className="space-y-3">
+              <span className="inline-block px-3.5 py-1 rounded-full bg-forest-50 border border-forest-200 text-[11px] font-bold text-forest-800 uppercase tracking-widest">
+                Hunmin Scent Analyzing...
+              </span>
+              <h2 className="font-serif text-2xl md:text-3xl font-bold text-forest-950">
+                나만의 맞춤 향 레시피 분석 중
+              </h2>
+              <p className="text-sm font-medium text-forest-700 min-h-[44px] flex items-center justify-center px-4 transition-all duration-300">
+                {analyzingMessages[analyzingTextIdx]}
+              </p>
+            </div>
+
+            {/* 프로그래스 바 & 카운터 */}
+            <div className="space-y-2 max-w-md mx-auto">
+              <div className="flex justify-between items-center text-xs font-mono font-bold text-forest-700 px-1">
+                <span>포뮬러 매칭 진행률</span>
+                <span className="text-luxury-goldDark text-sm">{analyzingProgress}%</span>
+              </div>
+              <div className="w-full h-3 bg-luxury-cream rounded-full overflow-hidden p-0.5 border border-luxury-gold/30 shadow-inner">
+                <div 
+                  className="h-full bg-gradient-to-r from-forest-800 via-luxury-gold to-forest-950 rounded-full transition-all duration-75 shadow-md"
+                  style={{ width: `${analyzingProgress}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* 하단 푸터 문구 */}
+            <div className="pt-4 border-t border-luxury-sand text-[11px] text-forest-500 font-serif italic">
+              훈민정음의 기품 있는 감성과 세종시 명소의 공간적 향기가 어우러지고 있습니다.
+            </div>
+
           </div>
         )}
 
