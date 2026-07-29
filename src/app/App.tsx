@@ -92,6 +92,7 @@ export default function App() {
   const [guestTop, setGuestTop] = useState<RecommendedNote[]>([]);
   const [guestMiddle, setGuestMiddle] = useState<RecommendedNote[]>([]);
   const [guestBase, setGuestBase] = useState<RecommendedNote[]>([]);
+  const [guestCustomPerfumeName, setGuestCustomPerfumeName] = useState('');
   const [selectedGuestTopToAdd, setSelectedGuestTopToAdd] = useState('');
   const [selectedGuestMiddleToAdd, setSelectedGuestMiddleToAdd] = useState('');
   const [selectedGuestBaseToAdd, setSelectedGuestBaseToAdd] = useState('');
@@ -307,7 +308,7 @@ export default function App() {
     }
   };
 
-  // 손님이 4단계에서 추천 테마 선택 시 조향 복사 처리
+  // 손님이 3단계에서 추천 테마 선택 시 조향 복사 처리
   const handleSelectRecipeType = (type: 'name_only' | 'name_sejong') => {
     setSelectedRecipeType(type);
     const targetRecipe = type === 'name_only' ? recommended1 : recommended2;
@@ -315,6 +316,7 @@ export default function App() {
       setGuestTop(JSON.parse(JSON.stringify(targetRecipe.top)));
       setGuestMiddle(JSON.parse(JSON.stringify(targetRecipe.middle)));
       setGuestBase(JSON.parse(JSON.stringify(targetRecipe.base)));
+      setGuestCustomPerfumeName(targetRecipe.name || `${guestNameForRecipe}의 향`);
     }
   };
 
@@ -388,7 +390,7 @@ export default function App() {
     try {
       const mockFinalRecipe: Partial<FinalRecipe> = {
         selectedType: selectedRecipeType,
-        perfumeName: guestNameForRecipe + '의 향',
+        perfumeName: guestCustomPerfumeName.trim() || (guestNameForRecipe + '의 향'),
         top: normalized.top,
         middle: normalized.middle,
         base: normalized.base,
@@ -580,7 +582,6 @@ export default function App() {
   };
 
   const currentTotalRatio = [...finalTop, ...finalMiddle, ...finalBase].reduce((sum, item) => sum + (item.ratio || 0), 0);
-  const guestTotalRatio = [...guestTop, ...guestMiddle, ...guestBase].reduce((sum, item) => sum + (item.ratio || 0), 0);
 
   // 관리자 목록 필터링 (통합 탭 지원)
   const filteredAdminRecords = adminRecords.filter(r => {
@@ -1059,6 +1060,20 @@ export default function App() {
                   <span className="text-[10px] text-forest-500 font-sans ml-2">(향료를 추가/제거하거나 원하는 비율로 조정해 보세요)</span>
                 </div>
 
+                {/* 향수 이름 사용자 직접 입력 */}
+                <div className="bg-luxury-cream/30 p-4 rounded-xl border border-luxury-gold/20 space-y-2">
+                  <label className="block text-xs font-bold text-forest-900">
+                    향수 이름 (Perfume Name)
+                  </label>
+                  <input
+                    type="text"
+                    value={guestCustomPerfumeName}
+                    onChange={(e) => setGuestCustomPerfumeName(e.target.value)}
+                    placeholder="나만의 향수 이름을 입력해 주세요 (예: 이응다리의 바람)"
+                    className="w-full px-4 py-2.5 bg-white border border-forest-200 rounded-xl text-sm font-semibold text-forest-950 focus:outline-none focus:ring-2 focus:ring-luxury-gold/50 focus:border-luxury-gold"
+                  />
+                </div>
+
                 <div className="grid md:grid-cols-3 gap-6">
                   
                   {/* 손님 Top Note */}
@@ -1077,7 +1092,14 @@ export default function App() {
                               onChange={(e) => handleGuestRatioChange('top', idx, parseInt(e.target.value))}
                               className="flex-grow accent-forest-700 h-0.5 bg-forest-100 appearance-none cursor-pointer"
                             />
-                            <span className="font-mono text-[9px] text-forest-700">{item.ratio}%</span>
+                            <div className="flex items-center bg-forest-50/80 border border-forest-200 rounded px-1 py-0.5">
+                              <input 
+                                type="number" min="0" max="100" value={item.ratio ?? 0}
+                                onChange={(e) => handleGuestRatioChange('top', idx, parseInt(e.target.value))}
+                                className="w-8 text-right font-mono text-[10px] bg-transparent text-forest-950 font-bold focus:outline-none"
+                              />
+                              <span className="text-[9px] font-bold text-forest-600 ml-0.5">%</span>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1112,7 +1134,14 @@ export default function App() {
                               onChange={(e) => handleGuestRatioChange('middle', idx, parseInt(e.target.value))}
                               className="flex-grow accent-forest-700 h-0.5 bg-forest-100 appearance-none cursor-pointer"
                             />
-                            <span className="font-mono text-[9px] text-forest-700">{item.ratio}%</span>
+                            <div className="flex items-center bg-forest-50/80 border border-forest-200 rounded px-1 py-0.5">
+                              <input 
+                                type="number" min="0" max="100" value={item.ratio ?? 0}
+                                onChange={(e) => handleGuestRatioChange('middle', idx, parseInt(e.target.value))}
+                                className="w-8 text-right font-mono text-[10px] bg-transparent text-forest-950 font-bold focus:outline-none"
+                              />
+                              <span className="text-[9px] font-bold text-forest-600 ml-0.5">%</span>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1147,7 +1176,14 @@ export default function App() {
                               onChange={(e) => handleGuestRatioChange('base', idx, parseInt(e.target.value))}
                               className="flex-grow accent-forest-700 h-0.5 bg-forest-100 appearance-none cursor-pointer"
                             />
-                            <span className="font-mono text-[9px] text-forest-700">{item.ratio}%</span>
+                            <div className="flex items-center bg-forest-50/80 border border-forest-200 rounded px-1 py-0.5">
+                              <input 
+                                type="number" min="0" max="100" value={item.ratio ?? 0}
+                                onChange={(e) => handleGuestRatioChange('base', idx, parseInt(e.target.value))}
+                                className="w-8 text-right font-mono text-[10px] bg-transparent text-forest-950 font-bold focus:outline-none"
+                              />
+                              <span className="text-[9px] font-bold text-forest-600 ml-0.5">%</span>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1166,14 +1202,6 @@ export default function App() {
                     </div>
                   </div>
 
-                </div>
-
-                {/* 손님용 자동 정규화 안내 트래커 */}
-                <div className="flex justify-between items-center bg-luxury-cream/50 px-4 py-3 rounded-xl border border-luxury-gold/10 text-xs font-semibold text-forest-800">
-                  <span>향료 비율 안내 (제출 시 100% 비율로 자동 정규화 조정됩니다)</span>
-                  <span className="font-mono text-xs font-bold text-green-700">
-                    현재 설정 합계: {guestTotalRatio}% (제출 시 100% 자동 적용)
-                  </span>
                 </div>
 
                 {/* 최종 의뢰 제출 */}
