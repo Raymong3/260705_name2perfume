@@ -5,13 +5,50 @@ import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
 import { NameAnalysis, PerfumeRecipe, SejongStory, FinalRecipe, RecommendedNote } from '../types/perfume';
 import { SEJONG_STORIES } from '../data/sejongStories';
-import { SURVEY_QUESTIONS } from '../data/surveyQuestions';
 import { NOTES } from '../data/notes';
 import { dbLoginGuest, dbCreateRecord, dbGetRecords, dbCompleteRecord, dbDeleteRecords } from '../logic/supabaseClient';
 
+// 향료 비율(Top, Middle, Base)의 합을 자동으로 100%로 정규화 조절해주는 헬퍼 함수
+function normalizeRatios(
+  top: RecommendedNote[],
+  middle: RecommendedNote[],
+  base: RecommendedNote[]
+): { top: RecommendedNote[]; middle: RecommendedNote[]; base: RecommendedNote[] } {
+  const all = [...top, ...middle, ...base];
+  if (all.length === 0) return { top, middle, base };
+
+  const currentSum = all.reduce((sum, item) => sum + (item.ratio || 0), 0);
+  let rawPcts: number[];
+
+  if (currentSum <= 0) {
+    const equalRatio = Math.floor(100 / all.length);
+    rawPcts = all.map(() => equalRatio);
+  } else {
+    rawPcts = all.map(item => Math.max(0, Math.round(((item.ratio || 0) / currentSum) * 100)));
+  }
+
+  const sumPcts = rawPcts.reduce((a, b) => a + b, 0);
+  const diff = 100 - sumPcts;
+
+  if (diff !== 0 && rawPcts.length > 0) {
+    let maxIdx = 0;
+    for (let i = 1; i < rawPcts.length; i++) {
+      if (rawPcts[i] > rawPcts[maxIdx]) maxIdx = i;
+    }
+    rawPcts[maxIdx] += diff;
+  }
+
+  let idx = 0;
+  const newTop = top.map(item => ({ ...item, ratio: rawPcts[idx++] }));
+  const newMiddle = middle.map(item => ({ ...item, ratio: rawPcts[idx++] }));
+  const newBase = base.map(item => ({ ...item, ratio: rawPcts[idx++] }));
+
+  return { top: newTop, middle: newMiddle, base: newBase };
+}
+
 export default function App() {
-  // 전체 플로우 상태: 'input' | 'mypage' | 'sejong' | 'survey' | 'result' | 'submit_done' | 'record'
-  const [step, setStep] = useState<'input' | 'mypage' | 'sejong' | 'survey' | 'result' | 'submit_done' | 'record'>('input');
+  // 전체 플로우 상태: 'input' | 'mypage' | 'sejong' | 'result' | 'submit_done' | 'record'
+  const [step, setStep] = useState<'input' | 'mypage' | 'sejong' | 'result' | 'submit_done' | 'record'>('input');
   
   // 인증 관련 상태
   const [loginId, setLoginId] = useState(''); // 휴대폰 번호 뒷자리 4자리 + 영문 1자리
@@ -38,18 +75,16 @@ export default function App() {
   // 관리자 일괄 선택 삭제 대상 ID 리스트
   const [selectedAdminRecordIds, setSelectedAdminRecordIds] = useState<string[]>([]);
 
-  // 1~3단계 진행용 임시 상태
+  // 진행용 임시 상태
   const [analysis, setAnalysis] = useState<NameAnalysis | null>(null);
   const [selectedStory, setSelectedStory] = useState<SejongStory | null>(null);
-  const [surveyAnswers, setSurveyAnswers] = useState<{ questionId: number; optionId: number }[]>([]);
-  const [currentSurveyIdx, setCurrentSurveyIdx] = useState(0);
 
-  // 4단계 추천 결과 상태
+  // 추천 결과 상태
   const [recommended1, setRecommended1] = useState<PerfumeRecipe | null>(null);
   const [recommended2, setRecommended2] = useState<PerfumeRecipe | null>(null);
   const [selectedRecipeType, setSelectedRecipeType] = useState<'name_only' | 'name_sejong' | null>(null);
 
-  // 손님용 4단계 최종 커스터마이저 조향 상태
+  // 손님용 최종 커스터마이저 조향 상태
   const [guestTop, setGuestTop] = useState<RecommendedNote[]>([]);
   const [guestMiddle, setGuestMiddle] = useState<RecommendedNote[]>([]);
   const [guestBase, setGuestBase] = useState<RecommendedNote[]>([]);
@@ -57,7 +92,7 @@ export default function App() {
   const [selectedGuestMiddleToAdd, setSelectedGuestMiddleToAdd] = useState('');
   const [selectedGuestBaseToAdd, setSelectedGuestBaseToAdd] = useState('');
 
-  // 4단계 조향사 수정용 임시 상태
+  // 조향사 수정용 임시 상태
   const [finalTop, setFinalTop] = useState<RecommendedNote[]>([]);
   const [finalMiddle, setFinalMiddle] = useState<RecommendedNote[]>([]);
   const [finalBase, setFinalBase] = useState<RecommendedNote[]>([]);
@@ -70,7 +105,7 @@ export default function App() {
   const [selectedMiddleToAdd, setSelectedMiddleToAdd] = useState('');
   const [selectedBaseToAdd, setSelectedBaseToAdd] = useState('');
 
-  // 5단계 최종 확정 레시피
+  // 최종 확정 레시피
   const [finalRecipe, setFinalRecipe] = useState<FinalRecipe | null>(null);
 
   // 관리자 모드 레코드 목록 실시간 리로딩용
@@ -172,7 +207,6 @@ export default function App() {
     setSelectedRecordForAdmin(null);
     setAnalysis(null);
     setSelectedStory(null);
-    setSurveyAnswers([]);
     setRecommended1(null);
     setRecommended2(null);
     setSelectedRecipeType(null);
@@ -215,33 +249,18 @@ export default function App() {
     }
   };
 
-  // 2단계 완료 -> 3단계 이동
+  // 2단계 완료 -> 추천 결과(result)로 바로 이동 (설문 제거)
   const handleSejongSubmit = () => {
     if (!selectedStory) {
-      alert('세종의 이야기를 하나 선택해주세요.');
+      alert('세종시의 명소 이야기를 하나 선택해주세요.');
       return;
     }
-    setStep('survey');
-    setCurrentSurveyIdx(0);
-    setSurveyAnswers([]);
-  };
-
-  // 3단계 설문 응답 처리
-  const handleSurveyAnswer = (optionId: number) => {
-    const questionId = SURVEY_QUESTIONS[currentSurveyIdx].id;
-    const newAnswers = [...surveyAnswers.filter(a => a.questionId !== questionId), { questionId, optionId }];
-    setSurveyAnswers(newAnswers);
-
-    if (currentSurveyIdx < SURVEY_QUESTIONS.length - 1) {
-      setCurrentSurveyIdx(currentSurveyIdx + 1);
-    } else {
-      if (analysis) {
-        const { recipe1, recipe2 } = recommendPerfumes(analysis, selectedStory, newAnswers);
-        setRecommended1(recipe1);
-        setRecommended2(recipe2);
-        setStep('result');
-        setSelectedRecipeType(null);
-      }
+    if (analysis) {
+      const { recipe1, recipe2 } = recommendPerfumes(analysis, selectedStory);
+      setRecommended1(recipe1);
+      setRecommended2(recipe2);
+      setStep('result');
+      setSelectedRecipeType(null);
     }
   };
 
@@ -310,34 +329,33 @@ export default function App() {
     }
   };
 
-  // 추천 향 선택하여 조향 의뢰서 최종 제출
+  // 추천 향 선택하여 조향 의뢰서 최종 제출 (100% 비율 자동 정규화 조정)
   const handleGuestSubmitRecipe = async () => {
     if (!selectedRecipeType) return;
     const targetRecipe = selectedRecipeType === 'name_only' ? recommended1 : recommended2;
     if (!targetRecipe || !analysis) return;
 
-    // 손님이 수정한 최종 비율의 합 검증
-    const totalRatio = [...guestTop, ...guestMiddle, ...guestBase].reduce((sum, item) => sum + (item.ratio || 0), 0);
-    if (totalRatio !== 100) {
-      alert(`향료 비율의 합계가 100%가 되어야 제출이 가능합니다. (현재: ${totalRatio}%)`);
-      return;
-    }
+    // 수동 검증 없이 제출 시 비율을 자동으로 100%에 맞춰 정규화
+    const normalized = normalizeRatios(guestTop, guestMiddle, guestBase);
+    setGuestTop(normalized.top);
+    setGuestMiddle(normalized.middle);
+    setGuestBase(normalized.base);
 
     setIsAuthLoading(true);
     try {
       const mockFinalRecipe: Partial<FinalRecipe> = {
         selectedType: selectedRecipeType,
         perfumeName: guestNameForRecipe + '의 향',
-        top: guestTop,
-        middle: guestMiddle,
-        base: guestBase,
+        top: normalized.top,
+        middle: normalized.middle,
+        base: normalized.base,
         addedNotes: [],
         removedNotes: [],
         modifiedNotes: [],
         makerMemo: '',
         analysis: analysis,
         selectedStory: selectedStory,
-        surveyAnswers: surveyAnswers
+        surveyAnswers: []
       };
 
       await dbCreateRecord(guestNameForRecipe.trim(), loginId, mockFinalRecipe);
@@ -417,23 +435,22 @@ export default function App() {
     }
   };
 
-  // 조향사 확정 ➔ A6 인쇄 화면 진입
+  // 조향사 확정 ➔ A6 인쇄 화면 진입 (100% 비율 자동 정규화 조정)
   const handleConfirmAdminRecipe = async () => {
     if (!selectedRecordForAdmin) return;
 
-    const totalRatio = [...finalTop, ...finalMiddle, ...finalBase].reduce((sum, item) => sum + (item.ratio || 0), 0);
-    if (totalRatio !== 100) {
-      if (!window.confirm(`현재 향료 비율의 합이 ${totalRatio}%입니다. 그대로 완료하시겠습니까?`)) {
-        return;
-      }
-    }
+    // 조향사 확정 시에도 비율 자동 정규화
+    const normalized = normalizeRatios(finalTop, finalMiddle, finalBase);
+    setFinalTop(normalized.top);
+    setFinalMiddle(normalized.middle);
+    setFinalBase(normalized.base);
 
     setIsAuthLoading(true);
     try {
       const updates: Partial<FinalRecipe> = {
-        top: finalTop,
-        middle: finalMiddle,
-        base: finalBase,
+        top: normalized.top,
+        middle: normalized.middle,
+        base: normalized.base,
         addedNotes: addedNotesText.split(',').map(s => s.trim()).filter(Boolean),
         removedNotes: removedNotesText.split(',').map(s => s.trim()).filter(Boolean),
         modifiedNotes: modifiedNotesText.split(',').map(s => s.trim()).filter(Boolean),
@@ -502,10 +519,9 @@ export default function App() {
     }
   };
 
-  // 신규 향수 만들기 시작 (이전 진행 데이터 리셋 후 세종의 이야기로)
+  // 신규 향수 만들기 시작 (이전 진행 데이터 리셋 후 세종시의 이야기로)
   const handleStartNewJourney = () => {
     setSelectedStory(null);
-    setSurveyAnswers([]);
     setRecommended1(null);
     setRecommended2(null);
     setSelectedRecipeType(null);
@@ -547,7 +563,7 @@ export default function App() {
         {isLoggedIn && (
           <div className="flex items-center gap-3">
             <span className="text-xs text-forest-300 font-medium">
-              {isAdmin ? '조향사(관리자)' : `로그인 코드: ${loginId}`}
+              {isAdmin ? '조향사 (Admin)' : `로그인 코드 (Login Code): ${loginId}`}
             </span>
             <button 
               onClick={handleLogout}
@@ -568,15 +584,15 @@ export default function App() {
             {/* Visual branding block */}
             <div className="text-center md:text-left space-y-6 md:pr-6 animate-slide-up">
               <div className="inline-block px-3 py-1 rounded-full border border-forest-200 text-[11px] font-semibold tracking-widest text-forest-600 uppercase bg-forest-50/50">
-                조향사 상담 플로우 - 로그인
+                조향 상담 - 로그인
               </div>
               <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight text-forest-950">
                 훈민향음<br />
                 <span className="text-forest-700 font-medium text-2xl md:text-3xl font-serif">(訓民香音)</span>
               </h1>
               <p className="text-sm md:text-base leading-relaxed text-forest-600 font-medium">
-                세종대왕이 훈민정음으로 백성의 뜻을 담아냈듯,<br className="hidden md:inline" />
-                조향사와의 대화를 거쳐 당신의 이름과 이야기를 하나의 특별한 향으로 완성합니다.
+                훈민정음의 조화로움처럼,<br className="hidden md:inline" />
+                조향사와의 대화를 통해 당신의 이름과 세종시의 감성을 하나의 특별한 향으로 완성합니다.
               </p>
               
               <div className="hidden md:flex justify-center md:justify-start pt-4 relative group">
@@ -604,7 +620,7 @@ export default function App() {
 
               <form onSubmit={handleAuthSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-forest-700 uppercase mb-1">나의 로그인 코드</label>
+                  <label className="block text-xs font-bold text-forest-700 mb-1">로그인 코드 (Login Code)</label>
                   <input 
                     type="text" 
                     maxLength={10}
@@ -622,7 +638,7 @@ export default function App() {
                 {/* 관리자(admin9)일 때 비밀번호 2차 검증 필드 페이드인 */}
                 {isMasterLogin && (
                   <div className="space-y-1 animate-slide-up">
-                    <label className="block text-[10px] font-bold text-red-700 uppercase mb-1">관리자 비밀번호 (Password)</label>
+                    <label className="block text-xs font-bold text-red-700 mb-1">관리자 비밀번호 (Password)</label>
                     <input 
                       type="password"
                       value={passwordAdmin}
@@ -665,7 +681,7 @@ export default function App() {
             <div className="text-center md:text-left space-y-6 md:pr-6 animate-slide-up">
               <div className="flex flex-col md:flex-row md:items-center gap-3 justify-center md:justify-start">
                 <div className="inline-block px-3 py-1 rounded-full border border-forest-200 text-[11px] font-semibold tracking-widest text-forest-600 uppercase bg-forest-50/50">
-                  조향사 상담 플로우 - 1단계
+                  조향 상담 - 1단계
                 </div>
                 <button
                   onClick={handleGoToMyPage}
@@ -679,7 +695,7 @@ export default function App() {
                 <span className="text-forest-700 font-medium text-2xl md:text-3xl font-serif">(訓民香音)</span>
               </h1>
               <p className="text-sm md:text-base leading-relaxed text-forest-600 font-medium">
-                의뢰하실 이름을 입력해 주세요. <br />
+                의뢰하실 분의 이름을 입력해 주세요. <br />
                 가족, 친구 등 다른 사람들의 이름으로도 언제든 새로 향수를 조향할 수 있습니다.
               </p>
               
@@ -692,7 +708,7 @@ export default function App() {
                 />
               </div>
             </div>
- 
+
             <div className="bg-white border border-luxury-gold/15 rounded-2xl p-8 shadow-xl flex flex-col justify-center space-y-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-forest-50 to-transparent opacity-50 -z-10 rounded-tr-2xl"></div>
               <div className="space-y-2 text-center md:text-left">
@@ -702,7 +718,7 @@ export default function App() {
 
               <form onSubmit={handleNameNext} className="space-y-6">
                 <div className="relative">
-                  <label htmlFor="guestName" className="block text-xs font-semibold tracking-wider text-forest-700 uppercase mb-2">Guest Name (한글 이름)</label>
+                  <label htmlFor="guestName" className="block text-xs font-bold text-forest-700 mb-2">이름 (Name)</label>
                   <input
                     type="text"
                     id="guestName"
@@ -741,14 +757,14 @@ export default function App() {
           </div>
         )}
 
-        {/* 2단계: 세종의 이야기 선택 */}
+        {/* 2단계: 세종시의 이야기를 담다 */}
         {step === 'sejong' && isLoggedIn && (
           <div className="max-w-4xl w-full space-y-8 animate-slide-up print-exclude">
             <div className="text-center space-y-2">
               <span className="text-xs font-bold tracking-widest text-luxury-goldDark uppercase">Step 02</span>
-              <h2 className="font-serif text-3xl font-bold text-forest-950">세종의 이야기를 담다</h2>
+              <h2 className="font-serif text-3xl font-bold text-forest-950">세종시의 이야기를 담다</h2>
               <p className="text-sm text-forest-600 max-w-lg mx-auto">
-                이름 '{analysis?.normalizedName}'의 향에 녹여내고 싶은 세종대왕의 역사 속 이야기를 하나 선택해 주세요.
+                이름 '{analysis?.normalizedName}'의 향에 녹여내고 싶은 세종시의 명소 이야기를 하나 선택해 주세요.
               </p>
             </div>
 
@@ -806,74 +822,21 @@ export default function App() {
                 disabled={!selectedStory}
                 className="luxury-btn flex items-center gap-1.5 px-6 py-3 bg-forest-800 text-luxury-cream rounded-xl text-sm font-semibold hover:bg-forest-900 disabled:opacity-50"
               >
-                <span>향 선호도 설문으로</span> <ArrowRight className="w-4 h-4" />
+                <span>향 추천 제안 보기</span> <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* 3단계: 향선택 설문 */}
-        {step === 'survey' && isLoggedIn && (
-          <div className="max-w-2xl w-full space-y-8 animate-slide-up print-exclude">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-xs font-semibold text-forest-500">
-                <span>향 선호도 설문</span>
-                <span>{currentSurveyIdx + 1} / {SURVEY_QUESTIONS.length}</span>
-              </div>
-              <div className="w-full h-1.5 bg-luxury-sand rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-luxury-gold transition-all duration-300"
-                  style={{ width: `${((currentSurveyIdx + 1) / SURVEY_QUESTIONS.length) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="bg-white border border-luxury-gold/15 rounded-2xl p-8 shadow-xl space-y-6">
-              <div className="text-center space-y-2">
-                <span className="text-[10px] tracking-widest text-luxury-goldDark font-serif uppercase">Step 03</span>
-                <h3 className="font-serif text-xl font-bold text-forest-950">
-                  {SURVEY_QUESTIONS[currentSurveyIdx].question}
-                </h3>
-              </div>
-
-              <div className="space-y-3.5">
-                {SURVEY_QUESTIONS[currentSurveyIdx].options.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleSurveyAnswer(option.id)}
-                    className="w-full text-left px-5 py-4 bg-luxury-cream/40 border border-luxury-gold/10 hover:border-forest-600 hover:bg-white rounded-xl transition-all text-sm font-medium text-forest-800 hover:text-forest-950 shadow-sm active:scale-[0.995]"
-                  >
-                    {option.text}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <button 
-                onClick={() => {
-                  if (currentSurveyIdx > 0) {
-                    setCurrentSurveyIdx(currentSurveyIdx - 1);
-                  } else {
-                    setStep('sejong');
-                  }
-                }}
-                className="flex items-center gap-1 text-sm font-bold text-forest-600 hover:text-forest-900"
-              >
-                <ChevronLeft className="w-4 h-4" /> 이전으로
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 4단계: 향을 완성하다 (손님용 레시피 커스터마이저 탑재) */}
+        {/* 4단계: 향을 완성하다 (추천 결과 & 커스텀 조향) */}
         {step === 'result' && isLoggedIn && (
           <div className="max-w-6xl w-full space-y-8 animate-slide-up print-exclude">
             <div className="text-center space-y-2">
-              <span className="text-xs font-bold tracking-widest text-luxury-goldDark uppercase">Step 04</span>
+              <span className="text-xs font-bold tracking-widest text-luxury-goldDark uppercase">Step 03</span>
               <h2 className="font-serif text-3xl font-bold text-forest-950">당신의 향을 다듬다</h2>
               <p className="text-xs text-forest-600">
-                두 가지 추천 제안 중 마음에 드는 안을 선택하고, 하단의 조향 편집기에서 직접 좋아하는 향료를 더하거나 뺄 수 있습니다.
+                두 가지 추천 테마 중 마음에 드는 안을 선택하고, 하단의 조향 편집기에서 원하는 향료를 자유롭게 조정할 수 있습니다.<br />
+                <span className="text-forest-500 font-medium">(향료 비율은 제출 시 100% 비율로 자동 정규화 조정됩니다)</span>
               </p>
             </div>
 
@@ -905,7 +868,7 @@ export default function App() {
                     </div>
                     <div className="space-y-1.5">
                       <h3 className="font-serif text-2xl font-bold text-forest-950">나의 이름을 담은 향</h3>
-                      <p className="text-[11px] text-forest-400 italic">이름 분석과 취향 설문을 결합한 고유의 무드</p>
+                      <p className="text-[11px] text-forest-400 italic">이름의 한글 조합 및 분위기 분석 기반</p>
                     </div>
                     <p className="text-xs leading-relaxed text-forest-600 pl-3 border-l-2 border-luxury-gold font-medium">
                       "{recommended1.concept}"
@@ -961,8 +924,8 @@ export default function App() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <h3 className="font-serif text-2xl font-bold text-forest-950">이름과 세종이 만난 향</h3>
-                      <p className="text-[11px] text-forest-400 italic">이름 분석, 취향 설문, 그리고 세종의 이야기 중 {selectedStory?.title}의 결합</p>
+                      <h3 className="font-serif text-2xl font-bold text-forest-950">이름과 세종시가 만난 향</h3>
+                      <p className="text-[11px] text-forest-400 italic">이름 분석과 세종시 명소 중 {selectedStory?.title}의 결합</p>
                     </div>
                     <p className="text-xs leading-relaxed text-forest-600 pl-3 border-l-2 border-luxury-gold font-medium">
                       "{recommended2.concept}"
@@ -1002,7 +965,7 @@ export default function App() {
                 <div className="flex items-center gap-2 pb-3 border-b border-luxury-sand text-forest-950">
                   <Sliders className="w-5 h-5 text-luxury-gold" />
                   <h3 className="font-serif text-lg font-bold">나만의 향료 커스텀 조향</h3>
-                  <span className="text-[10px] text-forest-500 font-sans ml-2">(향료를 추가/제거하거나 비율을 조정해 보세요)</span>
+                  <span className="text-[10px] text-forest-500 font-sans ml-2">(향료를 추가/제거하거나 원하는 비율로 조정해 보세요)</span>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-6">
@@ -1038,7 +1001,7 @@ export default function App() {
                           <option key={n.id} value={n.id}>{n.nameKo}</option>
                         ))}
                       </select>
-                      <button onClick={() => handleGuestAddNote('top', selectedGuestTopToAdd)} className="px-2 py-1 bg-forest-800 hover:bg-forest-950 text-luxury-cream rounded text-[9px] font-bold">추가</button>
+                      <button onClick={() => handleGuestAddNote('top', selectedGuestTopToAdd)} className="px-2 py-1 bg-forest-800 hover:bg-forest-955 text-luxury-cream rounded text-[9px] font-bold">추가</button>
                     </div>
                   </div>
 
@@ -1073,7 +1036,7 @@ export default function App() {
                           <option key={n.id} value={n.id}>{n.nameKo}</option>
                         ))}
                       </select>
-                      <button onClick={() => handleGuestAddNote('middle', selectedGuestMiddleToAdd)} className="px-2 py-1 bg-forest-800 hover:bg-forest-950 text-luxury-cream rounded text-[9px] font-bold">추가</button>
+                      <button onClick={() => handleGuestAddNote('middle', selectedGuestMiddleToAdd)} className="px-2 py-1 bg-forest-800 hover:bg-forest-955 text-luxury-cream rounded text-[9px] font-bold">추가</button>
                     </div>
                   </div>
 
@@ -1108,17 +1071,17 @@ export default function App() {
                           <option key={n.id} value={n.id}>{n.nameKo}</option>
                         ))}
                       </select>
-                      <button onClick={() => handleGuestAddNote('base', selectedGuestBaseToAdd)} className="px-2 py-1 bg-forest-800 hover:bg-forest-950 text-luxury-cream rounded text-[9px] font-bold">추가</button>
+                      <button onClick={() => handleGuestAddNote('base', selectedGuestBaseToAdd)} className="px-2 py-1 bg-forest-800 hover:bg-forest-955 text-luxury-cream rounded text-[9px] font-bold">추가</button>
                     </div>
                   </div>
 
                 </div>
 
-                {/* 손님용 배율 총합 트래커 */}
+                {/* 손님용 자동 정규화 안내 트래커 */}
                 <div className="flex justify-between items-center bg-luxury-cream/50 px-4 py-3 rounded-xl border border-luxury-gold/10 text-xs font-semibold text-forest-800">
-                  <span>향료들의 비율 합계 (100%를 정확히 맞춰주셔야 제출이 가능합니다.)</span>
-                  <span className={`font-mono text-sm font-bold ${guestTotalRatio === 100 ? 'text-green-600' : 'text-red-500 animate-pulse'}`}>
-                    현재: {guestTotalRatio}%
+                  <span>향료 비율 안내 (제출 시 100% 비율로 자동 정규화 조정됩니다)</span>
+                  <span className="font-mono text-xs font-bold text-green-700">
+                    현재 설정 합계: {guestTotalRatio}% (제출 시 100% 자동 적용)
                   </span>
                 </div>
 
@@ -1126,8 +1089,8 @@ export default function App() {
                 <div className="flex justify-center pt-3">
                   <button
                     onClick={handleGuestSubmitRecipe}
-                    disabled={isAuthLoading || guestTotalRatio !== 100}
-                    className="luxury-btn w-full max-w-md py-4 bg-forest-900 hover:bg-forest-955 text-luxury-cream font-bold text-base rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isAuthLoading}
+                    className="luxury-btn w-full max-w-md py-4 bg-forest-900 hover:bg-forest-955 text-luxury-cream font-bold text-base rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {isAuthLoading ? (
                       <div className="w-5 h-5 border-2 border-luxury-cream border-t-transparent rounded-full animate-spin"></div>
@@ -1145,7 +1108,7 @@ export default function App() {
 
             <div className="flex justify-between items-center border-t border-luxury-sand pt-4">
               <button 
-                onClick={() => setStep('survey')}
+                onClick={() => setStep('sejong')}
                 className="flex items-center gap-1 text-sm font-bold text-forest-600 hover:text-forest-900"
               >
                 <ChevronLeft className="w-4 h-4" /> 이전으로

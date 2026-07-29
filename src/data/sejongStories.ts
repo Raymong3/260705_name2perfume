@@ -2,39 +2,40 @@ import { SejongStory } from '../types/perfume';
 
 export const SEJONG_STORIES: SejongStory[] = [
   {
-    id: 'hunmin',
-    title: '훈민정음 (訓民正音)',
-    subtitle: '백성을 사랑하는 마음으로 한글을 창제하다',
-    description: '글을 몰라 서러운 백성들을 위해 친히 스물여덟 글자를 만드신 세종대왕의 애민정신을 담은 이야기입니다. 따뜻하고 배려심 넘치며 온화한 기운을 품고 있습니다.',
-    imageDesc: '한글 자모음이 은은하게 떠다니며 백성을 생각하는 온화한 세종대왕의 모습',
-    bonusTags: ['따뜻한', '배려심', '맑은', '온화한', '편안한'],
-    bonusNotes: ['white musk', 'Peony', 'Muguet']
+    id: 'eung_bridge',
+    title: '세종 이응다리',
+    subtitle: '금강 위를 아름답게 이어주는 원형 보행교',
+    description: '세종시 금강 위를 둥글게 이어주는 이응다리처럼, 사람과 사람, 자연과 사람을 잇는 활기차고 연결성 있는 시원한 분위기를 담아냅니다.',
+    imageDesc: '금강 위에 둥근 원 모양으로 빛나는 이응다리의 아름다운 밤풍경과 싱그러운 강바람',
+    bonusTags: ['활기찬', '연결되는', '시원한', '맑은', '현대적인'],
+    bonusNotes: ['Bergamot', 'Marine', 'Grapefruit']
   },
   {
-    id: 'science',
-    title: '앙부일구와 자격루',
-    subtitle: '백성의 시간을 열어주기 위해 해시계와 물시계를 창제하다',
-    description: '하늘의 운행과 자연의 이치를 정밀하게 읽어내어 백성들에게 올바른 시간과 절기를 돌려주고자 했던 지혜와 탐구의 이야기입니다. 정교하고 또렷하며 세련된 지적인 분위기를 풍깁니다.',
-    imageDesc: '해시계와 물시계의 정교한 청동 기어와 맑은 물방울이 어우러진 과학적 이미지',
-    bonusTags: ['지적인', '정교한', '세련된', '차분한', '또렷한'],
-    bonusNotes: ['cedar wood', 'Bergamot', 'rosewood']
+    id: 'sejong_arboretum',
+    title: '국립세종수목원',
+    subtitle: '도심 속에 펼쳐진 사계절 싱그러운 녹음',
+    description: '사계절 온실과 울창한 수목이 어우러진 도심형 수목원처럼, 피톤치드 가득한 녹음과 싱그러운 생동감, 편안한 휴식을 안겨줍니다.',
+    imageDesc: '사계절 온실의 은은한 꽃향기와 푸른 숲속 산책로의 피톤치드 그린 이미지',
+    bonusTags: ['싱그러운', '네이처', '피톤치드', '상쾌한', '자연스러운'],
+    bonusNotes: ['Eucalyptus', 'Green Tea', 'Cedarwood']
   },
   {
-    id: 'music',
-    title: '여민락 (與民樂)',
-    subtitle: '백성과 즐거움을 함께 나누기 위해 음악을 짓다',
-    description: '높고 낮은 신분을 떠나 온 백성이 함께 어우러져 기쁨과 태평성대를 노래하기를 바랐던 마음을 담은 이야기입니다. 풍성하고 화려하며 예술적인 감수성을 가득 담고 있습니다.',
-    imageDesc: '편경과 편종이 어우러지고 전통 아악의 우아한 선율이 퍼져나가는 화려한 궁중 연회 이미지',
-    bonusTags: ['화려한', '풍성한', '예술적인', '감성적인', '밝은'],
-    bonusNotes: ['Ylang Ylang', 'Rose', 'Neroli']
+    id: 'government_park',
+    title: '정부청사 옥상정원',
+    subtitle: '세계 최대 규모의 하늘 위 커다란 정원',
+    description: '청사 건물들을 하나로 잇는 세계 최대 옥상정원의 산책로처럼, 탁 트인 시야와 조화롭고 품격 있는 정원의 서정적 분위기를 품고 있습니다.',
+    imageDesc: '하늘과 맞닿은 옥상정원의 허브와 다양한 야생화가 펼쳐진 조화롭고 서정적인 분위기',
+    bonusTags: ['품격있는', '조화로운', '서정적인', '여유로운', '은은한'],
+    bonusNotes: ['Lavender', 'Rosewood', 'Jasmin']
   },
   {
-    id: 'library',
-    title: '집현전 (集賢殿)',
-    subtitle: '밤새도록 책을 읽으며 지혜의 숲을 거닐다',
-    description: '깊은 밤 촉촉한 공기 속에서 등불을 밝히고 학자들과 치열하게 학문을 닦으며 나라의 기틀을 다지던 사색의 이야기입니다. 깊이 있고 신비로우며 정갈한 고요함을 전합니다.',
-    imageDesc: '오래된 서적의 향과 정갈한 붓글씨, 은은한 등불이 밝혀진 고요한 서재 이미지',
-    bonusTags: ['깊이감', '신비로운', '정갈한', '차분한', '고급스러운'],
-    bonusNotes: ['Black Tea', 'oud', 'sandal wood']
+    id: 'lake_park',
+    title: '세종 호수공원',
+    subtitle: '도심 한가운데 잔잔히 물빛을 품은 청량한 휴식처',
+    description: '국내 최대 규모의 인공호수로 맑은 물빛과 청량한 바람이 감도는 호수공원처럼, 투명하고 편안하며 마음을 차분하게 가라앉혀 줍니다.',
+    imageDesc: '은빛 물결이 출렁이는 호숫가와 은은한 햇살 아래 잔잔한 물빛 잔물결',
+    bonusTags: ['청량한', '잔잔한', '투명한', '편안한', '감성적인'],
+    bonusNotes: ['Aquatic', 'White Musk', 'Muguet']
   }
 ];
+

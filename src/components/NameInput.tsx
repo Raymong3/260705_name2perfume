@@ -41,7 +41,7 @@ export const NameInput: React.FC<NameInputProps> = ({ onNext, isLoading }) => {
             htmlFor="name" 
             className="block text-xs font-semibold tracking-wider text-forest-700 uppercase mb-2"
           >
-            Your Name (한글 이름)
+            이름 (Name)
           </label>
           <input
             type="text"

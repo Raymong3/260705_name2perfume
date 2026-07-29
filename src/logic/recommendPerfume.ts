@@ -2,7 +2,6 @@ import { NameAnalysis, PerfumeRecipe, RecommendedNote, SejongStory } from '../ty
 import { NOTES } from '../data/notes';
 import { seededRandom } from './nameSeed';
 import { generateResultText } from './generateResultText';
-import { SURVEY_QUESTIONS } from '../data/surveyQuestions';
 
 // Recommends a single recipe given a specific seed, along with bonus tags and notes from survey/sejong
 export function recommendSingleRecipe(
@@ -189,50 +188,35 @@ export function recommendSingleRecipe(
   return rawRecipe;
 }
 
-// Recommends two recipes: recipe1 (Name + Survey) and recipe2 (Name + Sejong + Survey)
+// Recommends two recipes: recipe1 (Name Only) and recipe2 (Name + Sejong City Landmark)
 export function recommendPerfumes(
   nameAnalysis: NameAnalysis,
-  sejongStory: SejongStory | null,
-  surveyAnswers: { questionId: number; optionId: number }[]
+  sejongStory: SejongStory | null
 ): { recipe1: PerfumeRecipe; recipe2: PerfumeRecipe } {
-  // Accumulate survey bonus tags and notes
-  const surveyBonusTags: string[] = [];
-  const surveyBonusNotes: string[] = [];
-
-  for (const answer of surveyAnswers) {
-    const question = SURVEY_QUESTIONS.find(q => q.id === answer.questionId);
-    if (question) {
-      const option = question.options.find(o => o.id === answer.optionId);
-      if (option) {
-        surveyBonusTags.push(...option.bonusTags);
-        surveyBonusNotes.push(...option.bonusNotes);
-      }
-    }
-  }
-
-  // 1안: 나의 이름을 담은 향 (이름 분석 + 설문 결과)
+  // 1안: 나의 이름을 담은 향 (이름 구조 및 감성 분석 기반)
   const recipe1 = recommendSingleRecipe(
     nameAnalysis,
     0,
-    surveyBonusTags,
-    surveyBonusNotes
+    [],
+    []
   );
-  recipe1.concept = `당신의 이름 '${nameAnalysis.normalizedName}'의 한글 결성과 취향 설문 결과가 자아내는 온전한 당신만의 시그니처 향`;
+  recipe1.concept = `당신의 이름 '${nameAnalysis.normalizedName}'의 한글 결성과 무드가 자아내는 온전한 당신만의 시그니처 향`;
 
-  // 2안: 이름과 세종이 만난 향 (이름 분석 + 세종의 이야기 + 설문 결과)
+  // 2안: 이름과 세종시가 만난 향 (이름 분석 + 세종시 랜드마크 키워드)
   const sejongBonusTags = sejongStory ? sejongStory.bonusTags : [];
   const sejongBonusNotes = sejongStory ? sejongStory.bonusNotes : [];
 
   const recipe2 = recommendSingleRecipe(
     nameAnalysis,
     100,
-    [...surveyBonusTags, ...sejongBonusTags],
-    [...surveyBonusNotes, ...sejongBonusNotes]
+    sejongBonusTags,
+    sejongBonusNotes
   );
 
   if (sejongStory) {
-    recipe2.concept = `'${nameAnalysis.normalizedName}'의 이름과 세종의 이야기 중 '${sejongStory.title}'의 뜻이 어우러져 만들어진 깊이 있는 조화의 향`;
+    recipe2.concept = `'${nameAnalysis.normalizedName}'의 이름과 세종시의 '${sejongStory.title}' 풍경 및 감성이 어우러져 만들어진 깊이 있는 조화의 향`;
   }
 
   return { recipe1, recipe2 };
 }
+

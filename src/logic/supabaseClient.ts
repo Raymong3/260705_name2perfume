@@ -285,7 +285,7 @@ export async function dbGetRecords(loginId?: string): Promise<FinalRecipe[]> {
     if (error) throw error;
     if (!data) return [];
 
-    return data.map(r => {
+    return data.map((r: any) => {
       const today = new Date(r.created_at);
       const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}. ${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
       return {
