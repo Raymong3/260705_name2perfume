@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, ChevronLeft, ArrowRight, Printer, Trash2, Shield, Search, CheckCircle, RefreshCw, ClipboardList, CheckSquare, Square, Sliders, UserCheck, UserPlus, Heart } from 'lucide-react';
-import perfumeImgUrl from '../assets/perfume_hunmin_v3.png';
 import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
 import { NameAnalysis, PerfumeRecipe, SejongStory, FinalRecipe, RecommendedNote } from '../types/perfume';
@@ -709,15 +708,6 @@ export default function App() {
                 훈민정음의 조화로움처럼,<br className="hidden md:inline" />
                 당신의 이름과 세종시의 감성을 하나의 특별한 향으로 완성합니다.
               </p>
-              
-              <div className="hidden md:flex justify-center md:justify-start pt-2 relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-luxury-gold to-forest-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
-                <img 
-                  src={perfumeImgUrl} 
-                  alt="훈민향음 향수" 
-                  className="relative w-full max-w-md h-64 md:h-72 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
-                />
-              </div>
             </div>
 
             {/* Reception form block (Dark Green theme) */}
@@ -877,46 +867,29 @@ export default function App() {
         {step === 'input' && isLoggedIn && !isAdmin && (
           <div className="max-w-5xl xl:max-w-6xl w-full grid lg:grid-cols-2 grid-cols-1 gap-8 lg:gap-12 items-center print-exclude">
             <div className="text-center md:text-left space-y-6 md:pr-6 animate-slide-up">
-              <div className="flex flex-col md:flex-row md:items-center gap-3 justify-center md:justify-start">
-                <div className="inline-block px-3 py-1 rounded-full border border-forest-200 text-[11px] font-semibold tracking-widest text-forest-600 uppercase bg-forest-50/50">
-                  조향 상담 - 1단계
-                </div>
-                <button
-                  onClick={handleGoToMyPage}
-                  className="text-xs font-bold text-luxury-goldDark hover:underline flex items-center gap-1 justify-center"
-                >
-                  <ClipboardList className="w-3.5 h-3.5" /> 나의 과거 기록서 보기
-                </button>
+              <div className="inline-block px-3.5 py-1.5 rounded-full border border-forest-700 text-xs font-bold tracking-widest text-luxury-gold uppercase bg-forest-900/80">
+                1단계: 나를 읽다
               </div>
-              <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight text-forest-950">
+              <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight text-white">
                 훈민향음<br />
-                <span className="text-forest-700 font-medium text-2xl md:text-3xl font-serif">(訓民香音)</span>
+                <span className="text-luxury-gold font-medium text-2xl md:text-3xl font-serif">(訓民香音)</span>
               </h1>
-              <p className="text-sm md:text-base leading-relaxed text-forest-600 font-medium">
+              <p className="text-sm md:text-base leading-relaxed text-forest-200 font-medium">
                 의뢰하실 분의 이름을 입력해 주세요. <br />
                 가족, 친구 등 다른 사람들의 이름으로도 언제든 새로 향수를 조향할 수 있습니다.
               </p>
-              
-              <div className="hidden md:flex justify-center md:justify-start pt-4 relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-luxury-gold to-forest-500 rounded-2xl blur opacity-15 group-hover:opacity-25 transition duration-1000 group-hover:duration-200"></div>
-                <img 
-                  src={perfumeImgUrl} 
-                  alt="훈민향음 향수" 
-                  className="relative w-full max-w-lg h-72 md:h-80 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
-                />
-              </div>
             </div>
 
-            <div className="bg-white border border-luxury-gold/15 rounded-2xl p-8 shadow-xl flex flex-col justify-center space-y-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-forest-50 to-transparent opacity-50 -z-10 rounded-tr-2xl"></div>
+            <div className="bg-forest-900/90 border border-forest-750 rounded-2xl p-8 shadow-2xl flex flex-col justify-center space-y-6 relative overflow-hidden backdrop-blur-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-forest-800/40 to-transparent opacity-60 -z-10 rounded-tr-2xl"></div>
               <div className="space-y-2 text-center md:text-left">
-                <h3 className="font-serif text-lg font-semibold text-forest-900">의뢰 대상자 성함</h3>
-                <p className="text-xs text-forest-500">향수를 소유할 분의 이름을 공백 없이 입력해주세요.</p>
+                <h3 className="font-serif text-xl font-bold text-white">의뢰 대상자 성함</h3>
+                <p className="text-xs text-forest-300">향수를 소유할 분의 이름을 공백 없이 입력해주세요.</p>
               </div>
 
               <form onSubmit={handleNameNext} className="space-y-6">
                 <div className="relative">
-                  <label htmlFor="guestName" className="block text-xs font-bold text-forest-700 mb-2">이름 (Name)</label>
+                  <label htmlFor="guestName" className="block text-xs font-bold text-forest-200 mb-2">이름 (Name)</label>
                   <input
                     type="text"
                     id="guestName"
@@ -927,10 +900,10 @@ export default function App() {
                     }}
                     placeholder="이름을 입력하세요 (예: 홍길동)"
                     disabled={isAuthLoading}
-                    className="w-full px-5 py-4 bg-luxury-cream border border-forest-200 focus:border-forest-600 focus:ring-forest-100 rounded-lg text-forest-900 placeholder-forest-300 focus:outline-none focus:ring-4 transition-all duration-300 text-lg tracking-wide"
+                    className="w-full px-5 py-4 bg-forest-950 border border-forest-800 focus:border-forest-500 rounded-xl text-white placeholder-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20 transition-all duration-300 text-lg tracking-wide"
                   />
                   {nameError && (
-                    <div className="flex items-center gap-1.5 mt-2.5 text-xs text-red-600 font-medium animate-fade-in">
+                    <div className="flex items-center gap-1.5 mt-2.5 text-xs text-red-400 font-semibold bg-red-950/40 p-2 rounded border border-red-900/60 animate-fade-in">
                       <span>{nameError}</span>
                     </div>
                   )}
@@ -939,7 +912,7 @@ export default function App() {
                 <button
                   type="submit"
                   disabled={isAuthLoading}
-                  className="luxury-btn w-full flex items-center justify-center gap-2 px-6 py-4 bg-forest-800 text-luxury-cream font-medium rounded-lg hover:bg-forest-900 transition-all duration-300 shadow-md active:scale-[0.98] disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-forest-800 text-luxury-cream font-medium rounded-xl hover:bg-forest-700 border border-forest-650 transition-all duration-300 shadow-lg active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                   {isAuthLoading ? (
                     <div className="w-5 h-5 border-2 border-luxury-cream border-t-transparent rounded-full animate-spin"></div>
@@ -955,13 +928,13 @@ export default function App() {
           </div>
         )}
 
-        {/* 2단계: 세종시의 이야기를 담다 */}
+        {/* 2단계: 세종을 담다 */}
         {step === 'sejong' && isLoggedIn && (
           <div className="max-w-6xl w-full space-y-8 animate-slide-up print-exclude">
             <div className="text-center space-y-2">
-              <span className="text-xs font-bold tracking-widest text-forest-700 uppercase bg-forest-100/60 px-3 py-1 rounded-full border border-forest-300 inline-block">Step 02</span>
-              <h2 className="font-serif text-3xl font-bold text-forest-950">세종시의 이야기를 담다</h2>
-              <p className="text-sm text-forest-700 max-w-lg mx-auto">
+              <span className="text-xs font-bold tracking-widest text-luxury-gold uppercase bg-forest-900/80 px-3.5 py-1.5 rounded-full border border-forest-700 inline-block">2단계: 세종을 담다</span>
+              <h2 className="font-serif text-3xl font-bold text-white">세종시의 이야기를 담다</h2>
+              <p className="text-sm text-forest-200 max-w-lg mx-auto">
                 이름 '{analysis?.normalizedName}'의 향에 녹여내고 싶은 세종시의 명소 이야기를 하나 선택해 주세요.
               </p>
             </div>
@@ -973,34 +946,34 @@ export default function App() {
                   <button
                     key={story.id}
                     onClick={() => setSelectedStory(story)}
-                    className={`text-left p-6 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[250px] bg-white relative overflow-hidden group hover:shadow-xl cursor-pointer ${
+                    className={`text-left p-6 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[250px] bg-forest-950/80 relative overflow-hidden group hover:shadow-2xl cursor-pointer ${
                       isSelected 
-                        ? 'border-forest-600 ring-2 ring-forest-500/30 shadow-lg bg-forest-50/30' 
-                        : 'border-forest-200 hover:border-forest-500 hover:bg-forest-50/10'
+                        ? 'border-luxury-gold ring-2 ring-luxury-gold/40 shadow-xl bg-forest-850/90' 
+                        : 'border-forest-800 hover:border-forest-650 hover:bg-forest-900/90'
                     }`}
                   >
-                    <div className="absolute -bottom-8 -right-8 w-28 h-28 bg-forest-100/40 rounded-full group-hover:scale-110 transition-transform duration-500 -z-10"></div>
+                    <div className="absolute -bottom-8 -right-8 w-28 h-28 bg-forest-800/20 rounded-full group-hover:scale-110 transition-transform duration-500 -z-10"></div>
                     
                     <div className="space-y-3">
                       <div className="flex justify-between items-start">
-                        <span className="font-serif text-xs font-bold text-forest-700 tracking-wider uppercase">
+                        <span className="font-serif text-xs font-bold text-luxury-gold tracking-wider uppercase">
                           {story.title}
                         </span>
                         {isSelected && (
-                          <span className="w-5 h-5 rounded-full bg-forest-800 text-white flex items-center justify-center text-[10px] font-bold shadow">
+                          <span className="w-5 h-5 rounded-full bg-luxury-gold text-forest-950 flex items-center justify-center text-[10px] font-bold shadow">
                             ✓
                           </span>
                         )}
                       </div>
-                      <h3 className="font-serif text-lg font-bold text-forest-950 group-hover:text-forest-800 transition-colors">
+                      <h3 className="font-serif text-lg font-bold text-white group-hover:text-luxury-cream transition-colors">
                         {story.subtitle}
                       </h3>
-                      <p className="text-xs text-forest-600 leading-relaxed font-medium line-clamp-4">
+                      <p className="text-xs text-forest-300 leading-relaxed font-medium line-clamp-4">
                         {story.description}
                       </p>
                     </div>
 
-                    <div className="text-[10px] font-semibold text-forest-500 italic pt-2.5 border-t border-forest-100 w-full mt-3">
+                    <div className="text-[10px] font-semibold text-forest-400 italic pt-2.5 border-t border-forest-800 w-full mt-3">
                       {story.imageDesc}
                     </div>
                   </button>
@@ -1011,16 +984,16 @@ export default function App() {
             <div className="flex justify-between items-center pt-4">
               <button 
                 onClick={() => setStep('input')}
-                className="flex items-center gap-1 text-sm font-bold text-forest-600 hover:text-forest-900"
+                className="flex items-center gap-1 text-sm font-bold text-forest-300 hover:text-white transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" /> 이전으로
               </button>
               <button
                 onClick={handleSejongSubmit}
                 disabled={!selectedStory}
-                className="luxury-btn flex items-center gap-1.5 px-6 py-3 bg-forest-800 text-luxury-cream rounded-xl text-sm font-semibold hover:bg-forest-900 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-6 py-3 bg-forest-800 text-luxury-cream rounded-xl text-sm font-semibold hover:bg-forest-700 border border-forest-650 shadow-lg disabled:opacity-50 transition-all cursor-pointer"
               >
-                <span>향 추천 제안 보기</span> <ArrowRight className="w-4 h-4" />
+                <span>향 추천 제안 보기</span> <ArrowRight className="w-4 h-4 text-luxury-gold" />
               </button>
             </div>
           </div>
@@ -1028,26 +1001,26 @@ export default function App() {
 
         {/* 분석 중 애니메이션 페이지 (스텝 2 세종시 이야기 선택 후 스텝 3 결과 이동 전) */}
         {step === 'analyzing' && isLoggedIn && (
-          <div className="max-w-xl w-full bg-white/90 backdrop-blur-md border border-luxury-gold/30 rounded-3xl p-8 md:p-12 shadow-2xl text-center space-y-8 animate-fade-in print-exclude my-auto">
+          <div className="max-w-xl w-full bg-forest-900/90 backdrop-blur-lg border border-forest-750 rounded-3xl p-8 md:p-12 shadow-2xl text-center space-y-8 animate-fade-in print-exclude my-auto">
             
             {/* 회전하는 로고 엠블럼 & 아우라 */}
             <div className="relative w-32 h-32 mx-auto flex items-center justify-center">
               <div className="absolute inset-0 rounded-full border-4 border-luxury-gold/20 border-t-luxury-gold animate-spin"></div>
-              <div className="absolute inset-2 rounded-full border-2 border-forest-200 border-b-forest-700 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '3s' }}></div>
-              <div className="w-20 h-20 bg-forest-900 rounded-full flex items-center justify-center text-luxury-gold shadow-xl animate-pulse">
+              <div className="absolute inset-2 rounded-full border-2 border-forest-700 border-b-forest-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '3s' }}></div>
+              <div className="w-20 h-20 bg-forest-950 rounded-full flex items-center justify-center text-luxury-gold shadow-xl animate-pulse">
                 <Sparkles className="w-10 h-10 animate-bounce text-luxury-gold" />
               </div>
             </div>
 
             {/* 헤더 및 실시간 메시지 */}
             <div className="space-y-3">
-              <span className="inline-block px-3.5 py-1 rounded-full bg-forest-50 border border-forest-200 text-[11px] font-bold text-forest-800 uppercase tracking-widest">
+              <span className="inline-block px-3.5 py-1 rounded-full bg-forest-950 border border-forest-800 text-[11px] font-bold text-luxury-gold uppercase tracking-widest">
                 Hunmin Scent Analyzing...
               </span>
-              <h2 className="font-serif text-2xl md:text-3xl font-bold text-forest-950">
+              <h2 className="font-serif text-2xl md:text-3xl font-bold text-white">
                 나만의 맞춤 향 레시피 분석 중
               </h2>
-              <p className="text-sm font-medium text-forest-700 min-h-[44px] flex items-center justify-center px-4 transition-all duration-300">
+              <p className="text-sm font-medium text-forest-200 min-h-[44px] flex items-center justify-center px-4 transition-all duration-300">
                 {analyzingMessages[analyzingTextIdx]}
               </p>
             </div>
@@ -1074,15 +1047,15 @@ export default function App() {
           </div>
         )}
 
-        {/* 4단계: 향을 완성하다 (추천 결과 & 커스텀 조향) */}
+        {/* 3단계: 향을 잇다 (추천 결과 & 커스텀 조향) */}
         {step === 'result' && isLoggedIn && (
           <div className="max-w-6xl w-full space-y-8 animate-slide-up print-exclude">
             <div className="text-center space-y-2">
-              <span className="text-xs font-bold tracking-widest text-luxury-goldDark uppercase">Step 03</span>
-              <h2 className="font-serif text-3xl font-bold text-forest-950">당신의 향을 다듬다</h2>
-              <p className="text-xs text-forest-600">
+              <span className="text-xs font-bold tracking-widest text-luxury-gold uppercase bg-forest-900/80 px-3.5 py-1.5 rounded-full border border-forest-700 inline-block">3단계: 향을 잇다</span>
+              <h2 className="font-serif text-3xl font-bold text-white">당신의 향을 다듬다</h2>
+              <p className="text-xs text-forest-200">
                 두 가지 추천 테마 중 마음에 드는 안을 선택하고, 하단의 조향 편집기에서 원하는 향료를 자유롭게 조정할 수 있습니다.<br />
-                <span className="text-forest-500 font-medium">(향료 비율은 제출 시 100% 비율로 자동 정규화 조정됩니다)</span>
+                <span className="text-forest-400 font-medium">(향료 비율은 제출 시 100% 비율로 자동 정규화 조정됩니다)</span>
               </p>
             </div>
 
@@ -1093,15 +1066,15 @@ export default function App() {
               {recommended1 && (
                 <div 
                   onClick={() => handleSelectRecipeType('name_only')}
-                  className={`cursor-pointer bg-white border rounded-2xl p-6 md:p-8 flex flex-col justify-between space-y-6 transition-all duration-300 relative ${
+                  className={`cursor-pointer bg-forest-950/90 border rounded-2xl p-6 md:p-8 flex flex-col justify-between space-y-6 transition-all duration-300 relative ${
                     selectedRecipeType === 'name_only'
-                      ? 'border-luxury-gold ring-2 ring-luxury-gold/40 shadow-xl scale-[1.01]'
-                      : 'border-luxury-gold/15 hover:border-forest-400 hover:shadow-md'
+                      ? 'border-luxury-gold ring-2 ring-luxury-gold/40 shadow-2xl scale-[1.01] bg-forest-900/90'
+                      : 'border-forest-800 hover:border-forest-650 hover:bg-forest-900/60'
                   }`}
                 >
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-forest-50 border border-forest-200 text-forest-700 font-bold uppercase tracking-wider">
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-forest-900 border border-forest-750 text-luxury-gold font-bold uppercase tracking-wider">
                         추천 테마 01
                       </span>
                       <input 
@@ -1109,29 +1082,29 @@ export default function App() {
                         name="recipeSelect" 
                         checked={selectedRecipeType === 'name_only'} 
                         onChange={() => handleSelectRecipeType('name_only')}
-                        className="w-4 h-4 text-forest-900 border-luxury-gold focus:ring-forest-800"
+                        className="w-4 h-4 text-luxury-gold border-forest-700 focus:ring-forest-800 accent-luxury-gold"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <h3 className="font-serif text-2xl font-bold text-forest-950">나의 이름을 담은 향</h3>
+                      <h3 className="font-serif text-2xl font-bold text-white">나의 이름을 담은 향</h3>
                       <p className="text-[11px] text-forest-400 italic">이름의 한글 조합 및 분위기 분석 기반</p>
                     </div>
-                    <p className="text-xs leading-relaxed text-forest-600 pl-3 border-l-2 border-luxury-gold font-medium">
+                    <p className="text-xs leading-relaxed text-forest-200 pl-3 border-l-2 border-luxury-gold font-medium">
                       "{recommended1.concept}"
                     </p>
 
                     <div className="space-y-3 pt-2">
-                      <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-forest-800">
-                        <div className="bg-forest-50/50 p-2.5 rounded-lg border border-forest-100">
-                          <div className="text-[9px] text-forest-400 uppercase font-mono mb-1">Top</div>
+                      <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-white">
+                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
+                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Top</div>
                           {recommended1.top.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
                         </div>
-                        <div className="bg-forest-50/50 p-2.5 rounded-lg border border-forest-100">
-                          <div className="text-[9px] text-forest-400 uppercase font-mono mb-1">Middle</div>
+                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
+                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Middle</div>
                           {recommended1.middle.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
                         </div>
-                        <div className="bg-forest-50/50 p-2.5 rounded-lg border border-forest-100">
-                          <div className="text-[9px] text-forest-400 uppercase font-mono mb-1">Base</div>
+                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
+                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Base</div>
                           {recommended1.base.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
                         </div>
                       </div>
@@ -1139,7 +1112,7 @@ export default function App() {
                   </div>
                   
                   <div className="text-center">
-                    <button className="w-full py-2.5 rounded-xl text-xs font-bold transition-all bg-luxury-cream text-forest-700 border border-luxury-gold/20 hover:bg-luxury-cream/60">
+                    <button className="w-full py-2.5 rounded-xl text-xs font-bold transition-all bg-forest-800 text-luxury-cream border border-forest-650 hover:bg-forest-700">
                       이 테마로 선택
                     </button>
                   </div>
@@ -1150,15 +1123,15 @@ export default function App() {
               {recommended2 && (
                 <div 
                   onClick={() => handleSelectRecipeType('name_sejong')}
-                  className={`cursor-pointer bg-white border rounded-2xl p-6 md:p-8 flex flex-col justify-between space-y-6 transition-all duration-300 relative ${
+                  className={`cursor-pointer bg-forest-950/90 border rounded-2xl p-6 md:p-8 flex flex-col justify-between space-y-6 transition-all duration-300 relative ${
                     selectedRecipeType === 'name_sejong'
-                      ? 'border-luxury-gold ring-2 ring-luxury-gold/40 shadow-xl scale-[1.01]'
-                      : 'border-luxury-gold/15 hover:border-forest-400 hover:shadow-md'
+                      ? 'border-luxury-gold ring-2 ring-luxury-gold/40 shadow-2xl scale-[1.01] bg-forest-900/90'
+                      : 'border-forest-800 hover:border-forest-650 hover:bg-forest-900/60'
                   }`}
                 >
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-luxury-sand/50 border border-luxury-gold/20 text-forest-800 font-bold uppercase tracking-wider">
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-forest-900 border border-forest-750 text-luxury-gold font-bold uppercase tracking-wider">
                         추천 테마 02
                       </span>
                       <input 
@@ -1166,29 +1139,29 @@ export default function App() {
                         name="recipeSelect" 
                         checked={selectedRecipeType === 'name_sejong'} 
                         onChange={() => handleSelectRecipeType('name_sejong')}
-                        className="w-4 h-4 text-forest-900 border-luxury-gold focus:ring-forest-800"
+                        className="w-4 h-4 text-luxury-gold border-forest-700 focus:ring-forest-800 accent-luxury-gold"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <h3 className="font-serif text-2xl font-bold text-forest-950">이름과 세종시가 만난 향</h3>
+                      <h3 className="font-serif text-2xl font-bold text-white">이름과 세종시가 만난 향</h3>
                       <p className="text-[11px] text-forest-400 italic">이름 분석과 세종시 명소 중 {selectedStory?.title}의 결합</p>
                     </div>
-                    <p className="text-xs leading-relaxed text-forest-600 pl-3 border-l-2 border-luxury-gold font-medium">
+                    <p className="text-xs leading-relaxed text-forest-200 pl-3 border-l-2 border-luxury-gold font-medium">
                       "{recommended2.concept}"
                     </p>
 
                     <div className="space-y-3 pt-2">
-                      <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-forest-800">
-                        <div className="bg-forest-50/50 p-2.5 rounded-lg border border-forest-100">
-                          <div className="text-[9px] text-forest-400 uppercase font-mono mb-1">Top</div>
+                      <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-white">
+                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
+                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Top</div>
                           {recommended2.top.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
                         </div>
-                        <div className="bg-forest-50/50 p-2.5 rounded-lg border border-forest-100">
-                          <div className="text-[9px] text-forest-400 uppercase font-mono mb-1">Middle</div>
+                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
+                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Middle</div>
                           {recommended2.middle.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
                         </div>
-                        <div className="bg-forest-50/50 p-2.5 rounded-lg border border-forest-100">
-                          <div className="text-[9px] text-forest-400 uppercase font-mono mb-1">Base</div>
+                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
+                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Base</div>
                           {recommended2.base.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
                         </div>
                       </div>
@@ -1196,7 +1169,7 @@ export default function App() {
                   </div>
 
                   <div className="text-center">
-                    <button className="w-full py-2.5 rounded-xl text-xs font-bold transition-all bg-luxury-cream text-forest-700 border border-luxury-gold/20 hover:bg-luxury-cream/60">
+                    <button className="w-full py-2.5 rounded-xl text-xs font-bold transition-all bg-forest-800 text-luxury-cream border border-forest-650 hover:bg-forest-700">
                       이 테마로 선택
                     </button>
                   </div>
@@ -1207,16 +1180,16 @@ export default function App() {
 
             {/* 손님용 향료 편집기 개방 */}
             {selectedRecipeType && (
-              <div className="bg-white border border-luxury-gold/20 rounded-2xl p-6 md:p-8 shadow-lg space-y-6 animate-slide-up">
-                <div className="flex items-center gap-2 pb-3 border-b border-luxury-sand text-forest-950">
+              <div className="bg-forest-900/90 border border-forest-750 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6 backdrop-blur-lg animate-slide-up">
+                <div className="flex items-center gap-2 pb-3 border-b border-forest-800 text-white">
                   <Sliders className="w-5 h-5 text-luxury-gold" />
                   <h3 className="font-serif text-lg font-bold">나만의 향료 커스텀 조향</h3>
-                  <span className="text-[10px] text-forest-500 font-sans ml-2">(향료를 추가/제거하거나 원하는 비율로 조정해 보세요)</span>
+                  <span className="text-[10px] text-forest-300 font-sans ml-2">(향료를 추가/제거하거나 원하는 비율로 조정해 보세요)</span>
                 </div>
 
                 {/* 향수 이름 사용자 직접 입력 */}
-                <div className="bg-luxury-cream/30 p-4 rounded-xl border border-luxury-gold/20 space-y-2">
-                  <label className="block text-xs font-bold text-forest-900">
+                <div className="bg-forest-950/60 p-4 rounded-xl border border-forest-800 space-y-2">
+                  <label className="block text-xs font-bold text-luxury-gold font-serif">
                     향수 이름 (Perfume Name)
                   </label>
                   <input
@@ -1224,35 +1197,35 @@ export default function App() {
                     value={guestCustomPerfumeName}
                     onChange={(e) => setGuestCustomPerfumeName(e.target.value)}
                     placeholder="나만의 향수 이름을 입력해 주세요 (예: 이응다리의 바람)"
-                    className="w-full px-4 py-2.5 bg-white border border-forest-200 rounded-xl text-sm font-semibold text-forest-950 focus:outline-none focus:ring-2 focus:ring-luxury-gold/50 focus:border-luxury-gold"
+                    className="w-full px-4 py-2.5 bg-forest-950 border border-forest-800 rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-luxury-gold focus:ring-1 focus:ring-luxury-gold/30"
                   />
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-6">
                   
                   {/* 손님 Top Note */}
-                  <div className="bg-luxury-cream/35 p-4 rounded-xl border border-luxury-gold/10 space-y-3">
-                    <h4 className="font-serif text-xs font-bold text-forest-900 pb-1.5 border-b border-luxury-gold/20">Top Notes</h4>
+                  <div className="bg-forest-950/40 p-4 rounded-xl border border-forest-800 space-y-3">
+                    <h4 className="font-serif text-xs font-bold text-luxury-gold pb-1.5 border-b border-forest-800">Top Notes</h4>
                     <div className="space-y-2 min-h-[90px]">
                       {guestTop.map((item, idx) => (
-                        <div key={item.note.id} className="bg-white p-2 rounded border border-forest-100 text-[10px] space-y-1.5">
+                        <div key={item.note.id} className="bg-forest-950/80 p-2 rounded border border-forest-800 text-[10px] space-y-1.5">
                           <div className="flex justify-between items-center">
-                            <span className="font-bold text-forest-900">{item.note.nameKo}</span>
-                            <button onClick={() => handleGuestRemoveNote('top', idx)} className="text-red-500 hover:text-red-700">×</button>
+                            <span className="font-bold text-white">{item.note.nameKo}</span>
+                            <button onClick={() => handleGuestRemoveNote('top', idx)} className="text-red-400 hover:text-red-300">×</button>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <input 
                               type="range" min="0" max="100" value={item.ratio || 0}
                               onChange={(e) => handleGuestRatioChange('top', idx, parseInt(e.target.value))}
-                              className="flex-grow accent-forest-700 h-0.5 bg-forest-100 appearance-none cursor-pointer"
+                              className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                             />
-                            <div className="flex items-center bg-forest-50/80 border border-forest-200 rounded px-1 py-0.5">
+                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1 py-0.5">
                               <input 
                                 type="number" min="0" max="100" value={item.ratio ?? 0}
                                 onChange={(e) => handleGuestRatioChange('top', idx, parseInt(e.target.value))}
-                                className="w-8 text-right font-mono text-[10px] bg-transparent text-forest-950 font-bold focus:outline-none"
+                                className="w-8 text-right font-mono text-[10px] bg-transparent text-luxury-gold font-bold focus:outline-none"
                               />
-                              <span className="text-[9px] font-bold text-forest-600 ml-0.5">%</span>
+                              <span className="text-[9px] font-bold text-forest-400 ml-0.5">%</span>
                             </div>
                           </div>
                         </div>
@@ -1261,40 +1234,40 @@ export default function App() {
                     <div className="flex gap-1 pt-1.5">
                       <select 
                         value={selectedGuestTopToAdd} onChange={(e) => setSelectedGuestTopToAdd(e.target.value)}
-                        className="flex-grow p-1 bg-white border border-forest-200 rounded text-[9px] text-forest-800 focus:outline-none"
+                        className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                       >
                         <option value="">탑 향료 추가...</option>
                         {NOTES.filter(n => n.type === 'top').map(n => (
                           <option key={n.id} value={n.id}>{n.nameKo}</option>
                         ))}
                       </select>
-                      <button onClick={() => handleGuestAddNote('top', selectedGuestTopToAdd)} className="px-2 py-1 bg-forest-800 hover:bg-forest-955 text-luxury-cream rounded text-[9px] font-bold">추가</button>
+                      <button onClick={() => handleGuestAddNote('top', selectedGuestTopToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                     </div>
                   </div>
 
                   {/* 손님 Middle Note */}
-                  <div className="bg-luxury-cream/35 p-4 rounded-xl border border-luxury-gold/10 space-y-3">
-                    <h4 className="font-serif text-xs font-bold text-forest-900 pb-1.5 border-b border-luxury-gold/20">Middle Notes</h4>
+                  <div className="bg-forest-950/40 p-4 rounded-xl border border-forest-800 space-y-3">
+                    <h4 className="font-serif text-xs font-bold text-luxury-gold pb-1.5 border-b border-forest-800">Middle Notes</h4>
                     <div className="space-y-2 min-h-[90px]">
                       {guestMiddle.map((item, idx) => (
-                        <div key={item.note.id} className="bg-white p-2 rounded border border-forest-100 text-[10px] space-y-1.5">
+                        <div key={item.note.id} className="bg-forest-950/80 p-2 rounded border border-forest-800 text-[10px] space-y-1.5">
                           <div className="flex justify-between items-center">
-                            <span className="font-bold text-forest-900">{item.note.nameKo}</span>
-                            <button onClick={() => handleGuestRemoveNote('middle', idx)} className="text-red-500 hover:text-red-700">×</button>
+                            <span className="font-bold text-white">{item.note.nameKo}</span>
+                            <button onClick={() => handleGuestRemoveNote('middle', idx)} className="text-red-400 hover:text-red-300">×</button>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <input 
                               type="range" min="0" max="100" value={item.ratio || 0}
                               onChange={(e) => handleGuestRatioChange('middle', idx, parseInt(e.target.value))}
-                              className="flex-grow accent-forest-700 h-0.5 bg-forest-100 appearance-none cursor-pointer"
+                              className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                             />
-                            <div className="flex items-center bg-forest-50/80 border border-forest-200 rounded px-1 py-0.5">
+                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1 py-0.5">
                               <input 
                                 type="number" min="0" max="100" value={item.ratio ?? 0}
                                 onChange={(e) => handleGuestRatioChange('middle', idx, parseInt(e.target.value))}
-                                className="w-8 text-right font-mono text-[10px] bg-transparent text-forest-950 font-bold focus:outline-none"
+                                className="w-8 text-right font-mono text-[10px] bg-transparent text-luxury-gold font-bold focus:outline-none"
                               />
-                              <span className="text-[9px] font-bold text-forest-600 ml-0.5">%</span>
+                              <span className="text-[9px] font-bold text-forest-400 ml-0.5">%</span>
                             </div>
                           </div>
                         </div>
@@ -1303,40 +1276,40 @@ export default function App() {
                     <div className="flex gap-1 pt-1.5">
                       <select 
                         value={selectedGuestMiddleToAdd} onChange={(e) => setSelectedGuestMiddleToAdd(e.target.value)}
-                        className="flex-grow p-1 bg-white border border-forest-200 rounded text-[9px] text-forest-800 focus:outline-none"
+                        className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                       >
                         <option value="">미들 향료 추가...</option>
                         {NOTES.filter(n => n.type === 'middle').map(n => (
                           <option key={n.id} value={n.id}>{n.nameKo}</option>
                         ))}
                       </select>
-                      <button onClick={() => handleGuestAddNote('middle', selectedGuestMiddleToAdd)} className="px-2 py-1 bg-forest-800 hover:bg-forest-955 text-luxury-cream rounded text-[9px] font-bold">추가</button>
+                      <button onClick={() => handleGuestAddNote('middle', selectedGuestMiddleToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                     </div>
                   </div>
 
                   {/* 손님 Base Note */}
-                  <div className="bg-luxury-cream/35 p-4 rounded-xl border border-luxury-gold/10 space-y-3">
-                    <h4 className="font-serif text-xs font-bold text-forest-900 pb-1.5 border-b border-luxury-gold/20">Base Notes</h4>
+                  <div className="bg-forest-950/40 p-4 rounded-xl border border-forest-800 space-y-3">
+                    <h4 className="font-serif text-xs font-bold text-luxury-gold pb-1.5 border-b border-forest-800">Base Notes</h4>
                     <div className="space-y-2 min-h-[90px]">
                       {guestBase.map((item, idx) => (
-                        <div key={item.note.id} className="bg-white p-2 rounded border border-forest-100 text-[10px] space-y-1.5">
+                        <div key={item.note.id} className="bg-forest-950/80 p-2 rounded border border-forest-800 text-[10px] space-y-1.5">
                           <div className="flex justify-between items-center">
-                            <span className="font-bold text-forest-900">{item.note.nameKo}</span>
-                            <button onClick={() => handleGuestRemoveNote('base', idx)} className="text-red-500 hover:text-red-700">×</button>
+                            <span className="font-bold text-white">{item.note.nameKo}</span>
+                            <button onClick={() => handleGuestRemoveNote('base', idx)} className="text-red-400 hover:text-red-300">×</button>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <input 
                               type="range" min="0" max="100" value={item.ratio || 0}
                               onChange={(e) => handleGuestRatioChange('base', idx, parseInt(e.target.value))}
-                              className="flex-grow accent-forest-700 h-0.5 bg-forest-100 appearance-none cursor-pointer"
+                              className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                             />
-                            <div className="flex items-center bg-forest-50/80 border border-forest-200 rounded px-1 py-0.5">
+                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1 py-0.5">
                               <input 
                                 type="number" min="0" max="100" value={item.ratio ?? 0}
                                 onChange={(e) => handleGuestRatioChange('base', idx, parseInt(e.target.value))}
-                                className="w-8 text-right font-mono text-[10px] bg-transparent text-forest-950 font-bold focus:outline-none"
+                                className="w-8 text-right font-mono text-[10px] bg-transparent text-luxury-gold font-bold focus:outline-none"
                               />
-                              <span className="text-[9px] font-bold text-forest-600 ml-0.5">%</span>
+                              <span className="text-[9px] font-bold text-forest-400 ml-0.5">%</span>
                             </div>
                           </div>
                         </div>
@@ -1345,14 +1318,14 @@ export default function App() {
                     <div className="flex gap-1 pt-1.5">
                       <select 
                         value={selectedGuestBaseToAdd} onChange={(e) => setSelectedGuestBaseToAdd(e.target.value)}
-                        className="flex-grow p-1 bg-white border border-forest-200 rounded text-[9px] text-forest-800 focus:outline-none"
+                        className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                       >
                         <option value="">베이스 향료 추가...</option>
                         {NOTES.filter(n => n.type === 'base').map(n => (
                           <option key={n.id} value={n.id}>{n.nameKo}</option>
                         ))}
                       </select>
-                      <button onClick={() => handleGuestAddNote('base', selectedGuestBaseToAdd)} className="px-2 py-1 bg-forest-800 hover:bg-forest-955 text-luxury-cream rounded text-[9px] font-bold">추가</button>
+                      <button onClick={() => handleGuestAddNote('base', selectedGuestBaseToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                     </div>
                   </div>
 
@@ -1392,31 +1365,31 @@ export default function App() {
 
         {/* 제출 완료 대기 화면 */}
         {step === 'submit_done' && isLoggedIn && (
-          <div className="max-w-md w-full bg-white border border-luxury-gold/15 rounded-2xl p-8 shadow-xl text-center space-y-6 animate-slide-up print-exclude">
-            <div className="w-16 h-16 bg-forest-50 border border-forest-200 rounded-full flex items-center justify-center mx-auto text-forest-800">
+          <div className="max-w-md w-full bg-forest-900/90 border border-forest-750 rounded-2xl p-8 shadow-2xl text-center space-y-6 animate-slide-up print-exclude backdrop-blur-lg">
+            <div className="w-16 h-16 bg-forest-950 border border-forest-800 rounded-full flex items-center justify-center mx-auto text-forest-800">
               <CheckCircle className="w-8 h-8 text-luxury-gold" />
             </div>
 
             <div className="space-y-2">
-              <h2 className="font-serif text-2xl font-bold text-forest-950">의뢰서 제출 완료</h2>
-              <p className="text-sm text-forest-600 font-medium">
+              <h2 className="font-serif text-2xl font-bold text-white">의뢰서 제출 완료</h2>
+              <p className="text-sm text-forest-200 font-medium">
                 조향 의뢰서가 성공적으로 전달되었습니다!
               </p>
-              <p className="text-xs text-forest-400 leading-relaxed">
+              <p className="text-xs text-forest-300 leading-relaxed">
                 공방의 조향사에게 제출 완료 소식을 말씀해 주시면, 최종 대시보드 검증을 거쳐 훈민향음 기록서(A6)를 인쇄해 드립니다.
               </p>
             </div>
 
-            <div className="pt-2 border-t border-luxury-sand flex flex-col gap-2">
+            <div className="pt-2 border-t border-forest-800 flex flex-col gap-2">
               <button
                 onClick={handleStartNewJourney}
-                className="w-full py-3 bg-forest-900 hover:bg-forest-955 text-white text-xs font-bold rounded-xl"
+                className="w-full py-3 bg-forest-800 hover:bg-forest-700 text-luxury-cream text-xs font-bold rounded-xl border border-forest-650 transition-all cursor-pointer"
               >
                 다른 이름으로 새 향수 만들기
               </button>
               <button
                 onClick={handleGoToMyPage}
-                className="w-full py-3 bg-luxury-cream border border-luxury-gold/20 text-forest-800 text-xs font-bold rounded-xl hover:bg-luxury-cream/60"
+                className="w-full py-3 bg-forest-950 border border-forest-800 text-forest-200 text-xs font-bold rounded-xl hover:bg-forest-900 transition-all cursor-pointer"
               >
                 나의 전체 조향기록 보관소로 이동
               </button>
@@ -1427,22 +1400,24 @@ export default function App() {
         {/* 일반 손님 마이페이지 (과거 기록 확인 및 신규 만들기 버튼) */}
         {step === 'mypage' && isLoggedIn && !isAdmin && (
           <div className="max-w-2xl w-full space-y-6 animate-slide-up print-exclude">
-            <div className="bg-white border border-luxury-gold/15 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+            <div className="bg-forest-900/90 border border-forest-750 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6 backdrop-blur-lg">
               
-              <div className="text-center space-y-1.5 border-b border-luxury-sand pb-4">
-                <span className="text-[10px] tracking-widest text-luxury-goldDark font-serif uppercase">Guest Portal</span>
-                <h2 className="font-serif text-2xl font-bold text-forest-950">조향 기록 보관소</h2>
-                <p className="text-xs text-forest-500">본인 로그인 계정({loginId})으로 생성된 역대 조향 내역입니다.</p>
+              <div className="text-center space-y-1.5 border-b border-forest-800 pb-4">
+                <span className="text-[10px] tracking-widest text-luxury-gold font-serif uppercase font-bold">Guest Portal</span>
+                <h2 className="font-serif text-2xl font-bold text-white">조향 기록 보관소</h2>
+                <p className="text-xs text-forest-300 font-medium">
+                  본인 로그인 계정 <span className="font-bold text-luxury-gold">{getDisplayGuestName(loginId)}</span>으로 생성된 역대 조향 내역입니다.
+                </p>
               </div>
 
               {/* 과거 조향 기록 목록 */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-forest-400 uppercase tracking-wider">나의 조향 기록 목록</h3>
+                <h3 className="text-xs font-bold text-luxury-gold uppercase tracking-wider">나의 조향 기록 목록</h3>
                 
                 {isRecordsLoading ? (
                   <div className="text-center py-8 text-xs text-forest-400">상담 이력을 불러오는 중입니다...</div>
                 ) : guestRecords.length === 0 ? (
-                  <div className="text-center py-10 bg-luxury-cream/30 rounded-xl border border-dashed border-luxury-gold/20 text-xs text-forest-500">
+                  <div className="text-center py-10 bg-forest-950/60 rounded-xl border border-dashed border-forest-800 text-xs text-forest-400">
                     아직 생성된 향수 기록이 없습니다. 새로운 조향을 시작해 보세요!
                   </div>
                 ) : (
@@ -1450,18 +1425,18 @@ export default function App() {
                     {guestRecords.map(rec => {
                       const recordStatus = rec.status || (rec.makerMemo ? 'completed' : 'submitted');
                       return (
-                        <div key={rec.id} className="flex justify-between items-center p-3.5 bg-luxury-cream/40 border border-luxury-gold/10 rounded-xl hover:border-forest-400 transition-all">
+                        <div key={rec.id} className="flex justify-between items-center p-3.5 bg-forest-950/80 border border-forest-800 rounded-xl hover:border-forest-650 transition-all">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-forest-950">{rec.guestName}</span>
-                              <span className="text-[10px] text-forest-500 font-serif">({rec.perfumeName})</span>
+                              <span className="text-xs font-bold text-white">{rec.guestName}</span>
+                              <span className="text-[10px] text-luxury-gold font-serif">({rec.perfumeName})</span>
                             </div>
                             <div className="flex gap-2 text-[9px] text-forest-400 font-mono">
                               <span>{rec.createdDate}</span>
                               <span>•</span>
                               <span>{rec.selectedType === 'name_only' ? '이름 분석' : '세종의 이야기'}</span>
                               <span>•</span>
-                              <span className={recordStatus === 'completed' ? 'text-green-600 font-bold' : 'text-amber-600'}>
+                              <span className={recordStatus === 'completed' ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
                                 {recordStatus === 'completed' ? '조향 완성' : '접수 대기'}
                               </span>
                             </div>
@@ -1473,7 +1448,7 @@ export default function App() {
                                 setFinalRecipe(rec);
                                 setStep('record');
                               }}
-                              className="px-3 py-1.5 bg-forest-900 text-luxury-cream text-[10px] font-bold rounded-lg hover:bg-forest-955 transition-colors flex items-center gap-1"
+                              className="px-3 py-1.5 bg-forest-800 text-luxury-cream text-[10px] font-bold rounded-lg hover:bg-forest-700 transition-colors flex items-center gap-1 border border-forest-650"
                             >
                               <Printer className="w-3 h-3 text-luxury-gold" /> 기록서 보기
                             </button>
