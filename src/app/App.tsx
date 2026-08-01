@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, ChevronLeft, ArrowRight, Printer, Trash2, Shield, Search, CheckCircle, RefreshCw, ClipboardList, CheckSquare, Square, Sliders } from 'lucide-react';
+import { Sparkles, ChevronLeft, ArrowRight, Printer, Trash2, Shield, Search, CheckCircle, RefreshCw, ClipboardList, CheckSquare, Square, Sliders, UserCheck, UserPlus, Heart } from 'lucide-react';
 import perfumeImgUrl from '../assets/perfume_hunmin_v3.png';
 import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
 import { NameAnalysis, PerfumeRecipe, SejongStory, FinalRecipe, RecommendedNote } from '../types/perfume';
 import { SEJONG_STORIES } from '../data/sejongStories';
 import { NOTES } from '../data/notes';
+import { FAVORITE_SCENT_OPTIONS } from '../data/favoriteScents';
 import { dbLoginGuest, dbCreateRecord, dbGetRecords, dbCompleteRecord, dbDeleteRecords } from '../logic/supabaseClient';
 
 // 향료 비율(Top, Middle, Base)의 합을 자동으로 100%로 정규화 조절해주는 헬퍼 함수
@@ -55,7 +56,9 @@ export default function App() {
   const [analyzingTextIdx, setAnalyzingTextIdx] = useState(0);
   
   // 인증 관련 상태
-  const [loginId, setLoginId] = useState(''); // 휴대폰 번호 뒷자리 4자리 + 영문 1자리
+  const [authMode, setAuthMode] = useState<'new' | 'existing'>('new'); // 'new': 신규 접수, 'existing': 기존 접수자 조회
+  const [loginId, setLoginId] = useState(''); // 휴대폰 번호 뒷자리 4자리
+  const [selectedFavScentId, setSelectedFavScentId] = useState(''); // 12종 마음에 드는 향 선택 ID
   const [passwordAdmin, setPasswordAdmin] = useState(''); // 관리자용 2차 패스워드
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -113,6 +116,16 @@ export default function App() {
   // 최종 확정 레시피
   const [finalRecipe, setFinalRecipe] = useState<FinalRecipe | null>(null);
 
+  // 사용자 표출용 접수 정보 (숫자 + 향 명칭)
+  const getDisplayGuestName = (idStr: string) => {
+    if (!idStr) return '';
+    const parts = idStr.split('_');
+    const num = parts[0];
+    const scentId = parts[1];
+    const scentObj = FAVORITE_SCENT_OPTIONS.find(s => s.id === scentId);
+    return scentObj ? `${num} (${scentObj.nameKo})` : num;
+  };
+
   // 관리자 모드 레코드 목록 실시간 리로딩용
   const loadAdminRecords = async () => {
     try {
@@ -143,7 +156,7 @@ export default function App() {
     const idTrimmed = loginId.trim();
 
     if (!idTrimmed) {
-      setAuthError('접수번호를 입력해주세요.');
+      setAuthError('접수번호(휴대폰 뒷자리 4자리)를 입력해주세요.');
       return;
     }
 
@@ -172,27 +185,60 @@ export default function App() {
       return;
     }
 
-    // 일반 접수번호 유효성 검사 (휴대폰 뒷자리 4개 + 영문 1자)
-    const loginRegEx = /^\d{4}[a-zA-Z]$/;
-    if (!loginRegEx.test(idTrimmed)) {
-      setAuthError('휴대폰 뒷자리 4개와 영문 1글자를 조합하여 입력해주세요. (예: 1234a)');
+    // 일반 손님 접수번호 유효성 검사 (휴대폰 뒷자리 4자리 숫자)
+    if (!/^\d{4}$/.test(idTrimmed)) {
+      setAuthError('휴대폰 번호 뒷자리 4자리 숫자만 입력해주세요. (예: 4440)');
       return;
     }
 
+    // 마음에 드는 향 선택 유효성 검사
+    if (!selectedFavScentId) {
+      setAuthError('마음에 드는 향 12가지 중 1개를 선택해 주세요.');
+      return;
+    }
+
+    // 고유 식별 사용자 키 생성 (4자리 숫자 + 선택한 향 ID)
+    const fullUserKey = `${idTrimmed}_${selectedFavScentId}`;
+    const selectedScentObj = FAVORITE_SCENT_OPTIONS.find(s => s.id === selectedFavScentId);
+    const scentNameKo = selectedScentObj ? selectedScentObj.nameKo : '';
+
     setIsAuthLoading(true);
     try {
-      const res = await dbLoginGuest(idTrimmed);
-      if (!res.success) {
-        setAuthError(res.error || '접수번호 확인 실패');
-        setIsAuthLoading(false);
-        return;
-      }
+      // 전체 기록 조회하여 중복 유무 확인 (loginId 필드에 fullUserKey 저장)
+      const allRecords = await dbGetRecords('admin9');
+      const hasExistingRecord = allRecords.some(r => r.loginId === fullUserKey || (r as any).guestId === fullUserKey);
 
-      setIsLoggedIn(true);
-      setLoginId(idTrimmed); // Ensure sanitized loginId is saved to state
-      // 접수 후 즉시 이름 적는 1단계 화면으로 이행
-      setStep('input');
-      setGuestNameForRecipe('');
+      if (authMode === 'new') {
+        // [신규 접수] 모드
+        if (hasExistingRecord) {
+          alert(`[신규 접수 안내]\n\n입력하신 접수 정보 '접수번호 ${idTrimmed} + ${scentNameKo}'는 이미 사용 중입니다.\n\n다른 향을 선택하시거나 [기존 접수자 조회] 탭을 클릭해 주세요.`);
+          setAuthError('이미 사용 중인 접수 정보입니다. 다른 향을 선택하거나 기존 접수 조회를 이용해 주세요.');
+          setIsAuthLoading(false);
+          return;
+        }
+
+        // 신규 사용자 로그인 및 등록 처리
+        await dbLoginGuest(fullUserKey);
+        setIsLoggedIn(true);
+        setLoginId(fullUserKey);
+        setStep('input');
+        setGuestNameForRecipe('');
+      } else {
+        // [기존 접수자 조회] 모드
+        if (!hasExistingRecord) {
+          alert(`[기존 접수자 조회 안내]\n\n입력하신 '접수번호 ${idTrimmed} + ${scentNameKo}'에 대한 접수 기록을 찾을 수 없습니다.\n\n접수번호와 선택하신 향이 맞는지 확인하시거나 [신규 접수]를 진행해 주세요.`);
+          setAuthError('일치하는 기존 접수 정보가 없습니다. 신규 접수를 이용해 주세요.');
+          setIsAuthLoading(false);
+          return;
+        }
+
+        // 기존 사용자 로그인 성공 및 보관소 이행
+        await dbLoginGuest(fullUserKey);
+        setIsLoggedIn(true);
+        setLoginId(fullUserKey);
+        setStep('mypage');
+        await loadGuestRecords(fullUserKey);
+      }
     } catch (err) {
       setAuthError('접수 처리 중 에러가 발생했습니다.');
     } finally {
@@ -203,6 +249,7 @@ export default function App() {
   // 로그아웃
   const handleLogout = () => {
     setLoginId('');
+    setSelectedFavScentId('');
     setPasswordAdmin('');
     setIsLoggedIn(false);
     setIsAdmin(false);
@@ -599,7 +646,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col justify-between selection:bg-forest-100 print:bg-white print:min-h-0">
       
       {/* Header - 인쇄 시 미출력 */}
-      <div className="print-exclude flex justify-between items-center bg-forest-950 px-6 py-4 text-white shadow-md border-b border-forest-800/60">
+      <div className="print-exclude flex justify-between items-center bg-forest-950 px-6 py-4 text-white shadow-md border-b border-forest-800/80">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-luxury-gold animate-pulse" />
           <span className="font-serif font-bold tracking-[0.15em] text-sm md:text-base">훈민향음 (訓民香音)</span>
@@ -610,7 +657,7 @@ export default function App() {
           <button 
             onClick={() => {
               if (!isLoggedIn) {
-                alert('접수번호를 입력하신 후 보관소 이용이 가능합니다.');
+                alert('접수번호(4자리)와 선호하는 향을 선택하여 접수한 후 보관소 이용이 가능합니다.');
                 const inputEl = document.getElementById('loginIdInput');
                 if (inputEl) inputEl.focus();
               } else if (isAdmin) {
@@ -620,7 +667,7 @@ export default function App() {
                 handleGoToMyPage();
               }
             }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-forest-800/90 hover:bg-forest-700 border border-forest-600/60 rounded-lg text-xs font-bold text-luxury-cream transition-all duration-200 hover:scale-[1.02] shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-forest-850 hover:bg-forest-750 border border-forest-700 rounded-lg text-xs font-bold text-luxury-cream transition-all duration-200 hover:scale-[1.02] shadow cursor-pointer"
             title="조향 기록 보관소 이동"
           >
             <ClipboardList className="w-3.5 h-3.5 text-luxury-gold" />
@@ -630,11 +677,11 @@ export default function App() {
           {isLoggedIn && (
             <div className="flex items-center gap-3 border-l border-forest-800 pl-3">
               <span className="text-xs text-forest-300 font-medium">
-                {isAdmin ? '조향사 (Admin)' : `접수번호: ${loginId}`}
+                {isAdmin ? '조향사 (Admin)' : `접수번호: ${getDisplayGuestName(loginId)}`}
               </span>
               <button 
                 onClick={handleLogout}
-                className="px-3 py-1 bg-forest-900 text-forest-200 text-[10px] rounded border border-forest-700 hover:bg-forest-800 transition-colors"
+                className="px-3 py-1 bg-forest-900 text-forest-300 text-[10px] rounded border border-forest-750 hover:bg-forest-800 transition-colors"
               >
                 접수 종료
               </button>
@@ -644,51 +691,88 @@ export default function App() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center py-10 px-4 bg-forest-50/40 print:py-0 print:px-0 print:bg-white">
+      <main className="flex-grow flex items-center justify-center py-10 px-4 bg-forest-950/60 print:py-0 print:px-0 print:bg-white">
         
-        {/* 1단계 이전: 접수 및 접수번호 입력 */}
+        {/* 1단계 이전: 접수 및 접수번호 + 12종 향 선택 */}
         {!isLoggedIn && (
-          <div className="max-w-5xl xl:max-w-6xl w-full grid lg:grid-cols-2 grid-cols-1 gap-8 lg:gap-12 items-center print-exclude">
+          <div className="max-w-5xl xl:max-w-6xl w-full grid lg:grid-cols-12 grid-cols-1 gap-8 items-center print-exclude">
             {/* Visual branding block */}
-            <div className="text-center md:text-left space-y-6 md:pr-6 animate-slide-up">
-              <div className="inline-block px-3 py-1 rounded-full border border-forest-300 text-[11px] font-bold tracking-widest text-forest-700 uppercase bg-forest-100/60">
+            <div className="lg:col-span-5 text-center md:text-left space-y-6 md:pr-4 animate-slide-up">
+              <div className="inline-block px-3 py-1 rounded-full border border-forest-700 text-[11px] font-bold tracking-widest text-luxury-gold uppercase bg-forest-900/80">
                 조향 상담 - 접수
               </div>
-              <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight text-forest-950">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-white">
                 훈민향음<br />
-                <span className="text-forest-700 font-medium text-2xl md:text-3xl font-serif">(訓民香音)</span>
+                <span className="text-luxury-gold font-medium text-2xl md:text-3xl font-serif">(訓民香音)</span>
               </h1>
-              <p className="text-sm md:text-base leading-relaxed text-forest-700 font-medium">
+              <p className="text-sm md:text-base leading-relaxed text-forest-200 font-medium">
                 훈민정음의 조화로움처럼,<br className="hidden md:inline" />
-                조향사와의 대화를 통해 당신의 이름과 세종시의 감성을 하나의 특별한 향으로 완성합니다.
+                당신의 이름과 세종시의 감성을 하나의 특별한 향으로 완성합니다.
               </p>
               
-              <div className="hidden md:flex justify-center md:justify-start pt-4 relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-luxury-gold to-forest-500 rounded-2xl blur opacity-15 group-hover:opacity-25 transition duration-1000 group-hover:duration-200"></div>
+              <div className="hidden md:flex justify-center md:justify-start pt-2 relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-luxury-gold to-forest-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
                 <img 
                   src={perfumeImgUrl} 
                   alt="훈민향음 향수" 
-                  className="relative w-full max-w-lg h-72 md:h-80 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
+                  className="relative w-full max-w-md h-64 md:h-72 object-cover rounded-2xl drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500" 
                 />
               </div>
             </div>
 
-            {/* Reception form block */}
-            <div className="bg-white border border-forest-200 rounded-2xl p-8 shadow-xl flex flex-col justify-center space-y-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-forest-100 to-transparent opacity-60 -z-10 rounded-tr-2xl"></div>
+            {/* Reception form block (Dark Green theme) */}
+            <div className="lg:col-span-7 bg-forest-900/90 border border-forest-750 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col justify-center space-y-5 relative overflow-hidden backdrop-blur-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-forest-800/40 to-transparent opacity-60 -z-10 rounded-tr-2xl"></div>
               
-              <div className="text-center md:text-left space-y-2">
-                <span className="text-[10px] tracking-widest text-forest-600 font-serif uppercase font-bold block">Registration Code</span>
-                <h2 className="font-serif text-2xl font-bold text-forest-950">세종과 이름의 만남 (조향)</h2>
-                <p className="text-xs text-forest-600">
-                  휴대폰 번호 뒷자리 4자리와 원하는 영문 1글자를 조합해 입력해주세요.<br />
-                  (예: 1234a)
+              <div className="text-center md:text-left space-y-1.5">
+                <span className="text-[10px] tracking-widest text-luxury-gold font-serif uppercase font-bold block">Scent Registration</span>
+                <h2 className="font-serif text-2xl font-bold text-white">세종의 향을 담다</h2>
+                <p className="text-xs text-forest-300">
+                  휴대폰 번호 뒷자리 4자리와 마음에 드는 향 1가지를 선택해 접수해 주세요.
                 </p>
               </div>
 
+              {/* 신규 접수 vs 기존 접수자 조회 모드 선택 탭 */}
+              <div className="grid grid-cols-2 gap-2 bg-forest-950 p-1.5 rounded-xl border border-forest-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('new');
+                    setAuthError('');
+                  }}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    authMode === 'new' 
+                      ? 'bg-forest-800 text-luxury-cream shadow border border-forest-650' 
+                      : 'text-forest-400 hover:text-forest-200'
+                  }`}
+                >
+                  <UserPlus className="w-3.5 h-3.5 text-luxury-gold" />
+                  <span>신규 접수</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('existing');
+                    setAuthError('');
+                  }}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    authMode === 'existing' 
+                      ? 'bg-forest-800 text-luxury-cream shadow border border-forest-650' 
+                      : 'text-forest-400 hover:text-forest-200'
+                  }`}
+                >
+                  <UserCheck className="w-3.5 h-3.5 text-luxury-gold" />
+                  <span>기존 접수자 조회</span>
+                </button>
+              </div>
+
               <form onSubmit={handleAuthSubmit} className="space-y-4">
+                {/* 접수번호 4자리 필드 */}
                 <div>
-                  <label className="block text-xs font-bold text-forest-800 mb-1">접수번호 (Receipt No.)</label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-xs font-bold text-forest-200">접수번호 (휴대폰 뒷자리 4자리)</label>
+                    <span className="text-[10px] text-forest-400 font-mono">예: 4440</span>
+                  </div>
                   <input 
                     id="loginIdInput"
                     type="text" 
@@ -698,16 +782,16 @@ export default function App() {
                       setLoginId(e.target.value);
                       if (authError) setAuthError('');
                     }}
-                    placeholder="예: 1234a"
+                    placeholder="예: 4440"
                     disabled={isAuthLoading}
-                    className="w-full px-4 py-3 bg-forest-50/50 border border-forest-300 rounded-lg text-sm text-forest-950 placeholder-forest-400 focus:outline-none focus:border-forest-600 focus:ring-2 focus:ring-forest-500/20 text-center text-lg font-bold tracking-widest transition-all"
+                    className="w-full px-4 py-3 bg-forest-950/90 border border-forest-800 rounded-xl text-sm text-white placeholder-forest-500 focus:outline-none focus:border-forest-500 focus:ring-2 focus:ring-forest-500/20 text-center text-lg font-bold tracking-widest transition-all"
                   />
                 </div>
 
-                {/* 관리자(admin9)일 때 비밀번호 2차 검증 필드 페이드인 */}
+                {/* 관리자(admin9) 2차 비밀번호 필드 */}
                 {isMasterLogin && (
                   <div className="space-y-1 animate-slide-up">
-                    <label className="block text-xs font-bold text-emerald-800 mb-1">관리자 비밀번호 (Password)</label>
+                    <label className="block text-xs font-bold text-emerald-400 mb-1">관리자 비밀번호 (Password)</label>
                     <input 
                       type="password"
                       value={passwordAdmin}
@@ -716,26 +800,71 @@ export default function App() {
                         if (authError) setAuthError('');
                       }}
                       placeholder="관리자 비밀번호 4자리 입력"
-                      className="w-full px-4 py-3 bg-forest-100/50 border border-forest-300 rounded-lg text-sm text-forest-950 focus:outline-none focus:border-forest-600 focus:ring-2 focus:ring-forest-500/20 text-center text-lg font-bold tracking-widest"
+                      className="w-full px-4 py-3 bg-forest-950 border border-emerald-700/60 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 text-center text-lg font-bold tracking-widest"
                     />
                   </div>
                 )}
 
+                {/* 12종 마음에 드는 향 선택 그리드 (3x4 또는 4x3) */}
+                {!isMasterLogin && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-xs font-bold text-forest-200 flex items-center gap-1">
+                        <Heart className="w-3.5 h-3.5 text-luxury-gold" />
+                        <span>마음에 드는 향 1가지 선택 (12종 중 택 1)</span>
+                      </label>
+                      <span className="text-[10px] text-luxury-gold font-semibold">
+                        {selectedFavScentId 
+                          ? `${FAVORITE_SCENT_OPTIONS.find(s => s.id === selectedFavScentId)?.nameKo} 선택됨` 
+                          : '필수 선택'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {FAVORITE_SCENT_OPTIONS.map((option) => {
+                        const isSelected = selectedFavScentId === option.id;
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedFavScentId(option.id);
+                              if (authError) setAuthError('');
+                            }}
+                            className={`p-2.5 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
+                              isSelected 
+                                ? 'bg-forest-800 border-luxury-gold ring-2 ring-luxury-gold/40 shadow-lg text-white' 
+                                : 'bg-forest-950/80 border-forest-800 text-forest-300 hover:border-forest-700 hover:bg-forest-900/60'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-[9px] font-bold text-luxury-gold font-mono uppercase">{option.tag}</span>
+                              {isSelected && <span className="text-[10px] text-luxury-gold font-bold">✓</span>}
+                            </div>
+                            <div className="font-serif text-xs font-bold text-white leading-tight">{option.nameKo}</div>
+                            <div className="text-[9px] text-forest-400 font-mono tracking-tight mt-0.5 truncate">{option.nameEn}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {authError && (
-                  <p className="text-xs text-red-600 font-semibold text-center">{authError}</p>
+                  <p className="text-xs text-red-400 font-semibold text-center bg-red-950/40 p-2 rounded border border-red-900/60">{authError}</p>
                 )}
 
                 <button
                   type="submit"
                   disabled={isAuthLoading}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-forest-800 hover:bg-forest-900 text-luxury-cream font-medium rounded-lg transition-colors shadow-md disabled:opacity-50 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-forest-800 hover:bg-forest-700 border border-forest-650 text-luxury-cream font-medium rounded-xl transition-all shadow-lg active:scale-[0.99] disabled:opacity-50 cursor-pointer"
                 >
                   {isAuthLoading ? (
                     <div className="w-5 h-5 border-2 border-luxury-cream border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 text-luxury-gold" />
-                      <span>조향 여정 시작하기</span>
+                      <span>{authMode === 'new' ? '신규 접수하고 조향 여정 시작' : '기존 접수 정보 조회하기'}</span>
                     </>
                   )}
                 </button>
