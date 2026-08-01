@@ -1094,24 +1094,39 @@ export default function App() {
                     </p>
 
                     <div className="space-y-3 pt-2">
-                      <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-white">
-                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
-                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Top</div>
-                          {recommended1.top.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
+                      {/* 향료 조향 스토리 및 선정 이유 전체 요약 */}
+                      <div className="bg-forest-900/60 p-3.5 rounded-xl border border-forest-800 space-y-1.5 text-left">
+                        <div className="text-[10px] text-luxury-gold font-bold flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-luxury-gold" /> 향료 조향 스토리 & 선정 이유
                         </div>
-                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
-                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Middle</div>
-                          {recommended1.middle.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
+                        <p className="text-xs text-forest-200 leading-relaxed font-sans">
+                          {recommended1.description}
+                        </p>
+                      </div>
+
+                      {/* 노트별 세부 추천 사유 */}
+                      <div className="space-y-2 pt-1 text-left">
+                        <div className="text-[10px] font-bold text-luxury-gold tracking-wider uppercase font-mono">
+                          💡 추천 향료 노트별 선정 이유
                         </div>
-                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
-                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Base</div>
-                          {recommended1.base.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
+                        <div className="space-y-1.5 text-[11px]">
+                          {[...recommended1.top, ...recommended1.middle, ...recommended1.base].map(item => (
+                            <div key={item.note.id} className="bg-forest-900/40 p-2 rounded-lg border border-forest-800/80 flex items-start gap-2">
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-forest-800 text-luxury-gold font-bold font-mono uppercase shrink-0 mt-0.5">
+                                {item.note.type}
+                              </span>
+                              <div className="space-y-0.5">
+                                <span className="font-bold text-white mr-1.5">{item.note.nameKo || item.note.nameEn}</span>
+                                <span className="text-forest-300 text-[10px] block leading-tight">{item.reason}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="text-center">
+                  <div className="text-center pt-2">
                     <button className="w-full py-2.5 rounded-xl text-xs font-bold transition-all bg-forest-800 text-luxury-cream border border-forest-650 hover:bg-forest-700">
                       이 테마로 선택
                     </button>
@@ -1151,18 +1166,33 @@ export default function App() {
                     </p>
 
                     <div className="space-y-3 pt-2">
-                      <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-white">
-                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
-                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Top</div>
-                          {recommended2.top.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
+                      {/* 향료 조향 스토리 및 선정 이유 전체 요약 */}
+                      <div className="bg-forest-900/60 p-3.5 rounded-xl border border-forest-800 space-y-1.5 text-left">
+                        <div className="text-[10px] text-luxury-gold font-bold flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-luxury-gold" /> 향료 조향 스토리 & 선정 이유
                         </div>
-                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
-                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Middle</div>
-                          {recommended2.middle.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
+                        <p className="text-xs text-forest-200 leading-relaxed font-sans">
+                          {recommended2.description}
+                        </p>
+                      </div>
+
+                      {/* 노트별 세부 추천 사유 */}
+                      <div className="space-y-2 pt-1 text-left">
+                        <div className="text-[10px] font-bold text-luxury-gold tracking-wider uppercase font-mono">
+                          💡 추천 향료 노트별 선정 이유
                         </div>
-                        <div className="bg-forest-900/80 p-2.5 rounded-lg border border-forest-800">
-                          <div className="text-[9px] text-luxury-gold uppercase font-mono mb-1 font-bold">Base</div>
-                          {recommended2.base.map(item => item.note.nameKo || item.note.nameEn).join(', ')}
+                        <div className="space-y-1.5 text-[11px]">
+                          {[...recommended2.top, ...recommended2.middle, ...recommended2.base].map(item => (
+                            <div key={item.note.id} className="bg-forest-900/40 p-2 rounded-lg border border-forest-800/80 flex items-start gap-2">
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-forest-800 text-luxury-gold font-bold font-mono uppercase shrink-0 mt-0.5">
+                                {item.note.type}
+                              </span>
+                              <div className="space-y-0.5">
+                                <span className="font-bold text-white mr-1.5">{item.note.nameKo || item.note.nameEn}</span>
+                                <span className="text-forest-300 text-[10px] block leading-tight">{item.reason}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>

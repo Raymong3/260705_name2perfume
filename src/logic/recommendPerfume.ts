@@ -94,9 +94,15 @@ export function recommendSingleRecipe(
       const note = item.note;
       const allTags = [...syllableTags, ...choTags, ...jungTags, ...jongTags, ...lenTags, ...rarityTags, ...bonusTags];
       const matchingTags = note.moodTags.filter(t => allTags.includes(t));
-      const reason = matchingTags.length > 0
-        ? `이름과 취향의 ${matchingTags.slice(0, 2).join(', ')} 분위기와 잘 어울립니다.`
-        : `이름의 전반적인 분위기와 세련되게 어우러집니다.`;
+      
+      let reason = '';
+      if (matchingTags.length > 0) {
+        reason = `이름의 ${matchingTags.slice(0, 2).join(', ')} 무드와 어울려 ${note.description.replace(/\.$/, '')} 효과를 선사합니다.`;
+      } else if (bonusNotes.some(bn => bn.toLowerCase() === note.nameEn.toLowerCase() || bn.toLowerCase() === note.id.toLowerCase())) {
+        reason = `선택하신 명소의 테마 향료로서 ${note.description.replace(/\.$/, '')} 느낌을 더해줍니다.`;
+      } else {
+        reason = `이름의 전체적인 인상과 조화를 이루며 ${note.description.replace(/\.$/, '')} 감성을 완성합니다.`;
+      }
 
       return {
         note,
