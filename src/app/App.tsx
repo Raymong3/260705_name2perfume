@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, ChevronLeft, ArrowRight, Printer, Trash2, LogIn, Shield, Search, CheckCircle, RefreshCw, ClipboardList, CheckSquare, Square, Sliders } from 'lucide-react';
+import { Sparkles, ChevronLeft, ArrowRight, Printer, Trash2, Shield, Search, CheckCircle, RefreshCw, ClipboardList, CheckSquare, Square, Sliders } from 'lucide-react';
 import perfumeImgUrl from '../assets/perfume_hunmin_v3.png';
 import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
@@ -136,14 +136,14 @@ export default function App() {
     }
   };
 
-  // 로그인 및 인증 핸들러
+  // 접수 및 인증 핸들러
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
     const idTrimmed = loginId.trim();
 
     if (!idTrimmed) {
-      setAuthError('로그인 코드를 입력해주세요.');
+      setAuthError('접수번호를 입력해주세요.');
       return;
     }
 
@@ -172,10 +172,10 @@ export default function App() {
       return;
     }
 
-    // 일반 로그인 코드 유효성 검사 (휴대폰 뒷자리 4개 + 영문 1자)
+    // 일반 접수번호 유효성 검사 (휴대폰 뒷자리 4개 + 영문 1자)
     const loginRegEx = /^\d{4}[a-zA-Z]$/;
     if (!loginRegEx.test(idTrimmed)) {
-      setAuthError('휴대폰 뒷자리 4개와 영문 1글자를 입력해주세요. (예: 1234a)');
+      setAuthError('휴대폰 뒷자리 4개와 영문 1글자를 조합하여 입력해주세요. (예: 1234a)');
       return;
     }
 
@@ -183,18 +183,18 @@ export default function App() {
     try {
       const res = await dbLoginGuest(idTrimmed);
       if (!res.success) {
-        setAuthError(res.error || '로그인 인증 실패');
+        setAuthError(res.error || '접수번호 확인 실패');
         setIsAuthLoading(false);
         return;
       }
 
       setIsLoggedIn(true);
       setLoginId(idTrimmed); // Ensure sanitized loginId is saved to state
-      // 로그인 후 즉시 이름 적는 1단계 화면으로 이행
+      // 접수 후 즉시 이름 적는 1단계 화면으로 이행
       setStep('input');
       setGuestNameForRecipe('');
     } catch (err) {
-      setAuthError('로그인 처리 중 에러가 발생했습니다.');
+      setAuthError('접수 처리 중 에러가 발생했습니다.');
     } finally {
       setIsAuthLoading(false);
     }
@@ -274,17 +274,17 @@ export default function App() {
           clearInterval(progressInterval);
           return 100;
         }
-        return prev + 2; // ~2.5초 간 (50ms * 50 = 2500ms) 100%까지 증가
+        return prev + 1; // ~4.0초 간 (40ms * 100 = 4000ms) 100%까지 증가
       });
-    }, 50);
+    }, 40);
 
     const textInterval = setInterval(() => {
       setAnalyzingTextIdx(prev => (prev + 1) % 4);
-    }, 600);
+    }, 1100);
 
     const finishTimeout = setTimeout(() => {
       setStep('result');
-    }, 2600);
+    }, 4500);
 
     return () => {
       clearInterval(progressInterval);
@@ -599,42 +599,66 @@ export default function App() {
     <div className="min-h-screen flex flex-col justify-between selection:bg-forest-100 print:bg-white print:min-h-0">
       
       {/* Header - 인쇄 시 미출력 */}
-      <div className="print-exclude flex justify-between items-center bg-forest-950 px-6 py-4 text-white">
+      <div className="print-exclude flex justify-between items-center bg-forest-950 px-6 py-4 text-white shadow-md border-b border-forest-800/60">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-luxury-gold" />
+          <Sparkles className="w-5 h-5 text-luxury-gold animate-pulse" />
           <span className="font-serif font-bold tracking-[0.15em] text-sm md:text-base">훈민향음 (訓民香音)</span>
         </div>
-        {isLoggedIn && (
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-forest-300 font-medium">
-              {isAdmin ? '조향사 (Admin)' : `로그인 코드 (Login Code): ${loginId}`}
-            </span>
-            <button 
-              onClick={handleLogout}
-              className="px-3 py-1 bg-forest-800 text-luxury-cream text-[10px] rounded hover:bg-forest-700 transition-colors"
-            >
-              로그아웃
-            </button>
-          </div>
-        )}
+        
+        <div className="flex items-center gap-3">
+          {/* 보관소 이동 버튼 - 로그인 여부와 관계없이 항시 노출 */}
+          <button 
+            onClick={() => {
+              if (!isLoggedIn) {
+                alert('접수번호를 입력하신 후 보관소 이용이 가능합니다.');
+                const inputEl = document.getElementById('loginIdInput');
+                if (inputEl) inputEl.focus();
+              } else if (isAdmin) {
+                setStep('mypage');
+                loadAdminRecords();
+              } else {
+                handleGoToMyPage();
+              }
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-forest-800/90 hover:bg-forest-700 border border-forest-600/60 rounded-lg text-xs font-bold text-luxury-cream transition-all duration-200 hover:scale-[1.02] shadow-sm cursor-pointer"
+            title="조향 기록 보관소 이동"
+          >
+            <ClipboardList className="w-3.5 h-3.5 text-luxury-gold" />
+            <span>조향 보관소 이동</span>
+          </button>
+
+          {isLoggedIn && (
+            <div className="flex items-center gap-3 border-l border-forest-800 pl-3">
+              <span className="text-xs text-forest-300 font-medium">
+                {isAdmin ? '조향사 (Admin)' : `접수번호: ${loginId}`}
+              </span>
+              <button 
+                onClick={handleLogout}
+                className="px-3 py-1 bg-forest-900 text-forest-200 text-[10px] rounded border border-forest-700 hover:bg-forest-800 transition-colors"
+              >
+                접수 종료
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center py-10 px-4 bg-luxury-cream/10 print:py-0 print:px-0 print:bg-white">
+      <main className="flex-grow flex items-center justify-center py-10 px-4 bg-forest-50/40 print:py-0 print:px-0 print:bg-white">
         
-        {/* 1단계 이전: 로그인 ID 입력 */}
+        {/* 1단계 이전: 접수 및 접수번호 입력 */}
         {!isLoggedIn && (
           <div className="max-w-5xl xl:max-w-6xl w-full grid lg:grid-cols-2 grid-cols-1 gap-8 lg:gap-12 items-center print-exclude">
             {/* Visual branding block */}
             <div className="text-center md:text-left space-y-6 md:pr-6 animate-slide-up">
-              <div className="inline-block px-3 py-1 rounded-full border border-forest-200 text-[11px] font-semibold tracking-widest text-forest-600 uppercase bg-forest-50/50">
-                조향 상담 - 로그인
+              <div className="inline-block px-3 py-1 rounded-full border border-forest-300 text-[11px] font-bold tracking-widest text-forest-700 uppercase bg-forest-100/60">
+                조향 상담 - 접수
               </div>
               <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight text-forest-950">
                 훈민향음<br />
                 <span className="text-forest-700 font-medium text-2xl md:text-3xl font-serif">(訓民香音)</span>
               </h1>
-              <p className="text-sm md:text-base leading-relaxed text-forest-600 font-medium">
+              <p className="text-sm md:text-base leading-relaxed text-forest-700 font-medium">
                 훈민정음의 조화로움처럼,<br className="hidden md:inline" />
                 조향사와의 대화를 통해 당신의 이름과 세종시의 감성을 하나의 특별한 향으로 완성합니다.
               </p>
@@ -649,14 +673,14 @@ export default function App() {
               </div>
             </div>
 
-            {/* Login form block */}
-            <div className="bg-white border border-luxury-gold/15 rounded-2xl p-8 shadow-xl flex flex-col justify-center space-y-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-forest-50 to-transparent opacity-50 -z-10 rounded-tr-2xl"></div>
+            {/* Reception form block */}
+            <div className="bg-white border border-forest-200 rounded-2xl p-8 shadow-xl flex flex-col justify-center space-y-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-forest-100 to-transparent opacity-60 -z-10 rounded-tr-2xl"></div>
               
               <div className="text-center md:text-left space-y-2">
-                <span className="text-[10px] tracking-widest text-luxury-goldDark font-serif uppercase block">Login Code</span>
-                <h2 className="font-serif text-2xl font-bold text-forest-950">조향 의뢰 로그인</h2>
-                <p className="text-xs text-forest-500">
+                <span className="text-[10px] tracking-widest text-forest-600 font-serif uppercase font-bold block">Registration Code</span>
+                <h2 className="font-serif text-2xl font-bold text-forest-950">세종과 이름의 만남 (조향)</h2>
+                <p className="text-xs text-forest-600">
                   휴대폰 번호 뒷자리 4자리와 원하는 영문 1글자를 조합해 입력해주세요.<br />
                   (예: 1234a)
                 </p>
@@ -664,8 +688,9 @@ export default function App() {
 
               <form onSubmit={handleAuthSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-forest-700 mb-1">로그인 코드 (Login Code)</label>
+                  <label className="block text-xs font-bold text-forest-800 mb-1">접수번호 (Receipt No.)</label>
                   <input 
+                    id="loginIdInput"
                     type="text" 
                     maxLength={10}
                     value={loginId}
@@ -675,14 +700,14 @@ export default function App() {
                     }}
                     placeholder="예: 1234a"
                     disabled={isAuthLoading}
-                    className="w-full px-4 py-3 bg-luxury-cream border border-forest-200 rounded-lg text-sm text-forest-900 placeholder-forest-300 focus:outline-none focus:border-forest-600 focus:ring-1 focus:ring-forest-600 text-center text-lg font-bold tracking-widest"
+                    className="w-full px-4 py-3 bg-forest-50/50 border border-forest-300 rounded-lg text-sm text-forest-950 placeholder-forest-400 focus:outline-none focus:border-forest-600 focus:ring-2 focus:ring-forest-500/20 text-center text-lg font-bold tracking-widest transition-all"
                   />
                 </div>
 
                 {/* 관리자(admin9)일 때 비밀번호 2차 검증 필드 페이드인 */}
                 {isMasterLogin && (
                   <div className="space-y-1 animate-slide-up">
-                    <label className="block text-xs font-bold text-red-700 mb-1">관리자 비밀번호 (Password)</label>
+                    <label className="block text-xs font-bold text-emerald-800 mb-1">관리자 비밀번호 (Password)</label>
                     <input 
                       type="password"
                       value={passwordAdmin}
@@ -691,7 +716,7 @@ export default function App() {
                         if (authError) setAuthError('');
                       }}
                       placeholder="관리자 비밀번호 4자리 입력"
-                      className="w-full px-4 py-3 bg-red-50/30 border border-red-200 rounded-lg text-sm text-red-950 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 text-center text-lg font-bold tracking-widest"
+                      className="w-full px-4 py-3 bg-forest-100/50 border border-forest-300 rounded-lg text-sm text-forest-950 focus:outline-none focus:border-forest-600 focus:ring-2 focus:ring-forest-500/20 text-center text-lg font-bold tracking-widest"
                     />
                   </div>
                 )}
@@ -703,14 +728,14 @@ export default function App() {
                 <button
                   type="submit"
                   disabled={isAuthLoading}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-forest-800 hover:bg-forest-900 text-luxury-cream font-medium rounded-lg transition-colors disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-forest-800 hover:bg-forest-900 text-luxury-cream font-medium rounded-lg transition-colors shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {isAuthLoading ? (
                     <div className="w-5 h-5 border-2 border-luxury-cream border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     <>
-                      <LogIn className="w-4 h-4 text-luxury-gold" />
-                      <span>입장하기</span>
+                      <Sparkles className="w-4 h-4 text-luxury-gold" />
+                      <span>조향 여정 시작하기</span>
                     </>
                   )}
                 </button>
@@ -803,42 +828,42 @@ export default function App() {
 
         {/* 2단계: 세종시의 이야기를 담다 */}
         {step === 'sejong' && isLoggedIn && (
-          <div className="max-w-4xl w-full space-y-8 animate-slide-up print-exclude">
+          <div className="max-w-6xl w-full space-y-8 animate-slide-up print-exclude">
             <div className="text-center space-y-2">
-              <span className="text-xs font-bold tracking-widest text-luxury-goldDark uppercase">Step 02</span>
+              <span className="text-xs font-bold tracking-widest text-forest-700 uppercase bg-forest-100/60 px-3 py-1 rounded-full border border-forest-300 inline-block">Step 02</span>
               <h2 className="font-serif text-3xl font-bold text-forest-950">세종시의 이야기를 담다</h2>
-              <p className="text-sm text-forest-600 max-w-lg mx-auto">
+              <p className="text-sm text-forest-700 max-w-lg mx-auto">
                 이름 '{analysis?.normalizedName}'의 향에 녹여내고 싶은 세종시의 명소 이야기를 하나 선택해 주세요.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {SEJONG_STORIES.map((story) => {
                 const isSelected = selectedStory?.id === story.id;
                 return (
                   <button
                     key={story.id}
                     onClick={() => setSelectedStory(story)}
-                    className={`text-left p-6 rounded-2xl border transition-all duration-300 flex flex-col justify-between h-64 bg-white relative overflow-hidden group hover:shadow-lg ${
+                    className={`text-left p-6 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[250px] bg-white relative overflow-hidden group hover:shadow-xl cursor-pointer ${
                       isSelected 
-                        ? 'border-luxury-gold ring-2 ring-luxury-gold/30 shadow-md' 
-                        : 'border-luxury-gold/15 hover:border-forest-400'
+                        ? 'border-forest-600 ring-2 ring-forest-500/30 shadow-lg bg-forest-50/30' 
+                        : 'border-forest-200 hover:border-forest-500 hover:bg-forest-50/10'
                     }`}
                   >
-                    <div className="absolute -bottom-8 -right-8 w-28 h-28 bg-luxury-cream/30 rounded-full group-hover:scale-110 transition-transform duration-500 -z-10"></div>
+                    <div className="absolute -bottom-8 -right-8 w-28 h-28 bg-forest-100/40 rounded-full group-hover:scale-110 transition-transform duration-500 -z-10"></div>
                     
                     <div className="space-y-3">
                       <div className="flex justify-between items-start">
-                        <span className="font-serif text-xs font-bold text-luxury-goldDark tracking-wider uppercase">
+                        <span className="font-serif text-xs font-bold text-forest-700 tracking-wider uppercase">
                           {story.title}
                         </span>
                         {isSelected && (
-                          <span className="w-5 h-5 rounded-full bg-forest-800 text-white flex items-center justify-center text-[10px] font-bold">
+                          <span className="w-5 h-5 rounded-full bg-forest-800 text-white flex items-center justify-center text-[10px] font-bold shadow">
                             ✓
                           </span>
                         )}
                       </div>
-                      <h3 className="font-serif text-xl font-bold text-forest-900 group-hover:text-forest-950 transition-colors">
+                      <h3 className="font-serif text-lg font-bold text-forest-950 group-hover:text-forest-800 transition-colors">
                         {story.subtitle}
                       </h3>
                       <p className="text-xs text-forest-600 leading-relaxed font-medium line-clamp-4">
@@ -846,7 +871,7 @@ export default function App() {
                       </p>
                     </div>
 
-                    <div className="text-[10px] font-semibold text-forest-400 italic pt-2 border-t border-luxury-sand/50 w-full">
+                    <div className="text-[10px] font-semibold text-forest-500 italic pt-2.5 border-t border-forest-100 w-full mt-3">
                       {story.imageDesc}
                     </div>
                   </button>

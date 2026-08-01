@@ -36,6 +36,24 @@ export const SEJONG_STORIES: SejongStory[] = [
     imageDesc: '은빛 물결이 출렁이는 호숫가와 은은한 햇살 아래 잔잔한 물빛 잔물결',
     bonusTags: ['청량한', '잔잔한', '투명한', '편안한', '감성적인'],
     bonusNotes: ['Aquatic', 'White Musk', 'Muguet']
+  },
+  {
+    id: 'presidential_archives',
+    title: '대통령기록관',
+    subtitle: '역사의 기품과 웅장한 지혜를 간직한 공간',
+    description: '대한민국 대통령의 역사와 기록이 보존된 상징적인 공간처럼, 무게감 있고 품격 있는 목재와 은은한 향나무의 지혜로운 아우라를 전해줍니다.',
+    imageDesc: '고풍스러운 서책과 고요하고 기품 있는 엠버우드 향기의 깊은 아우라',
+    bonusTags: ['기품있는', '웅장한', '품격있는', '깊이있는', '지혜로운'],
+    bonusNotes: ['Sandalwood', 'Amber', 'Cedarwood']
+  },
+  {
+    id: 'hunmin_studio',
+    title: '훈민향음공방',
+    subtitle: '한글의 원리와 향기의 예술이 교차하는 창작 아뜰리에',
+    description: '훈민정음의 독창적인 시그니처 감성과 훈민향음만의 시그니처 향료가 만나 당신만의 독창적이고 섬세한 예술적 향기를 완성합니다.',
+    imageDesc: '조향사의 손길과 훈민정음 한글 조형이 어우러진 시그니처 아뜰리에 공간',
+    bonusTags: ['시그니처', '예술적인', '감성적인', '독창적인', '섬세한'],
+    bonusNotes: ['Green Tea', 'White Musk', 'Bergamot']
   }
 ];
 
