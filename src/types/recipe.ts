@@ -57,6 +57,7 @@ export type FinalRecipe = {
   modifiedNotes: string[];
   perfumeName: string;
   makerMemo: string;
+  guestMemo?: string;
   createdDate: string;
   analysis: NameAnalysis;
   selectedStory: SejongStory | null;

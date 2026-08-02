@@ -43,7 +43,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
             훈민향음
           </h1>
           <p className="text-[7px] text-forest-600 font-serif italic">
-            "세종의 이야기와 당신의 이름이 향으로 이어지다 (총용량 30ml)"
+            "세종의 이야기와 당신의 이름이 향으로 이어지다"
           </p>
         </div>
 
@@ -54,11 +54,8 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
           <div className="flex justify-between items-baseline border-b border-luxury-gold/20 pb-1">
             <div className="space-y-0.5">
               <span className="text-[7px] text-forest-400 font-mono block">CLIENT / PERFUME</span>
-              <span className="font-serif text-sm font-bold text-forest-900">
-                {finalRecipe.guestName} <span className="text-[9px] font-normal text-forest-600">의뢰인</span>
-              </span>
-              <span className="font-serif text-xs font-bold text-luxury-goldDark block">
-                [ {finalRecipe.perfumeName} ]
+              <span className="font-serif text-xs font-bold text-forest-900">
+                {finalRecipe.guestName}(향수명: {finalRecipe.perfumeName})
               </span>
             </div>
             <span className="text-forest-400 font-mono text-[7px] font-semibold">{finalRecipe.createdDate}</span>
@@ -125,11 +122,17 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
 
           </div>
 
-          {/* 조향사의 손길 */}
+          {/* 조향 변경 이력 및 조향사 의견 */}
           <div className="space-y-1.5 py-1">
-            {finalRecipe.addedNotes && finalRecipe.addedNotes.length > 0 && (
-              <div className="text-[7px] text-forest-700 flex flex-wrap gap-x-1 font-semibold bg-luxury-sand/40 p-1.5 rounded border border-luxury-gold/20">
-                <span>[조향 변경]: {finalRecipe.addedNotes.join(', ')}</span>
+            {((finalRecipe.addedNotes && finalRecipe.addedNotes.length > 0) || (finalRecipe.removedNotes && finalRecipe.removedNotes.length > 0)) && (
+              <div className="text-[7px] text-forest-700 space-y-0.5 font-semibold bg-luxury-sand/40 p-1.5 rounded border border-luxury-gold/20">
+                <span className="font-bold text-luxury-goldDark block font-serif">[조향 변경 이력]</span>
+                {finalRecipe.addedNotes && finalRecipe.addedNotes.length > 0 && (
+                  <div>• 추가 향료: {finalRecipe.addedNotes.join(', ')}</div>
+                )}
+                {finalRecipe.removedNotes && finalRecipe.removedNotes.length > 0 && (
+                  <div>• 제거 향료: {finalRecipe.removedNotes.join(', ')}</div>
+                )}
               </div>
             )}
 

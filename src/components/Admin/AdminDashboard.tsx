@@ -227,7 +227,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => onPrintRecord(selectedRecord)}
+                    onClick={() => {
+                      if (selectedRecord.status !== 'completed') {
+                        alert('조향 제작 완료 처리 및 저장 후에 기록서를 인쇄하실 수 있습니다.');
+                        return;
+                      }
+                      onPrintRecord(selectedRecord);
+                    }}
                     className="px-3.5 py-2 bg-forest-800 hover:bg-forest-700 text-luxury-cream border border-forest-650 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <Printer className="w-3.5 h-3.5 text-luxury-gold" />
@@ -370,23 +376,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              {/* 조향사 제작 메모 및 완료 버튼 */}
-              <div className="space-y-3 pt-2">
+              {/* 고객 전달 메모 (읽기 전용) & 조향사 의견 (편집 가능) */}
+              <div className="grid md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-forest-300 font-serif">조향사 메모 (Maker Memo)</label>
+                  <label className="block text-xs font-bold text-forest-300 font-serif">고객 작성 메모 (Read-only)</label>
+                  <div className="w-full px-3 py-2 bg-forest-950/80 border border-forest-850 rounded-xl text-xs text-forest-200 min-h-[46px] flex items-center">
+                    {selectedRecord.makerMemo || selectedRecord.guestMemo || '작성된 고객 메모가 없습니다.'}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-luxury-gold font-serif">조향사 의견 (Perfumer's Touch)</label>
                   <textarea
                     value={adminMemo}
                     onChange={(e) => setAdminMemo(e.target.value)}
-                    placeholder="제작 시 참고사항 및 메모를 입력하세요."
+                    placeholder="조향사의 의견 및 추천 소견을 입력하세요."
                     rows={2}
                     className="w-full px-3 py-2 bg-forest-950 border border-forest-800 rounded-xl text-xs text-white focus:outline-none focus:border-luxury-gold"
                   />
                 </div>
+              </div>
 
                 <button
                   onClick={handleComplete}
                   disabled={isProcessing}
-                  className="w-full py-3.5 bg-forest-800 hover:bg-forest-700 text-luxury-cream border border-forest-650 font-bold text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full py-3.5 bg-forest-800 hover:bg-forest-700 text-luxury-cream border border-forest-650 font-bold text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 font-serif"
                 >
                   {isProcessing ? (
                     <div className="w-5 h-5 border-2 border-luxury-cream border-t-transparent rounded-full animate-spin"></div>
@@ -397,7 +411,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </>
                   )}
                 </button>
-              </div>
 
             </div>
           )}

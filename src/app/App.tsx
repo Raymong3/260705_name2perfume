@@ -36,6 +36,11 @@ export function App() {
   };
 
   const handlePrintRecipe = (recipe: FinalRecipe) => {
+    const isCompleted = recipe.status === 'completed' || !!recipe.makerMemo;
+    if (!isCompleted) {
+      alert('조향 제작 완료 처리 및 저장 후에 기록서를 인쇄하실 수 있습니다.');
+      return;
+    }
     setPrintTargetRecipe(recipe);
     setCurrentMode('print');
   };

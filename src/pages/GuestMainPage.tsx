@@ -101,7 +101,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     if (step === 'analyzing') {
       const interval = setInterval(() => {
         setAnalyzingIdx(prev => (prev + 1) % ANALYZING_MESSAGES.length);
-      }, 1200);
+      }, 1250);
       return () => clearInterval(interval);
     }
   }, [step]);
@@ -223,7 +223,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     setStep('analyzing');
     setTimeout(() => {
       setStep('result');
-    }, 3200);
+    }, 5000);
   };
 
   // Submit Final Custom Recipe

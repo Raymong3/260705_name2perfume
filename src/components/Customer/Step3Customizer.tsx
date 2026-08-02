@@ -364,7 +364,7 @@ export const Step3Customizer: React.FC<Step3CustomizerProps> = ({
           </div>
 
           <div className="bg-forest-950/60 p-4 rounded-xl border border-forest-800 space-y-2">
-            <label className="block text-xs font-bold text-forest-300 font-serif">조향사에게 전달할 메모 (선택사항)</label>
+            <label className="block text-xs font-bold text-forest-300 font-serif">메모 (선택사항)</label>
             <textarea
               value={makerMemo}
               onChange={(e) => setMakerMemo(e.target.value)}
