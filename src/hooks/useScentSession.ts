@@ -104,7 +104,7 @@ export function useScentSession() {
     const recipeData: Partial<FinalRecipe> = {
       selectedType: recipeType,
       originalRecipe: chosenOriginal,
-      perfumeName: perfumeName || `${guestName}의 향`,
+      perfumeName: perfumeName || `${guestName}의 향수`,
       top: customNotes.top,
       middle: customNotes.middle,
       base: customNotes.base,

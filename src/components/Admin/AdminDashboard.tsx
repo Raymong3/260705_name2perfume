@@ -46,8 +46,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   React.useEffect(() => {
     if (selectedRecord) {
-      setAdminMemo(selectedRecord.makerMemo || getDefaultMakerMemo(selectedRecord.selectedType));
-      setAdminPerfumeName(selectedRecord.perfumeName || '');
+      const rawMakerMemo = selectedRecord.makerMemo ? selectedRecord.makerMemo.replace(/^(조향사 의견:|조향사메모:|조향사 메모:)\s*/, '') : '';
+      setAdminMemo(rawMakerMemo || getDefaultMakerMemo(selectedRecord.selectedType));
+      setAdminPerfumeName(selectedRecord.perfumeName || `${selectedRecord.guestName}의 향수`);
     }
   }, [selectedRecord?.id]);
 
@@ -383,8 +384,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="grid md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-forest-300 font-serif">고객 작성 메모 (Read-only)</label>
-                  <div className="w-full px-3 py-2 bg-forest-950/80 border border-forest-850 rounded-xl text-xs text-forest-200 min-h-[46px] flex items-center">
-                    {selectedRecord.makerMemo || selectedRecord.guestMemo || '작성된 고객 메모가 없습니다.'}
+                  <div className="w-full px-3 py-2 bg-forest-950/80 border border-forest-850 rounded-xl text-xs text-forest-200 min-h-[46px] flex items-center whitespace-pre-wrap">
+                    {selectedRecord.guestMemo || (selectedRecord.makerMemo && !selectedRecord.makerMemo.includes('세종') && !selectedRecord.makerMemo.includes('한글') && !selectedRecord.makerMemo.includes('음가') ? selectedRecord.makerMemo : '작성된 고객 메모가 없습니다.')}
                   </div>
                 </div>
 

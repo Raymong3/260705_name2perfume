@@ -181,7 +181,7 @@ export function recommendSingleRecipe(
   const matchScore = calculateMatchScore(distributedTop, distributedMiddle, distributedBase);
 
   const rawRecipe: PerfumeRecipe = {
-    name: analysis.normalizedName,
+    name: `${analysis.normalizedName}의 향수`,
     analysis,
     concept,
     top: distributedTop,

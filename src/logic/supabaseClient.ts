@@ -58,7 +58,7 @@ class LocalScentDB {
       password_pin: loginId, // store loginId in password_pin field
       status: 'submitted',
       selected_type: recipeData.selectedType,
-      perfume_name: recipeData.perfumeName || `${guestName}의 향`,
+      perfume_name: recipeData.perfumeName || `${guestName}의 향수`,
       top: recipeData.top || [],
       middle: recipeData.middle || [],
       base: recipeData.base || [],
