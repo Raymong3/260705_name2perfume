@@ -213,7 +213,7 @@ export async function dbCreateRecord(
     password_pin: loginId, // store loginId in password_pin field
     status: 'submitted',
     selected_type: recipeData.selectedType,
-    perfume_name: recipeData.perfumeName || `${guestName}의 향`,
+    perfume_name: recipeData.perfumeName || `${guestName}의 향수`,
     top: recipeData.top || [],
     middle: recipeData.middle || [],
     base: recipeData.base || [],
@@ -221,6 +221,7 @@ export async function dbCreateRecord(
     removed_notes: recipeData.removedNotes || [],
     modified_notes: recipeData.modifiedNotes || [],
     maker_memo: recipeData.makerMemo || '',
+    guest_memo: recipeData.guestMemo || recipeData.makerMemo || '',
     analysis: recipeData.analysis || null,
     selected_story: recipeData.selectedStory || null,
     survey_answers: recipeData.surveyAnswers || []
@@ -236,6 +237,7 @@ export async function dbCreateRecord(
     if (!data || data.length === 0) throw new Error('의뢰 생성에 실패했습니다.');
 
     const created = data[0];
+    const effectiveGuestMemo = created.guest_memo || recipeData.guestMemo || (created.maker_memo && !created.maker_memo.includes('세종') && !created.maker_memo.includes('한글') && !created.maker_memo.includes('음가') ? created.maker_memo : '');
     return {
       id: created.id,
       guestName: created.guest_name,
@@ -260,6 +262,7 @@ export async function dbCreateRecord(
       modifiedNotes: created.modified_notes,
       perfumeName: created.perfume_name,
       makerMemo: created.maker_memo,
+      guestMemo: effectiveGuestMemo,
       createdDate: formattedDate,
       analysis: created.analysis,
       selectedStory: created.selected_story,
@@ -291,6 +294,7 @@ export async function dbGetRecords(loginId?: string): Promise<FinalRecipe[]> {
     return data.map((r: any) => {
       const today = new Date(r.created_at);
       const formattedDate = `${today.getFullYear()}. ${String(today.getMonth() + 1).padStart(2, '0')}. ${String(today.getDate()).padStart(2, '0')}. ${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
+      const effectiveGuestMemo = r.guest_memo || r.guestMemo || (r.maker_memo && !r.maker_memo.includes('세종') && !r.maker_memo.includes('한글') && !r.maker_memo.includes('음가') ? r.maker_memo : '') || '';
       return {
         id: r.id,
         guestName: r.guest_name,
@@ -315,6 +319,7 @@ export async function dbGetRecords(loginId?: string): Promise<FinalRecipe[]> {
         modifiedNotes: r.modified_notes,
         perfumeName: r.perfume_name,
         makerMemo: r.maker_memo,
+        guestMemo: effectiveGuestMemo,
         createdDate: formattedDate,
         analysis: r.analysis,
         selectedStory: r.selected_story,
@@ -345,6 +350,7 @@ export async function dbCompleteRecord(id: string, updates: Partial<FinalRecipe>
         modified_notes: updates.modifiedNotes,
         perfume_name: updates.perfumeName,
         maker_memo: updates.makerMemo,
+        guest_memo: updates.guestMemo,
         selected_type: updates.selectedType,
         updated_at: new Date().toISOString()
       })

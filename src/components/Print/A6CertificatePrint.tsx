@@ -136,19 +136,29 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
               </div>
             )}
 
-            {finalRecipe.guestMemo && (
-              <div className="space-y-0.5 bg-forest-900/5 p-1.5 rounded border border-luxury-gold/10">
-                <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider font-mono">Client Memo (고객 메모)</span>
-                <p className="text-[8px] leading-normal text-forest-800 font-serif italic">
-                  "{finalRecipe.guestMemo}"
-                </p>
-              </div>
-            )}
+            {(() => {
+              const effectiveGuestMemo = finalRecipe.guestMemo || (finalRecipe.makerMemo && !finalRecipe.makerMemo.includes('세종') && !finalRecipe.makerMemo.includes('한글') && !finalRecipe.makerMemo.includes('음가') ? finalRecipe.makerMemo : '');
+              if (!effectiveGuestMemo) return null;
+              return (
+                <div className="space-y-0.5 bg-forest-900/5 p-1.5 rounded border border-luxury-gold/10">
+                  <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider font-mono">Client Memo (고객 메모)</span>
+                  <p className="text-[8px] leading-normal text-forest-800 font-serif italic">
+                    "{effectiveGuestMemo}"
+                  </p>
+                </div>
+              );
+            })()}
 
             <div className="space-y-0.5">
               <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider font-mono">Perfumer's Touch (조향사 의견)</span>
               <p className="text-[8px] leading-normal text-forest-700 text-justify">
-                {(finalRecipe.makerMemo || getDefaultMakerMemo(finalRecipe.selectedType)).replace(/^(조향사 의견:|조향사메모:|조향사 메모:)\s*/, '')}
+                {(() => {
+                  const effectiveGuestMemo = finalRecipe.guestMemo || (finalRecipe.makerMemo && !finalRecipe.makerMemo.includes('세종') && !finalRecipe.makerMemo.includes('한글') && !finalRecipe.makerMemo.includes('음가') ? finalRecipe.makerMemo : '');
+                  const raw = finalRecipe.makerMemo;
+                  const isPerfumerTouch = raw && raw !== effectiveGuestMemo && (raw.includes('세종') || raw.includes('한글') || raw.includes('음가') || raw.includes('조향'));
+                  const textToUse = isPerfumerTouch ? raw : getDefaultMakerMemo(finalRecipe.selectedType);
+                  return textToUse.replace(/^(조향사 의견:|조향사메모:|조향사 메모:)\s*/, '');
+                })()}
               </p>
             </div>
           </div>

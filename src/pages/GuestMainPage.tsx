@@ -260,7 +260,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       removedNotes,
       modifiedNotes: [],
       perfumeName: perfumeName || `${guestName}의 향수`,
-      makerMemo: '',
+      makerMemo: makerMemo,
       guestMemo: makerMemo,
       createdDate: new Date().toLocaleDateString('ko-KR'),
       analysis: analysis!,
