@@ -907,6 +907,9 @@ export default function App() {
                           : '필수 선택'}
                       </span>
                     </div>
+                    <p className="text-[10.5px] text-forest-300/80 font-medium pl-0.5">
+                      ※ 아래 선택사항은 향료 추천에 영향을 끼치지 않습니다.
+                    </p>
 
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                       {FAVORITE_SCENT_OPTIONS.map((option) => {
