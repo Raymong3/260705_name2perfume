@@ -221,6 +221,9 @@ export function recommendPerfumes(
 
   if (sejongStory) {
     recipe2.concept = `'${nameAnalysis.normalizedName}'의 이름과 세종시의 '${sejongStory.title}' 풍경 및 감성이 어우러져 만들어진 깊이 있는 조화의 향`;
+    recipe2.description = `'${nameAnalysis.normalizedName}'님의 이름 분석 결과에 따른 이미지와, 선택하신 세종시 명소 '${sejongStory.title}'의 감성을 조화롭게 융합하여 선정된 결과입니다.`;
+  } else {
+    recipe2.description = `'${nameAnalysis.normalizedName}'님의 이름 분석 결과에 따른 이미지와 세종시 명소의 감성을 조화롭게 융합하여 선정된 결과입니다.`;
   }
 
   return { recipe1, recipe2 };
