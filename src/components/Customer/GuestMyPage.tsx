@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Printer } from 'lucide-react';
+import { Sparkles, FileText } from 'lucide-react';
 import { FinalRecipe } from '../../types/perfume';
 import { formatLoginIdDisplay } from '../../utils/formatters';
 
@@ -67,7 +67,7 @@ export const GuestMyPage: React.FC<GuestMyPageProps> = ({
                         onClick={() => onViewRecord(rec)}
                         className="px-3 py-1.5 bg-forest-800 text-luxury-cream text-[10px] font-bold rounded-lg hover:bg-forest-700 transition-colors flex items-center gap-1 border border-forest-650 cursor-pointer"
                       >
-                        <Printer className="w-3 h-3 text-luxury-gold" /> 기록서 보기
+                        <FileText className="w-3 h-3 text-luxury-gold" /> 접수상태 보기
                       </button>
                     </div>
                   </div>
