@@ -2014,9 +2014,9 @@ export default function App() {
 
                 {/* 향 스토리 문구 */}
                 <div className="py-1">
-                  <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider mb-0.5">Scent Concept (향의 이야기)</span>
-                  <p className="text-[8px] leading-relaxed text-forest-700 italic font-serif text-justify">
-                    "{finalRecipe.originalRecipe?.concept}"
+                  <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider mb-0.5">Scent Story (향의 이야기)</span>
+                  <p className="text-[8px] leading-relaxed text-forest-700 font-serif text-justify">
+                    {finalRecipe.originalRecipe?.description || finalRecipe.originalRecipe?.concept}
                   </p>
                 </div>
 
@@ -2095,8 +2095,8 @@ export default function App() {
                   <span className="tracking-[0.1em]">© 訓民香音 2026. ALL RIGHTS RESERVED.</span>
                   <div className="flex items-center gap-1 font-serif">
                     <span>조향사 :</span>
-                    <span className="w-5 h-5 border border-forest-300 rounded-full flex items-center justify-center text-[7px] font-bold text-forest-600">
-                      훈민
+                    <span className="px-1.5 py-0.5 border border-forest-300 rounded-full flex items-center justify-center text-[7px] font-bold text-forest-600">
+                      이나경
                     </span>
                   </div>
                 </div>
