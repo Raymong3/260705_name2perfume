@@ -10,14 +10,11 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
 
   const totalNotesCount = (finalRecipe.top?.length || 0) + (finalRecipe.middle?.length || 0) + (finalRecipe.base?.length || 0);
 
-  const calcNoteMl = (ratio: number, count: number): string => {
-    if (!ratio && count > 0) {
-      const equalRatio = 100 / count;
-      const ml = (equalRatio * 0.1).toFixed(1);
-      return `${ml}ml`;
-    }
-    const ml = (ratio * 0.1).toFixed(1);
-    return `${ml}ml`;
+  const calcEqualNoteMl = (count: number): string => {
+    if (count <= 0) return '0ml';
+    const ml = 30 / count;
+    const formatted = ml % 1 === 0 ? ml.toFixed(0) : ml.toFixed(1);
+    return `${formatted}ml`;
   };
 
   const getDefaultMakerMemo = (selectedType: string) => {
@@ -41,12 +38,12 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
 
         {/* 상단 엠블럼 & 헤더 */}
         <div className="text-center space-y-1 pt-1 border-b border-luxury-gold/30 pb-2">
-          <div className="text-[8px] font-mono tracking-[0.2em] text-luxury-goldDark uppercase">HUNMINHYANGEUM RECORD</div>
-          <h1 className="font-serif text-lg font-bold tracking-tight text-forest-900 leading-tight">
-            훈민향음 조향 기록서
+          <div className="text-[8px] font-mono tracking-[0.2em] text-luxury-goldDark uppercase">HUNMINHYANGEUM</div>
+          <h1 className="font-serif text-xl font-bold tracking-tight text-forest-900 leading-tight">
+            훈민향음
           </h1>
           <p className="text-[7px] text-forest-600 font-serif italic">
-            "세종의 이야기와 당신의 이름이 향으로 이어지다"
+            "세종의 이야기와 당신의 이름이 향으로 이어지다 (총용량 30ml)"
           </p>
         </div>
 
@@ -86,7 +83,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
                   <span key={item.note.id} className="text-[8px] font-semibold text-forest-900">
                     {item.note.nameKo || item.note.nameEn}{' '}
                     <span className="font-mono text-[7px] text-luxury-goldDark">
-                      ({calcNoteMl(item.ratio || 0, totalNotesCount)})
+                      ({calcEqualNoteMl(totalNotesCount)})
                     </span>
                   </span>
                 ))}
@@ -102,7 +99,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
                   <span key={item.note.id} className="text-[8px] font-semibold text-forest-900">
                     {item.note.nameKo || item.note.nameEn}{' '}
                     <span className="font-mono text-[7px] text-luxury-goldDark">
-                      ({calcNoteMl(item.ratio || 0, totalNotesCount)})
+                      ({calcEqualNoteMl(totalNotesCount)})
                     </span>
                   </span>
                 ))}
@@ -118,7 +115,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
                   <span key={item.note.id} className="text-[8px] font-semibold text-forest-900">
                     {item.note.nameKo || item.note.nameEn}{' '}
                     <span className="font-mono text-[7px] text-luxury-goldDark">
-                      ({calcNoteMl(item.ratio || 0, totalNotesCount)})
+                      ({calcEqualNoteMl(totalNotesCount)})
                     </span>
                   </span>
                 ))}

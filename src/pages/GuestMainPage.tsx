@@ -8,6 +8,7 @@ import { Step4SubmitCard } from '../components/Customer/Step4SubmitCard';
 import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
 import { SEJONG_STORIES } from '../data/sejongStories';
+import { ScentService } from '../services/scentService';
 
 const ANALYZING_MESSAGES = [
   '한글 이름의 초성, 중성, 종성 음가 파동 분석 중...',
@@ -18,12 +19,13 @@ const ANALYZING_MESSAGES = [
 
 interface GuestMainPageProps {
   onAdminLoginTrigger: (loginId: string) => void;
-  onPrintRecipe: (recipe: FinalRecipe) => void;
+  onPrintRecipe?: (recipe: FinalRecipe) => void;
+  pastRecordsSignal?: number;
 }
 
 export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   onAdminLoginTrigger,
-  onPrintRecipe
+  pastRecordsSignal
 }) => {
   const [loginId, setLoginId] = useState('');
   const [guestName, setGuestName] = useState('');
@@ -45,6 +47,16 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   const [finalRecipe, setFinalRecipe] = useState<FinalRecipe | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [analyzingIdx, setAnalyzingIdx] = useState(0);
+
+  // Trigger past record search mode from header
+  useEffect(() => {
+    if (pastRecordsSignal && pastRecordsSignal > 0) {
+      setAuthMode('search');
+      setStep('login');
+      setIsLoggedIn(false);
+      setAuthError('');
+    }
+  }, [pastRecordsSignal]);
 
   // Rotate analyzing messages
   useEffect(() => {
@@ -69,13 +81,27 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       return;
     }
 
-    if (authMode === 'new' && !selectedFavScentId) {
-      setAuthError('마음에 드는 향 1가지를 선택해 주세요.');
-      return;
-    }
+    if (authMode === 'new') {
+      if (!selectedFavScentId) {
+        setAuthError('마음에 드는 향 1가지를 선택해 주세요.');
+        return;
+      }
+      setIsLoggedIn(true);
+      setStep('step1');
+    } else {
+      setIsAuthLoading(true);
+      const res = await ScentService.getRecords(loginId.trim(), false);
+      setIsAuthLoading(false);
 
-    setIsLoggedIn(true);
-    setStep('step1');
+      if (res.success && res.data && res.data.length > 0) {
+        setFinalRecipe(res.data[0]);
+        setGuestName(res.data[0].guestName || '의뢰인');
+        setIsLoggedIn(true);
+        setStep('submitted');
+      } else {
+        setAuthError('입력하신 식별 번호로 등록된 조향 기록이 없습니다. 번호를 확인해 주세요.');
+      }
+    }
   };
 
   // Name submit -> Go to Step 2 (Sejong story)
@@ -355,7 +381,6 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       {step === 'submitted' && finalRecipe && (
         <Step4SubmitCard
           finalRecipe={finalRecipe}
-          onPrint={() => onPrintRecipe(finalRecipe)}
           onNewSession={handleResetSession}
         />
       )}

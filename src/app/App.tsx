@@ -9,6 +9,7 @@ export function App() {
   const [currentMode, setCurrentMode] = useState<'guest' | 'admin' | 'print'>('guest');
   const [adminLoginId, setAdminLoginId] = useState('');
   const [printTargetRecipe, setPrintTargetRecipe] = useState<FinalRecipe | null>(null);
+  const [pastRecordsSignal, setPastRecordsSignal] = useState(0);
 
   const handleAdminTrigger = (loginId: string) => {
     setAdminLoginId(loginId);
@@ -18,6 +19,11 @@ export function App() {
   const handleExitAdmin = () => {
     setCurrentMode('guest');
     setAdminLoginId('');
+  };
+
+  const handleOpenPastRecords = () => {
+    setCurrentMode('guest');
+    setPastRecordsSignal(prev => prev + 1);
   };
 
   const handlePrintRecipe = (recipe: FinalRecipe) => {
@@ -31,7 +37,7 @@ export function App() {
   return (
     <div className="min-h-screen bg-forest-950 text-luxury-cream flex flex-col font-sans antialiased selection:bg-luxury-gold selection:text-forest-950 relative overflow-x-hidden">
       {/* Header */}
-      <Header />
+      <Header onOpenPastRecords={handleOpenPastRecords} />
 
       {/* Main Container */}
       <main className="flex-1 flex flex-col items-center justify-start p-4 md:p-8 max-w-7xl w-full mx-auto relative z-10">
@@ -41,6 +47,7 @@ export function App() {
           <GuestMainPage
             onAdminLoginTrigger={handleAdminTrigger}
             onPrintRecipe={handlePrintRecipe}
+            pastRecordsSignal={pastRecordsSignal}
           />
         )}
 

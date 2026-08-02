@@ -1,6 +1,11 @@
 import React from 'react';
+import { History } from 'lucide-react';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  onOpenPastRecords?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onOpenPastRecords }) => {
   return (
     <header 
       className="border-b border-[#C9A46C]/10 px-6 sticky top-0 z-40 shadow-lg flex items-center h-[85px] animate-fade-in w-full print:hidden"
@@ -33,8 +38,17 @@ export const Header: React.FC = () => {
         {/* Center: Empty Space for layout elegance */}
         <div className="hidden md:block flex-grow"></div>
 
-        {/* Right Side: Settings hidden as requested */}
+        {/* Right Side: Always visible "과거 조향기록 보기" button */}
         <div className="flex items-center">
+          {onOpenPastRecords && (
+            <button
+              onClick={onOpenPastRecords}
+              className="flex items-center gap-2 px-3.5 py-2 bg-forest-900/90 hover:bg-forest-800 text-luxury-gold border border-luxury-gold/40 rounded-full text-xs font-serif font-bold transition-all shadow-md hover:shadow-luxury-gold/20 cursor-pointer active:scale-95"
+            >
+              <History className="w-4 h-4 text-luxury-gold" />
+              <span>과거 조향기록 보기</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

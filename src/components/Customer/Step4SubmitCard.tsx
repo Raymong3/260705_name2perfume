@@ -1,16 +1,14 @@
 import React from 'react';
-import { Sparkles, Printer, RefreshCw } from 'lucide-react';
+import { Sparkles, RefreshCw } from 'lucide-react';
 import { FinalRecipe } from '../../types/perfume';
 
 interface Step4SubmitCardProps {
   finalRecipe: FinalRecipe;
-  onPrint: () => void;
   onNewSession: () => void;
 }
 
 export const Step4SubmitCard: React.FC<Step4SubmitCardProps> = ({
   finalRecipe,
-  onPrint,
   onNewSession
 }) => {
   return (
@@ -47,20 +45,12 @@ export const Step4SubmitCard: React.FC<Step4SubmitCardProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 pt-2">
-        <button
-          onClick={onPrint}
-          className="flex-1 py-3.5 bg-forest-800 hover:bg-forest-700 text-luxury-cream border border-forest-650 font-bold text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <Printer className="w-4 h-4 text-luxury-gold" />
-          <span>훈민향음 기록서 출력</span>
-        </button>
-
+      <div className="pt-2">
         <button
           onClick={onNewSession}
-          className="py-3.5 px-5 bg-forest-950 hover:bg-forest-900 text-forest-300 hover:text-white border border-forest-800 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full py-4 bg-forest-800 hover:bg-forest-700 text-luxury-cream border border-forest-650 font-bold text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-4 h-4 text-luxury-gold" />
           <span>다른 이름으로 조향하기</span>
         </button>
       </div>
