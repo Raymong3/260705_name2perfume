@@ -8,10 +8,18 @@ import { NOTES } from '../data/notes';
 import { FAVORITE_SCENT_OPTIONS } from '../data/favoriteScents';
 import { dbLoginGuest, dbCreateRecord, dbGetRecords, dbCompleteRecord, dbDeleteRecords } from '../logic/supabaseClient';
 
-// 가나다 오름차순 사전 정렬된 노트 목록
-const SORTED_TOP_NOTES = NOTES.filter(n => n.type === 'top').slice().sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko-KR'));
-const SORTED_MIDDLE_NOTES = NOTES.filter(n => n.type === 'middle').slice().sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko-KR'));
-const SORTED_BASE_NOTES = NOTES.filter(n => n.type === 'base').slice().sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko-KR'));
+// 한국어 가나다 오름차순 사전 정렬 헬퍼 및 노트 목록
+function sortNotesKo(notes: typeof NOTES) {
+  return [...notes].sort((a, b) => {
+    const nameA = a.nameKo || a.nameEn || '';
+    const nameB = b.nameKo || b.nameEn || '';
+    return nameA.localeCompare(nameB, 'ko-KR', { sensitivity: 'base', numeric: true });
+  });
+}
+
+const SORTED_TOP_NOTES = sortNotesKo(NOTES.filter(n => n.type === 'top'));
+const SORTED_MIDDLE_NOTES = sortNotesKo(NOTES.filter(n => n.type === 'middle'));
+const SORTED_BASE_NOTES = sortNotesKo(NOTES.filter(n => n.type === 'base'));
 
 // 향료 비율(Top, Middle, Base)의 합을 전체 동일한 비율로 정규화 조절해주는 헬퍼 함수
 function normalizeRatios(
@@ -119,6 +127,7 @@ export default function App() {
   const [selectedTopToAdd, setSelectedTopToAdd] = useState('');
   const [selectedMiddleToAdd, setSelectedMiddleToAdd] = useState('');
   const [selectedBaseToAdd, setSelectedBaseToAdd] = useState('');
+  const [initialAdminNotes, setInitialAdminNotes] = useState<string[]>([]);
 
   // 최종 확정 레시피
   const [finalRecipe, setFinalRecipe] = useState<FinalRecipe | null>(null);
@@ -427,6 +436,19 @@ export default function App() {
     setGuestMiddle(normalized.middle);
     setGuestBase(normalized.base);
 
+    // 원본 테마 레시피 대비 변경된 향료 도출
+    const origNames = [...targetRecipe.top, ...targetRecipe.middle, ...targetRecipe.base].map(i => i.note.nameKo || i.note.nameEn);
+    const currentNames = [...normalized.top, ...normalized.middle, ...normalized.base].map(i => i.note.nameKo || i.note.nameEn);
+    const guestAdded = currentNames.filter(n => !origNames.includes(n));
+    const guestRemoved = origNames.filter(n => !currentNames.includes(n));
+
+    let autoMsg = '';
+    if (guestAdded.length > 0) autoMsg += `추가: ${guestAdded.join(', ')}`;
+    if (guestRemoved.length > 0) {
+      if (autoMsg) autoMsg += ' / ';
+      autoMsg += `제거: ${guestRemoved.join(', ')}`;
+    }
+
     setIsAuthLoading(true);
     try {
       const mockFinalRecipe: Partial<FinalRecipe> = {
@@ -435,7 +457,12 @@ export default function App() {
         top: normalized.top,
         middle: normalized.middle,
         base: normalized.base,
-        addedNotes: [],
+        originalRecipe: {
+          top: targetRecipe.top,
+          middle: targetRecipe.middle,
+          base: targetRecipe.base
+        },
+        addedNotes: autoMsg ? [autoMsg] : [],
         removedNotes: [],
         modifiedNotes: [],
         makerMemo: '',
@@ -462,20 +489,37 @@ export default function App() {
     setFinalBase(JSON.parse(JSON.stringify(record.base)));
     setFinalPerfumeName(record.perfumeName || record.guestName + '의 향');
     setMakerMemo(record.makerMemo || getDefaultMakerMemo(record.selectedType));
+
+    // 원래 테마 레시피 또는 접수 초기 향료 명칭 스냅샷 저장
+    const origTop = record.originalRecipe?.top || record.top || [];
+    const origMiddle = record.originalRecipe?.middle || record.middle || [];
+    const origBase = record.originalRecipe?.base || record.base || [];
+    const baseNames = [...origTop, ...origMiddle, ...origBase].map(i => i.note.nameKo || i.note.nameEn);
+    setInitialAdminNotes(baseNames);
+
+    if (record.addedNotes && record.addedNotes.length > 0) {
+      setAddedNotesText(record.addedNotes.join(', '));
+    } else {
+      setAddedNotesText('');
+    }
   };
 
-  // 향료 추가/삭제 시 조향 변경 내역 자동 작성 useEffect
+  // 향료 추가/삭제 시 조향 변경 내역 실시간 자동 작성 useEffect
   useEffect(() => {
     if (!selectedRecordForAdmin) return;
+
     const origTop = selectedRecordForAdmin.originalRecipe?.top || selectedRecordForAdmin.top || [];
     const origMiddle = selectedRecordForAdmin.originalRecipe?.middle || selectedRecordForAdmin.middle || [];
     const origBase = selectedRecordForAdmin.originalRecipe?.base || selectedRecordForAdmin.base || [];
 
-    const origNames = [...origTop, ...origMiddle, ...origBase].map(i => i.note.nameKo || i.note.nameEn);
+    const baseNames = initialAdminNotes.length > 0
+      ? initialAdminNotes
+      : [...origTop, ...origMiddle, ...origBase].map(i => i.note.nameKo || i.note.nameEn);
+
     const currentNames = [...finalTop, ...finalMiddle, ...finalBase].map(i => i.note.nameKo || i.note.nameEn);
 
-    const added = currentNames.filter(n => !origNames.includes(n));
-    const removed = origNames.filter(n => !currentNames.includes(n));
+    const added = currentNames.filter(n => !baseNames.includes(n));
+    const removed = baseNames.filter(n => !currentNames.includes(n));
 
     let autoMsg = '';
     if (added.length > 0) autoMsg += `추가: ${added.join(', ')}`;
@@ -483,10 +527,9 @@ export default function App() {
       if (autoMsg) autoMsg += ' / ';
       autoMsg += `제거: ${removed.join(', ')}`;
     }
-    if (!autoMsg) autoMsg = '기본 레시피 유지 (비율 정밀 조정)';
 
     setAddedNotesText(autoMsg);
-  }, [finalTop, finalMiddle, finalBase, selectedRecordForAdmin]);
+  }, [finalTop, finalMiddle, finalBase, selectedRecordForAdmin, initialAdminNotes]);
 
   // 조향사 향료 추가
   const handleAddNote = (category: 'top' | 'middle' | 'base', noteId: string) => {
@@ -1070,8 +1113,7 @@ export default function App() {
               <span className="text-xs font-bold tracking-widest text-luxury-gold uppercase bg-forest-900/80 px-3.5 py-1.5 rounded-full border border-forest-700 inline-block">3단계: 향을 잇다</span>
               <h2 className="font-serif text-3xl font-bold text-white">당신의 향을 다듬다</h2>
               <p className="text-xs text-forest-200">
-                두 가지 추천 테마 중 마음에 드는 안을 선택하고, 하단의 조향 편집기에서 원하는 향료를 자유롭게 조정할 수 있습니다.<br />
-                <span className="text-forest-400 font-medium">(향료 비율은 제출 시 100% 비율로 자동 정규화 조정됩니다)</span>
+                두 가지 추천 테마 중 마음에 드는 안을 선택하고, 하단의 조향 편집기에서 원하는 향료를 자유롭게 조정할 수 있습니다.
               </p>
             </div>
 
