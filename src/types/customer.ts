@@ -1,6 +1,6 @@
 import { FinalRecipe } from './recipe';
 
-export type StepType = 'login' | 'step1' | 'step2' | 'analyzing' | 'result' | 'submitted';
+export type StepType = 'login' | 'mypage' | 'step1' | 'step2' | 'analyzing' | 'result' | 'submitted';
 
 export type SurveyAnswer = {
   questionId: number;

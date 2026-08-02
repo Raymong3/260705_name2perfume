@@ -9,6 +9,7 @@ import { analyzeName } from '../logic/analyzeName';
 import { recommendPerfumes } from '../logic/recommendPerfume';
 import { SEJONG_STORIES } from '../data/sejongStories';
 import { ScentService } from '../services/scentService';
+import { GuestMyPage } from '../components/Customer/GuestMyPage';
 
 const ANALYZING_MESSAGES = [
   '한글 이름의 초성, 중성, 종성 음가 파동 분석 중...',
@@ -66,15 +67,34 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [analyzingIdx, setAnalyzingIdx] = useState(0);
 
+  const [guestRecords, setGuestRecords] = useState<FinalRecipe[]>([]);
+  const [isRecordsLoading, setIsRecordsLoading] = useState(false);
+
   // Trigger past record search mode from header
   useEffect(() => {
     if (pastRecordsSignal && pastRecordsSignal > 0) {
-      setAuthMode('search');
-      setStep('login');
-      setIsLoggedIn(false);
-      setAuthError('');
+      if (isLoggedIn && loginId) {
+        handleLoadRecords(loginId);
+      } else {
+        setAuthMode('search');
+        setStep('login');
+        setIsLoggedIn(false);
+        setAuthError('');
+      }
     }
-  }, [pastRecordsSignal]);
+  }, [pastRecordsSignal, isLoggedIn, loginId]);
+
+  const handleLoadRecords = async (queryId: string) => {
+    setIsRecordsLoading(true);
+    setStep('mypage');
+    const res = await ScentService.getRecords(queryId, false);
+    if (res.success && res.data) {
+      setGuestRecords(res.data);
+    } else {
+      setGuestRecords([]);
+    }
+    setIsRecordsLoading(false);
+  };
 
   // Rotate analyzing messages
   useEffect(() => {
@@ -119,34 +139,52 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     setLoginId(compoundKey);
 
     if (authMode === 'new') {
+      setIsAuthLoading(true);
+      const res = await ScentService.getRecords(compoundKey, false);
+      setIsAuthLoading(false);
+      
+      if (res.success && res.data && res.data.length > 0) {
+        setAuthError('이미 사용 중인 접수 정보입니다. 다른 향을 선택하거나 기존 접수 조회를 이용해 주세요.');
+        return;
+      }
+
       setIsLoggedIn(true);
       setStep('step1');
       onLoginSuccess && onLoginSuccess();
     } else {
       setIsAuthLoading(true);
       const res = await ScentService.getRecords(compoundKey, false);
-      let foundRecord = res.success && res.data && res.data.length > 0 ? res.data[0] : null;
+      let foundRecords = res.success && res.data ? res.data : [];
 
-      if (!foundRecord) {
+      if (foundRecords.length === 0) {
         // Fallback: search by phone digits alone for legacy records
         const resPhone = await ScentService.getRecords(rawPhone, false);
         if (resPhone.success && resPhone.data && resPhone.data.length > 0) {
-          foundRecord = resPhone.data[0];
+          foundRecords = resPhone.data;
         }
       }
 
       setIsAuthLoading(false);
 
-      if (foundRecord) {
-        setFinalRecipe(foundRecord);
-        setGuestName(foundRecord.guestName || '의뢰인');
+      if (foundRecords.length > 0) {
+        setGuestRecords(foundRecords);
+        setGuestName(foundRecords[0].guestName || '의뢰인');
         setIsLoggedIn(true);
-        setStep('submitted');
+        setStep('mypage');
         onLoginSuccess && onLoginSuccess();
       } else {
         setAuthError(`입력하신 정보(뒷자리 ${rawPhone})로 등록된 조향 기록을 찾을 수 없습니다. 휴대폰 번호와 선택 향을 다시 확인해 주세요.`);
       }
     }
+  };
+
+  const handleStartNewJourney = () => {
+    setSelectedStory(null);
+    setRecommended1(null);
+    setRecommended2(null);
+    setGuestNameForRecipe('');
+    setNameError('');
+    setStep('step1');
   };
 
   // Name submit -> Go to Step 2 (Sejong story)
@@ -238,8 +276,8 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       } else {
         // fallback to local recipe
         const localRecipe: FinalRecipe = {
-          id: 'local_' + Date.now(),
           ...recipeData as FinalRecipe,
+          id: 'local_' + Date.now(),
         } as FinalRecipe;
         setFinalRecipe(localRecipe);
         if (onNewRecipe) onNewRecipe(localRecipe);
@@ -247,8 +285,8 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     } catch (e) {
       console.error('[GuestMainPage] create recipe error', e);
       const localRecipe: FinalRecipe = {
-        id: 'local_' + Date.now(),
         ...recipeData as FinalRecipe,
+        id: 'local_' + Date.now(),
       } as FinalRecipe;
       setFinalRecipe(localRecipe);
       if (onNewRecipe) onNewRecipe(localRecipe);
@@ -462,7 +500,21 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       {step === 'submitted' && finalRecipe && (
         <Step4SubmitCard
           finalRecipe={finalRecipe}
-          onNewSession={handleResetSession}
+          onNewSession={handleStartNewJourney}
+        />
+      )}
+
+      {/* 마이페이지: 과거 조향 기록 보관함 */}
+      {step === 'mypage' && isLoggedIn && (
+        <GuestMyPage 
+          loginId={loginId}
+          guestRecords={guestRecords}
+          isRecordsLoading={isRecordsLoading}
+          onStartNewJourney={handleStartNewJourney}
+          onViewRecord={(rec) => {
+            setFinalRecipe(rec);
+            setStep('submitted');
+          }}
         />
       )}
     </div>

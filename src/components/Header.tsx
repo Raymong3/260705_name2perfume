@@ -1,5 +1,5 @@
 import React from 'react';
-import { History, Home } from 'lucide-react';
+import { History } from 'lucide-react';
 
 interface HeaderProps {
   onGoHome?: () => void;

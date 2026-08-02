@@ -7,11 +7,13 @@ import { FinalRecipe } from '../types/perfume';
 interface AdminPageProps {
   onExitAdmin: () => void;
   onPrintRecord: (record: FinalRecipe) => void;
+  refreshTrigger?: number;
 }
 
 export const AdminPage: React.FC<AdminPageProps> = ({
   onExitAdmin,
-  onPrintRecord
+  onPrintRecord,
+  refreshTrigger,
 }) => {
   const {
     isAdminAuthenticated,
@@ -36,7 +38,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     if (isAdminAuthenticated) {
       fetchRecords();
     }
-  }, [isAdminAuthenticated, fetchRecords]);
+  }, [isAdminAuthenticated, fetchRecords, refreshTrigger]);
 
   return (
     <div className="w-full flex flex-col items-center">

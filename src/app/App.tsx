@@ -44,7 +44,7 @@ export function App() {
   };
 
   // Triggered when a new recipe is created by the guest flow
-  const handleNewRecipe = (recipe: FinalRecipe) => {
+  const handleNewRecipe = () => {
     // Increment a trigger to force admin dashboard refresh
     setAdminRefreshTrigger(prev => prev + 1);
   };
@@ -69,6 +69,7 @@ export function App() {
             pastRecordsSignal={pastRecordsSignal}
             resetSignal={resetSignal}
             onLoginSuccess={handleLoginSuccess}
+            onNewRecipe={handleNewRecipe}
           />
         )}
 
@@ -77,6 +78,7 @@ export function App() {
           <AdminPage
             onExitAdmin={handleExitAdmin}
             onPrintRecord={handlePrintRecipe}
+            refreshTrigger={adminRefreshTrigger}
           />
         )}
 
