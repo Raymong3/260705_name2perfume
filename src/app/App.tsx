@@ -131,14 +131,17 @@ export default function App() {
   // 최종 확정 레시피
   const [finalRecipe, setFinalRecipe] = useState<FinalRecipe | null>(null);
 
-  // 사용자 표출용 접수 정보 (숫자 + 향 명칭)
+  // 사용자 표출용 접수 정보 (숫자 + 향 명칭: 예 4440_자스민)
   const getDisplayGuestName = (idStr: string) => {
     if (!idStr) return '';
     const parts = idStr.split('_');
     const num = parts[0];
     const scentId = parts[1];
-    const scentObj = FAVORITE_SCENT_OPTIONS.find(s => s.id === scentId);
-    return scentObj ? `${num} (${scentObj.nameKo})` : num;
+    if (!scentId) return num;
+    const scentObj = FAVORITE_SCENT_OPTIONS.find(
+      s => s.id.toLowerCase() === scentId.toLowerCase() || s.nameEn.toLowerCase() === scentId.toLowerCase()
+    );
+    return scentObj ? `${num}_${scentObj.nameKo}` : idStr;
   };
 
   // 관리자 모드 레코드 목록 실시간 리로딩용
@@ -1267,24 +1270,9 @@ export default function App() {
                     <h4 className="font-serif text-xs font-bold text-luxury-gold pb-1.5 border-b border-forest-800">Top Notes</h4>
                     <div className="space-y-2 min-h-[90px]">
                       {guestTop.map((item, idx) => (
-                        <div key={item.note.id} className="bg-forest-950/80 p-2 rounded border border-forest-800 text-[10px] space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-white">{item.note.nameKo}</span>
-                            <button onClick={() => handleGuestRemoveNote('top', idx)} className="text-red-400 hover:text-red-300">×</button>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <input 
-                              type="range" min="0" max="100" value={item.ratio || 0}
-                              onChange={(e) => handleGuestRatioChange('top', idx, parseInt(e.target.value))}
-                              className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
-                            />
-                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1.5 py-0.5 gap-1">
-                              <span className="font-mono text-[10px] text-luxury-gold font-bold">
-                                {calcNoteMl(item.ratio || 0, guestTop.length + guestMiddle.length + guestBase.length)}
-                              </span>
-                              <span className="text-[9px] font-bold text-forest-400">({item.ratio}%)</span>
-                            </div>
-                          </div>
+                        <div key={item.note.id} className="bg-forest-950/80 p-2.5 rounded-lg border border-forest-800 text-xs flex justify-between items-center">
+                          <span className="font-bold text-white">{item.note.nameKo || item.note.nameEn}</span>
+                          <button onClick={() => handleGuestRemoveNote('top', idx)} className="text-red-400 hover:text-red-300 font-bold px-1 text-sm">×</button>
                         </div>
                       ))}
                     </div>
@@ -1294,9 +1282,11 @@ export default function App() {
                         className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                       >
                         <option value="">탑 향료 추가...</option>
-                        {NOTES.filter(n => n.type === 'top').map(n => (
-                          <option key={n.id} value={n.id}>{n.nameKo}</option>
-                        ))}
+                        {NOTES.filter(n => n.type === 'top')
+                          .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
+                          .map(n => (
+                            <option key={n.id} value={n.id}>{n.nameKo}</option>
+                          ))}
                       </select>
                       <button onClick={() => handleGuestAddNote('top', selectedGuestTopToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                     </div>
@@ -1307,24 +1297,9 @@ export default function App() {
                     <h4 className="font-serif text-xs font-bold text-luxury-gold pb-1.5 border-b border-forest-800">Middle Notes</h4>
                     <div className="space-y-2 min-h-[90px]">
                       {guestMiddle.map((item, idx) => (
-                        <div key={item.note.id} className="bg-forest-950/80 p-2 rounded border border-forest-800 text-[10px] space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-white">{item.note.nameKo}</span>
-                            <button onClick={() => handleGuestRemoveNote('middle', idx)} className="text-red-400 hover:text-red-300">×</button>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <input 
-                              type="range" min="0" max="100" value={item.ratio || 0}
-                              onChange={(e) => handleGuestRatioChange('middle', idx, parseInt(e.target.value))}
-                              className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
-                            />
-                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1.5 py-0.5 gap-1">
-                              <span className="font-mono text-[10px] text-luxury-gold font-bold">
-                                {calcNoteMl(item.ratio || 0, guestTop.length + guestMiddle.length + guestBase.length)}
-                              </span>
-                              <span className="text-[9px] font-bold text-forest-400">({item.ratio}%)</span>
-                            </div>
-                          </div>
+                        <div key={item.note.id} className="bg-forest-950/80 p-2.5 rounded-lg border border-forest-800 text-xs flex justify-between items-center">
+                          <span className="font-bold text-white">{item.note.nameKo || item.note.nameEn}</span>
+                          <button onClick={() => handleGuestRemoveNote('middle', idx)} className="text-red-400 hover:text-red-300 font-bold px-1 text-sm">×</button>
                         </div>
                       ))}
                     </div>
@@ -1334,9 +1309,11 @@ export default function App() {
                         className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                       >
                         <option value="">미들 향료 추가...</option>
-                        {NOTES.filter(n => n.type === 'middle').map(n => (
-                          <option key={n.id} value={n.id}>{n.nameKo}</option>
-                        ))}
+                        {NOTES.filter(n => n.type === 'middle')
+                          .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
+                          .map(n => (
+                            <option key={n.id} value={n.id}>{n.nameKo}</option>
+                          ))}
                       </select>
                       <button onClick={() => handleGuestAddNote('middle', selectedGuestMiddleToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                     </div>
@@ -1347,24 +1324,9 @@ export default function App() {
                     <h4 className="font-serif text-xs font-bold text-luxury-gold pb-1.5 border-b border-forest-800">Base Notes</h4>
                     <div className="space-y-2 min-h-[90px]">
                       {guestBase.map((item, idx) => (
-                        <div key={item.note.id} className="bg-forest-950/80 p-2 rounded border border-forest-800 text-[10px] space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-white">{item.note.nameKo}</span>
-                            <button onClick={() => handleGuestRemoveNote('base', idx)} className="text-red-400 hover:text-red-300">×</button>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <input 
-                              type="range" min="0" max="100" value={item.ratio || 0}
-                              onChange={(e) => handleGuestRatioChange('base', idx, parseInt(e.target.value))}
-                              className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
-                            />
-                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1.5 py-0.5 gap-1">
-                              <span className="font-mono text-[10px] text-luxury-gold font-bold">
-                                {calcNoteMl(item.ratio || 0, guestTop.length + guestMiddle.length + guestBase.length)}
-                              </span>
-                              <span className="text-[9px] font-bold text-forest-400">({item.ratio}%)</span>
-                            </div>
-                          </div>
+                        <div key={item.note.id} className="bg-forest-950/80 p-2.5 rounded-lg border border-forest-800 text-xs flex justify-between items-center">
+                          <span className="font-bold text-white">{item.note.nameKo || item.note.nameEn}</span>
+                          <button onClick={() => handleGuestRemoveNote('base', idx)} className="text-red-400 hover:text-red-300 font-bold px-1 text-sm">×</button>
                         </div>
                       ))}
                     </div>
@@ -1374,9 +1336,11 @@ export default function App() {
                         className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                       >
                         <option value="">베이스 향료 추가...</option>
-                        {NOTES.filter(n => n.type === 'base').map(n => (
-                          <option key={n.id} value={n.id}>{n.nameKo}</option>
-                        ))}
+                        {NOTES.filter(n => n.type === 'base')
+                          .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
+                          .map(n => (
+                            <option key={n.id} value={n.id}>{n.nameKo}</option>
+                          ))}
                       </select>
                       <button onClick={() => handleGuestAddNote('base', selectedGuestBaseToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                     </div>
@@ -1393,7 +1357,7 @@ export default function App() {
                     </span>
                   </div>
                   <div className="font-mono text-xs font-bold text-luxury-gold bg-forest-900 px-3 py-1.5 rounded-lg border border-forest-800">
-                    투입 용량: {Math.round((([...guestTop, ...guestMiddle, ...guestBase].reduce((s, i) => s + (i.ratio || 0), 0)) / 100) * 30)}ml / 30ml
+                    선택된 향료: 총 {guestTop.length + guestMiddle.length + guestBase.length}개 (30ml 용기 기준)
                   </div>
                 </div>
 
@@ -1768,7 +1732,7 @@ export default function App() {
                                 className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                               />
                               <span className="font-mono text-[9px] text-luxury-gold font-bold">
-                                {calcNoteMl(item.ratio || 0, finalTop.length + finalMiddle.length + finalBase.length)} ({item.ratio}%)
+                                {calcNoteMl(item.ratio || 0, finalTop.length + finalMiddle.length + finalBase.length)}
                               </span>
                             </div>
                           </div>
@@ -1780,9 +1744,11 @@ export default function App() {
                           className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                         >
                           <option value="">탑 향료 추가...</option>
-                          {NOTES.filter(n => n.type === 'top').map(n => (
-                            <option key={n.id} value={n.id}>{n.nameKo}</option>
-                          ))}
+                          {NOTES.filter(n => n.type === 'top')
+                            .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
+                            .map(n => (
+                              <option key={n.id} value={n.id}>{n.nameKo}</option>
+                            ))}
                         </select>
                         <button onClick={() => handleAddNote('top', selectedTopToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                       </div>
@@ -1805,7 +1771,7 @@ export default function App() {
                                 className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                               />
                               <span className="font-mono text-[9px] text-luxury-gold font-bold">
-                                {calcNoteMl(item.ratio || 0, finalTop.length + finalMiddle.length + finalBase.length)} ({item.ratio}%)
+                                {calcNoteMl(item.ratio || 0, finalTop.length + finalMiddle.length + finalBase.length)}
                               </span>
                             </div>
                           </div>
@@ -1817,9 +1783,11 @@ export default function App() {
                           className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                         >
                           <option value="">미들 향료 추가...</option>
-                          {NOTES.filter(n => n.type === 'middle').map(n => (
-                            <option key={n.id} value={n.id}>{n.nameKo}</option>
-                          ))}
+                          {NOTES.filter(n => n.type === 'middle')
+                            .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
+                            .map(n => (
+                              <option key={n.id} value={n.id}>{n.nameKo}</option>
+                            ))}
                         </select>
                         <button onClick={() => handleAddNote('middle', selectedMiddleToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                       </div>
@@ -1842,7 +1810,7 @@ export default function App() {
                                 className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                               />
                               <span className="font-mono text-[9px] text-luxury-gold font-bold">
-                                {calcNoteMl(item.ratio || 0, finalTop.length + finalMiddle.length + finalBase.length)} ({item.ratio}%)
+                                {calcNoteMl(item.ratio || 0, finalTop.length + finalMiddle.length + finalBase.length)}
                               </span>
                             </div>
                           </div>
@@ -1854,9 +1822,11 @@ export default function App() {
                           className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                         >
                           <option value="">베이스 향료 추가...</option>
-                          {NOTES.filter(n => n.type === 'base').map(n => (
-                            <option key={n.id} value={n.id}>{n.nameKo}</option>
-                          ))}
+                          {NOTES.filter(n => n.type === 'base')
+                            .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
+                            .map(n => (
+                              <option key={n.id} value={n.id}>{n.nameKo}</option>
+                            ))}
                         </select>
                         <button onClick={() => handleAddNote('base', selectedBaseToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                       </div>
@@ -1872,8 +1842,8 @@ export default function App() {
                         * 30ml 투입 기준: 향료 5개 시 각 6ml, 6개 시 각 5ml씩 투입
                       </span>
                     </div>
-                    <span className={`font-bold font-mono text-sm ${currentTotalRatio === 100 ? 'text-green-400' : 'text-luxury-gold'}`}>
-                      {Math.round(((currentTotalRatio || 0) / 100) * 30)}ml / 30ml ({currentTotalRatio}%)
+                    <span className="font-bold font-mono text-sm text-luxury-gold">
+                      {Math.round(((currentTotalRatio || 0) / 100) * 30)}ml / 30ml
                     </span>
                   </div>
 
