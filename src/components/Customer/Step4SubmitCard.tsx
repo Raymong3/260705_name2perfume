@@ -18,7 +18,7 @@ export const Step4SubmitCard: React.FC<Step4SubmitCardProps> = ({
           <Sparkles className="w-7 h-7" />
         </div>
         <span className="text-[11px] font-bold text-luxury-gold uppercase tracking-widest bg-forest-950 px-3 py-1 rounded-full border border-forest-800 inline-block">
-          접수 완료 (Submitted)
+          조향 의뢰 접수 완료
         </span>
         <h2 className="font-serif text-2xl md:text-3xl font-bold text-white">
           {finalRecipe.guestName}님의 조향 의뢰가 정상 접수되었습니다

@@ -23,8 +23,8 @@ export const GuestMyPage: React.FC<GuestMyPageProps> = ({
       <div className="bg-forest-900/90 border border-forest-750 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6 backdrop-blur-lg">
         
         <div className="text-center space-y-1.5 border-b border-forest-800 pb-4">
-          <span className="text-[10px] tracking-widest text-luxury-gold font-serif uppercase font-bold">Guest Portal</span>
-          <h2 className="font-serif text-2xl font-bold text-white">조향 기록 보관함</h2>
+          <span className="text-[10px] tracking-widest text-luxury-gold font-serif uppercase font-bold">Fragrance Archive</span>
+          <h2 className="font-serif text-2xl font-bold text-white">조향기록서 보관함</h2>
           <p className="text-xs text-forest-300 font-medium">
             본인 로그인 계정 <span className="font-bold text-luxury-gold">{formatLoginIdDisplay(loginId)}</span>으로 생성된 향 조향 내역입니다.
           </p>
@@ -32,7 +32,7 @@ export const GuestMyPage: React.FC<GuestMyPageProps> = ({
 
         {/* 과거 조향 기록 목록 */}
         <div className="space-y-3">
-          <h3 className="text-xs font-bold text-luxury-gold uppercase tracking-wider">나의 조향 기록 목록</h3>
+          <h3 className="text-xs font-bold text-luxury-gold uppercase tracking-wider">나의 조향기록서 목록</h3>
           
           {isRecordsLoading ? (
             <div className="text-center py-8 text-xs text-forest-400">상담 이력을 불러오는 중입니다...</div>
@@ -47,9 +47,9 @@ export const GuestMyPage: React.FC<GuestMyPageProps> = ({
                 return (
                   <div key={rec.id} className="flex justify-between items-center p-3.5 bg-forest-950/80 border border-forest-800 rounded-xl hover:border-forest-650 transition-all">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-white">{rec.guestName}</span>
-                        <span className="text-[10px] text-luxury-gold font-serif">({rec.perfumeName})</span>
+                        <span className="text-[10px] text-luxury-gold font-serif">(향수명: {rec.perfumeName})</span>
                       </div>
                       <div className="flex gap-2 text-[9px] text-forest-400 font-mono">
                         <span>{rec.createdDate}</span>

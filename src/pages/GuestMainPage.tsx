@@ -318,9 +318,9 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
         <div className="max-w-xl w-full bg-forest-900/90 border border-forest-750 rounded-3xl p-8 md:p-10 shadow-2xl space-y-6 animate-fade-in print-exclude backdrop-blur-lg my-auto">
           <div className="text-center space-y-2">
             <span className="text-[11px] font-bold text-luxury-gold uppercase tracking-widest bg-forest-950 px-3 py-1 rounded-full border border-forest-800 inline-block">
-              HUNMIN PERFUME SESSION
+              HUNMIN SCENT ATELIER
             </span>
-            <h2 className="font-serif text-3xl font-bold text-white">훈민향음 조향 여정 시작</h2>
+            <h2 className="font-serif text-3xl font-bold text-white">훈민향음 조향 여정</h2>
             <p className="text-xs text-forest-300">
               세종의 이야기와 나만의 이름이 만나는 특별한 시그니처 향수 조향 서비스입니다.
             </p>
@@ -338,7 +338,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
                 authMode === 'new' ? 'bg-forest-800 text-luxury-gold shadow-md' : 'text-forest-400 hover:text-white'
               }`}
             >
-              신규 조향 접수하기
+              신규 조향 접수
             </button>
             <button
               type="button"
@@ -350,7 +350,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
                 authMode === 'search' ? 'bg-forest-800 text-luxury-gold shadow-md' : 'text-forest-400 hover:text-white'
               }`}
             >
-              기존 조향 기록 조회
+              조향기록서 보관함
             </button>
           </div>
 
@@ -397,7 +397,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
               className="w-full py-3.5 bg-forest-800 hover:bg-forest-700 text-luxury-cream border border-forest-650 font-bold text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4 text-luxury-gold" />
-              <span>{authMode === 'new' ? '신규 접수하고 조향 여정 시작' : '기존 접수 정보 조회하기'}</span>
+              <span>{authMode === 'new' ? '신규 접수하고 조향 여정 시작' : '조향기록서 조회하기'}</span>
             </button>
           </form>
         </div>
