@@ -46,6 +46,24 @@ function normalizeRatios(
   return { top: newTop, middle: newMiddle, base: newBase };
 }
 
+// 30ml 기준 용량 계산 헬퍼 함수 (5개 시 각 6ml, 6개 시 각 5ml)
+function calcNoteMl(ratio: number, totalCount: number): string {
+  if (totalCount <= 0) return '0ml';
+  const rawMl = ((ratio || 0) / 100) * 30;
+  const rounded = Math.round(rawMl * 10) / 10;
+  return Number.isInteger(rounded) ? `${rounded}ml` : `${rounded.toFixed(1)}ml`;
+}
+
+const DEFAULT_MAKER_MEMO_THEME1 = "이름의 자음모음과 형태소를 분석하여 오직 당신만을 위해 설계된 향입니다. 이름이 지닌 본연의 아름다움과 깊이가 당신의 일상에 은은하게 머물기를 바랍니다.";
+const DEFAULT_MAKER_MEMO_THEME2 = "이름 분석 결과와 세종 명소의 정취 및 이야기를 한데 담아 조향하였습니다. 세종의 은은한 향기가 당신의 매일을 아름답게 밝혀주기를 바랍니다.";
+
+function getDefaultMakerMemo(selectedType?: string): string {
+  if (selectedType === 'name_sejong') {
+    return DEFAULT_MAKER_MEMO_THEME2;
+  }
+  return DEFAULT_MAKER_MEMO_THEME1;
+}
+
 export default function App() {
   // 전체 플로우 상태: 'input' | 'mypage' | 'sejong' | 'analyzing' | 'result' | 'submit_done' | 'record'
   const [step, setStep] = useState<'input' | 'mypage' | 'sejong' | 'analyzing' | 'result' | 'submit_done' | 'record'>('input');
@@ -104,8 +122,6 @@ export default function App() {
   const [finalMiddle, setFinalMiddle] = useState<RecommendedNote[]>([]);
   const [finalBase, setFinalBase] = useState<RecommendedNote[]>([]);
   const [addedNotesText, setAddedNotesText] = useState('');
-  const [removedNotesText, setRemovedNotesText] = useState('');
-  const [modifiedNotesText, setModifiedNotesText] = useState('');
   const [makerMemo, setMakerMemo] = useState('');
   const [finalPerfumeName, setFinalPerfumeName] = useState('');
   const [selectedTopToAdd, setSelectedTopToAdd] = useState('');
@@ -466,11 +482,32 @@ export default function App() {
     setFinalMiddle(JSON.parse(JSON.stringify(record.middle)));
     setFinalBase(JSON.parse(JSON.stringify(record.base)));
     setFinalPerfumeName(record.perfumeName || record.guestName + '의 향');
-    setAddedNotesText(record.addedNotes?.join(', ') || '');
-    setRemovedNotesText(record.removedNotes?.join(', ') || '');
-    setModifiedNotesText(record.modifiedNotes?.join(', ') || '');
-    setMakerMemo(record.makerMemo || '');
+    setMakerMemo(record.makerMemo || getDefaultMakerMemo(record.selectedType));
   };
+
+  // 향료 추가/삭제 시 조향 변경 내역 자동 작성 useEffect
+  useEffect(() => {
+    if (!selectedRecordForAdmin) return;
+    const origTop = selectedRecordForAdmin.originalRecipe?.top || selectedRecordForAdmin.top || [];
+    const origMiddle = selectedRecordForAdmin.originalRecipe?.middle || selectedRecordForAdmin.middle || [];
+    const origBase = selectedRecordForAdmin.originalRecipe?.base || selectedRecordForAdmin.base || [];
+
+    const origNames = [...origTop, ...origMiddle, ...origBase].map(i => i.note.nameKo || i.note.nameEn);
+    const currentNames = [...finalTop, ...finalMiddle, ...finalBase].map(i => i.note.nameKo || i.note.nameEn);
+
+    const added = currentNames.filter(n => !origNames.includes(n));
+    const removed = origNames.filter(n => !currentNames.includes(n));
+
+    let autoMsg = '';
+    if (added.length > 0) autoMsg += `추가: ${added.join(', ')}`;
+    if (removed.length > 0) {
+      if (autoMsg) autoMsg += ' / ';
+      autoMsg += `제거: ${removed.join(', ')}`;
+    }
+    if (!autoMsg) autoMsg = '기본 레시피 유지 (비율 정밀 조정)';
+
+    setAddedNotesText(autoMsg);
+  }, [finalTop, finalMiddle, finalBase, selectedRecordForAdmin]);
 
   // 조향사 향료 추가
   const handleAddNote = (category: 'top' | 'middle' | 'base', noteId: string) => {
@@ -542,11 +579,11 @@ export default function App() {
         top: normalized.top,
         middle: normalized.middle,
         base: normalized.base,
-        addedNotes: addedNotesText.split(',').map(s => s.trim()).filter(Boolean),
-        removedNotes: removedNotesText.split(',').map(s => s.trim()).filter(Boolean),
-        modifiedNotes: modifiedNotesText.split(',').map(s => s.trim()).filter(Boolean),
+        addedNotes: addedNotesText ? [addedNotesText] : [],
+        removedNotes: [],
+        modifiedNotes: [],
         perfumeName: finalPerfumeName.trim(),
-        makerMemo: makerMemo.trim(),
+        makerMemo: makerMemo.trim() || getDefaultMakerMemo(selectedRecordForAdmin.selectedType),
         selectedType: selectedRecordForAdmin.selectedType
       };
 
@@ -1241,13 +1278,11 @@ export default function App() {
                               onChange={(e) => handleGuestRatioChange('top', idx, parseInt(e.target.value))}
                               className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                             />
-                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1 py-0.5">
-                              <input 
-                                type="number" min="0" max="100" value={item.ratio ?? 0}
-                                onChange={(e) => handleGuestRatioChange('top', idx, parseInt(e.target.value))}
-                                className="w-8 text-right font-mono text-[10px] bg-transparent text-luxury-gold font-bold focus:outline-none"
-                              />
-                              <span className="text-[9px] font-bold text-forest-400 ml-0.5">%</span>
+                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1.5 py-0.5 gap-1">
+                              <span className="font-mono text-[10px] text-luxury-gold font-bold">
+                                {calcNoteMl(item.ratio || 0, guestTop.length + guestMiddle.length + guestBase.length)}
+                              </span>
+                              <span className="text-[9px] font-bold text-forest-400">({item.ratio}%)</span>
                             </div>
                           </div>
                         </div>
@@ -1283,13 +1318,11 @@ export default function App() {
                               onChange={(e) => handleGuestRatioChange('middle', idx, parseInt(e.target.value))}
                               className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                             />
-                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1 py-0.5">
-                              <input 
-                                type="number" min="0" max="100" value={item.ratio ?? 0}
-                                onChange={(e) => handleGuestRatioChange('middle', idx, parseInt(e.target.value))}
-                                className="w-8 text-right font-mono text-[10px] bg-transparent text-luxury-gold font-bold focus:outline-none"
-                              />
-                              <span className="text-[9px] font-bold text-forest-400 ml-0.5">%</span>
+                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1.5 py-0.5 gap-1">
+                              <span className="font-mono text-[10px] text-luxury-gold font-bold">
+                                {calcNoteMl(item.ratio || 0, guestTop.length + guestMiddle.length + guestBase.length)}
+                              </span>
+                              <span className="text-[9px] font-bold text-forest-400">({item.ratio}%)</span>
                             </div>
                           </div>
                         </div>
@@ -1325,13 +1358,11 @@ export default function App() {
                               onChange={(e) => handleGuestRatioChange('base', idx, parseInt(e.target.value))}
                               className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                             />
-                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1 py-0.5">
-                              <input 
-                                type="number" min="0" max="100" value={item.ratio ?? 0}
-                                onChange={(e) => handleGuestRatioChange('base', idx, parseInt(e.target.value))}
-                                className="w-8 text-right font-mono text-[10px] bg-transparent text-luxury-gold font-bold focus:outline-none"
-                              />
-                              <span className="text-[9px] font-bold text-forest-400 ml-0.5">%</span>
+                            <div className="flex items-center bg-forest-900 border border-forest-800 rounded px-1.5 py-0.5 gap-1">
+                              <span className="font-mono text-[10px] text-luxury-gold font-bold">
+                                {calcNoteMl(item.ratio || 0, guestTop.length + guestMiddle.length + guestBase.length)}
+                              </span>
+                              <span className="text-[9px] font-bold text-forest-400">({item.ratio}%)</span>
                             </div>
                           </div>
                         </div>
@@ -1351,6 +1382,19 @@ export default function App() {
                     </div>
                   </div>
 
+                </div>
+
+                {/* 30ml 기준 용량 안내 트래커 */}
+                <div className="flex flex-col md:flex-row justify-between items-center bg-forest-950/80 p-3.5 rounded-xl border border-forest-800 text-xs text-forest-200 gap-2">
+                  <div className="space-y-0.5 text-left">
+                    <span className="font-bold text-white block">용량 안내 (총 30ml 용기 기준)</span>
+                    <span className="text-[11px] text-forest-300">
+                      * 30ml 기준: 향료 5개 선택 시 각 6ml, 6개 선택 시 각 5ml씩 투입하여 조향합니다.
+                    </span>
+                  </div>
+                  <div className="font-mono text-xs font-bold text-luxury-gold bg-forest-900 px-3 py-1.5 rounded-lg border border-forest-800">
+                    투입 용량: {Math.round((([...guestTop, ...guestMiddle, ...guestBase].reduce((s, i) => s + (i.ratio || 0), 0)) / 100) * 30)}ml / 30ml
+                  </div>
                 </div>
 
                 {/* 최종 의뢰 제출 */}
@@ -1649,7 +1693,7 @@ export default function App() {
                               <div>
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-[10px] font-bold text-forest-900">{r.guestName}</span>
-                                  <span className="text-[9px] text-forest-500 font-mono">({r.loginId})</span>
+                                  <span className="text-[9px] text-forest-500 font-mono">({getDisplayGuestName(r.loginId)})</span>
                                   {recordStatus === 'completed' ? (
                                     <span className="px-1.5 py-0.2 bg-green-50 border border-green-200 text-green-700 text-[8px] font-bold rounded">완료</span>
                                   ) : (
@@ -1689,7 +1733,7 @@ export default function App() {
                       <span className="text-[10px] text-luxury-gold font-bold uppercase tracking-widest font-mono">Formulation (조향 상담 의뢰)</span>
                       <h3 className="font-serif text-xl font-bold text-white">
                         이름: {selectedRecordForAdmin.guestName} 님{' '}
-                        <span className="text-xs font-mono text-luxury-gold">({selectedRecordForAdmin.loginId})</span>
+                        <span className="text-xs font-mono text-luxury-gold">({getDisplayGuestName(selectedRecordForAdmin.loginId)})</span>
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1723,7 +1767,9 @@ export default function App() {
                                 onChange={(e) => handleRatioChange('top', idx, parseInt(e.target.value))}
                                 className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                               />
-                              <span className="font-mono text-[9px] text-luxury-gold">{item.ratio}%</span>
+                              <span className="font-mono text-[9px] text-luxury-gold font-bold">
+                                {calcNoteMl(item.ratio || 0, finalTop.length + finalMiddle.length + finalBase.length)} ({item.ratio}%)
+                              </span>
                             </div>
                           </div>
                         ))}
@@ -1758,7 +1804,9 @@ export default function App() {
                                 onChange={(e) => handleRatioChange('middle', idx, parseInt(e.target.value))}
                                 className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                               />
-                              <span className="font-mono text-[9px] text-luxury-gold">{item.ratio}%</span>
+                              <span className="font-mono text-[9px] text-luxury-gold font-bold">
+                                {calcNoteMl(item.ratio || 0, finalTop.length + finalMiddle.length + finalBase.length)} ({item.ratio}%)
+                              </span>
                             </div>
                           </div>
                         ))}
@@ -1793,7 +1841,9 @@ export default function App() {
                                 onChange={(e) => handleRatioChange('base', idx, parseInt(e.target.value))}
                                 className="flex-grow accent-luxury-gold h-0.5 bg-forest-850 appearance-none cursor-pointer"
                               />
-                              <span className="font-mono text-[9px] text-luxury-gold">{item.ratio}%</span>
+                              <span className="font-mono text-[9px] text-luxury-gold font-bold">
+                                {calcNoteMl(item.ratio || 0, finalTop.length + finalMiddle.length + finalBase.length)} ({item.ratio}%)
+                              </span>
                             </div>
                           </div>
                         ))}
@@ -1814,11 +1864,16 @@ export default function App() {
 
                   </div>
 
-                  {/* 비율 총합 트래커 */}
-                  <div className="flex justify-between items-center bg-forest-900/50 p-3 rounded-lg text-xs">
-                    <span>비율 합계 (100% 필수)</span>
-                    <span className={`font-bold font-mono ${currentTotalRatio === 100 ? 'text-green-400' : 'text-luxury-gold'}`}>
-                      {currentTotalRatio}%
+                  {/* 용량 및 비율 총합 트래커 */}
+                  <div className="flex flex-col md:flex-row justify-between items-center bg-forest-900/50 p-3 rounded-lg text-xs gap-2">
+                    <div className="space-y-0.5 text-left">
+                      <span className="font-bold text-white block">용량 합계 (총 30ml 용기 기준)</span>
+                      <span className="text-[10px] text-forest-300 font-sans">
+                        * 30ml 투입 기준: 향료 5개 시 각 6ml, 6개 시 각 5ml씩 투입
+                      </span>
+                    </div>
+                    <span className={`font-bold font-mono text-sm ${currentTotalRatio === 100 ? 'text-green-400' : 'text-luxury-gold'}`}>
+                      {Math.round(((currentTotalRatio || 0) / 100) * 30)}ml / 30ml ({currentTotalRatio}%)
                     </span>
                   </div>
 
@@ -1956,7 +2011,10 @@ export default function App() {
                     <div className="col-span-3 flex flex-wrap gap-x-2 gap-y-0.5">
                       {finalRecipe.top.map(item => (
                         <span key={item.note.id} className="text-[8px] font-semibold text-forest-900">
-                          {item.note.nameKo || item.note.nameEn} <span className="font-mono text-[7px] text-luxury-goldDark">({item.ratio}%)</span>
+                          {item.note.nameKo || item.note.nameEn}{' '}
+                          <span className="font-mono text-[7px] text-luxury-goldDark">
+                            ({calcNoteMl(item.ratio || 0, finalRecipe.top.length + finalRecipe.middle.length + finalRecipe.base.length)})
+                          </span>
                         </span>
                       ))}
                       {finalRecipe.top.length === 0 && <span className="text-[8px] text-forest-300">-</span>}
@@ -1969,7 +2027,10 @@ export default function App() {
                     <div className="col-span-3 flex flex-wrap gap-x-2 gap-y-0.5">
                       {finalRecipe.middle.map(item => (
                         <span key={item.note.id} className="text-[8px] font-semibold text-forest-900">
-                          {item.note.nameKo || item.note.nameEn} <span className="font-mono text-[7px] text-luxury-goldDark">({item.ratio}%)</span>
+                          {item.note.nameKo || item.note.nameEn}{' '}
+                          <span className="font-mono text-[7px] text-luxury-goldDark">
+                            ({calcNoteMl(item.ratio || 0, finalRecipe.top.length + finalRecipe.middle.length + finalRecipe.base.length)})
+                          </span>
                         </span>
                       ))}
                       {finalRecipe.middle.length === 0 && <span className="text-[8px] text-forest-300">-</span>}
@@ -1982,7 +2043,10 @@ export default function App() {
                     <div className="col-span-3 flex flex-wrap gap-x-2 gap-y-0.5">
                       {finalRecipe.base.map(item => (
                         <span key={item.note.id} className="text-[8px] font-semibold text-forest-900">
-                          {item.note.nameKo || item.note.nameEn} <span className="font-mono text-[7px] text-luxury-goldDark">({item.ratio}%)</span>
+                          {item.note.nameKo || item.note.nameEn}{' '}
+                          <span className="font-mono text-[7px] text-luxury-goldDark">
+                            ({calcNoteMl(item.ratio || 0, finalRecipe.top.length + finalRecipe.middle.length + finalRecipe.base.length)})
+                          </span>
                         </span>
                       ))}
                       {finalRecipe.base.length === 0 && <span className="text-[8px] text-forest-300">-</span>}
@@ -1995,7 +2059,7 @@ export default function App() {
                 <div className="space-y-1.5 py-1">
                   {/* 변경 내역 */}
                   {finalRecipe.addedNotes && finalRecipe.addedNotes.length > 0 && (
-                    <div className="text-[7px] text-forest-500 flex flex-wrap gap-x-1 font-semibold bg-luxury-sand/30 p-1 rounded border border-luxury-gold/5">
+                    <div className="text-[7px] text-forest-700 flex flex-wrap gap-x-1 font-semibold bg-luxury-sand/40 p-1.5 rounded border border-luxury-gold/20">
                       <span>[조향 변경]: {finalRecipe.addedNotes.join(', ')}</span>
                     </div>
                   )}
@@ -2003,7 +2067,7 @@ export default function App() {
                   <div className="space-y-0.5">
                     <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider font-mono">Perfumer's Touch (조향사 의견)</span>
                     <p className="text-[8px] leading-normal text-forest-700 text-justify">
-                      {finalRecipe.makerMemo || "이름과 세종의 은은한 향이 결합되어 완성되었습니다. 소중하게 조향한 단 하나의 향이 당신의 일상에 잔잔한 기쁨으로 기억되기를 바랍니다."}
+                      {finalRecipe.makerMemo || getDefaultMakerMemo(finalRecipe.selectedType)}
                     </p>
                   </div>
                 </div>
