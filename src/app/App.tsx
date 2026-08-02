@@ -510,19 +510,32 @@ export default function App() {
     setFinalPerfumeName(record.perfumeName || record.guestName + '의 향');
     setMakerMemo(record.makerMemo || getDefaultMakerMemo(record.selectedType));
 
-    // 추천 테마 원본 대비 변경 사항 자동 계산
-    const origTop = record.originalRecipe?.top || [];
-    const origMiddle = record.originalRecipe?.middle || [];
-    const origBase = record.originalRecipe?.base || [];
+    // 추천 테마 원본 포뮬러 복원 (구버전 DB 레코드인 경우 분석 데이터로부터 역산 복원)
+    let origTop = record.originalRecipe?.top || [];
+    let origMiddle = record.originalRecipe?.middle || [];
+    let origBase = record.originalRecipe?.base || [];
 
-    if (origTop.length > 0 || origMiddle.length > 0 || origBase.length > 0) {
-      const diffMsg = calcRecipeDiff(origTop, origMiddle, origBase, topCopy, middleCopy, baseCopy);
-      setAddedNotesText(diffMsg);
-    } else if (record.addedNotes && record.addedNotes.length > 0) {
-      setAddedNotesText(record.addedNotes.join(', '));
-    } else {
-      setAddedNotesText('');
+    if (origTop.length === 0 && origMiddle.length === 0 && origBase.length === 0 && record.analysis) {
+      const recs = recommendPerfumes(record.analysis);
+      const targetTheme = record.selectedType === 'name_only' ? recs.rec1 : recs.rec2;
+      if (targetTheme) {
+        origTop = targetTheme.top;
+        origMiddle = targetTheme.middle;
+        origBase = targetTheme.base;
+      }
     }
+
+    let diffMsg = calcRecipeDiff(origTop, origMiddle, origBase, topCopy, middleCopy, baseCopy);
+
+    // 구버전 DB에 '기본 레시피 유지' 문구가 저장되어 있던 경우 필터링
+    if (!diffMsg && record.addedNotes && record.addedNotes.length > 0) {
+      const rawText = record.addedNotes.join(', ');
+      if (!rawText.includes('기본 레시피 유지')) {
+        diffMsg = rawText;
+      }
+    }
+
+    setAddedNotesText(diffMsg);
   };
 
   // 조향사 향료 추가
@@ -554,9 +567,18 @@ export default function App() {
     }
 
     if (selectedRecordForAdmin) {
-      const origTop = selectedRecordForAdmin.originalRecipe?.top || selectedRecordForAdmin.top || [];
-      const origMiddle = selectedRecordForAdmin.originalRecipe?.middle || selectedRecordForAdmin.middle || [];
-      const origBase = selectedRecordForAdmin.originalRecipe?.base || selectedRecordForAdmin.base || [];
+      let origTop = selectedRecordForAdmin.originalRecipe?.top || [];
+      let origMiddle = selectedRecordForAdmin.originalRecipe?.middle || [];
+      let origBase = selectedRecordForAdmin.originalRecipe?.base || [];
+      if (origTop.length === 0 && origMiddle.length === 0 && origBase.length === 0 && selectedRecordForAdmin.analysis) {
+        const recs = recommendPerfumes(selectedRecordForAdmin.analysis);
+        const targetTheme = selectedRecordForAdmin.selectedType === 'name_only' ? recs.rec1 : recs.rec2;
+        if (targetTheme) {
+          origTop = targetTheme.top;
+          origMiddle = targetTheme.middle;
+          origBase = targetTheme.base;
+        }
+      }
       setAddedNotesText(calcRecipeDiff(origTop, origMiddle, origBase, nextTop, nextMiddle, nextBase));
     }
   };
@@ -572,9 +594,18 @@ export default function App() {
     else setFinalBase(nextBase);
 
     if (selectedRecordForAdmin) {
-      const origTop = selectedRecordForAdmin.originalRecipe?.top || selectedRecordForAdmin.top || [];
-      const origMiddle = selectedRecordForAdmin.originalRecipe?.middle || selectedRecordForAdmin.middle || [];
-      const origBase = selectedRecordForAdmin.originalRecipe?.base || selectedRecordForAdmin.base || [];
+      let origTop = selectedRecordForAdmin.originalRecipe?.top || [];
+      let origMiddle = selectedRecordForAdmin.originalRecipe?.middle || [];
+      let origBase = selectedRecordForAdmin.originalRecipe?.base || [];
+      if (origTop.length === 0 && origMiddle.length === 0 && origBase.length === 0 && selectedRecordForAdmin.analysis) {
+        const recs = recommendPerfumes(selectedRecordForAdmin.analysis);
+        const targetTheme = selectedRecordForAdmin.selectedType === 'name_only' ? recs.rec1 : recs.rec2;
+        if (targetTheme) {
+          origTop = targetTheme.top;
+          origMiddle = targetTheme.middle;
+          origBase = targetTheme.base;
+        }
+      }
       setAddedNotesText(calcRecipeDiff(origTop, origMiddle, origBase, nextTop, nextMiddle, nextBase));
     }
   };
