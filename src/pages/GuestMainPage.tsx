@@ -28,6 +28,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   pastRecordsSignal
 }) => {
   const [loginId, setLoginId] = useState('');
+  const [phoneLast4, setPhoneLast4] = useState('');
   const [guestName, setGuestName] = useState('');
   const [authMode, setAuthMode] = useState<'new' | 'search'>('new');
   const [selectedFavScentId, setSelectedFavScentId] = useState<string | null>(null);
@@ -71,35 +72,60 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   // Initial Login submit
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginId.trim()) {
-      setAuthError('식별 번호(PIN)를 입력해 주세요.');
+    const rawPhone = phoneLast4.trim();
+    
+    // Check Admin Login attempt
+    if (rawPhone.toLowerCase().startsWith('admin') || rawPhone.toLowerCase() === 'master' || rawPhone.toLowerCase() === 'admin9') {
+      onAdminLoginTrigger(rawPhone);
       return;
     }
 
-    if (loginId.trim().startsWith('admin') || loginId.trim().toLowerCase() === 'master') {
-      onAdminLoginTrigger(loginId.trim());
+    if (!rawPhone) {
+      setAuthError('휴대폰 번호 뒷자리 4자리를 입력해 주세요.');
       return;
     }
+
+    if (!/^\d{4}$/.test(rawPhone)) {
+      setAuthError('휴대폰 번호 뒷자리는 숫자 4자리로 입력해 주세요. (예: 1234)');
+      return;
+    }
+
+    if (!selectedFavScentId) {
+      setAuthError(authMode === 'new' 
+        ? '마음에 드는 향 1가지를 아래 12개 중 선택해 주세요.' 
+        : '조향 접수 시 선택하셨던 향 1가지를 아래 12개 중 선택해 주세요.'
+      );
+      return;
+    }
+
+    const compoundKey = `${rawPhone}_${selectedFavScentId}`;
+    setLoginId(compoundKey);
 
     if (authMode === 'new') {
-      if (!selectedFavScentId) {
-        setAuthError('마음에 드는 향 1가지를 선택해 주세요.');
-        return;
-      }
       setIsLoggedIn(true);
       setStep('step1');
     } else {
       setIsAuthLoading(true);
-      const res = await ScentService.getRecords(loginId.trim(), false);
+      const res = await ScentService.getRecords(compoundKey, false);
+      let foundRecord = res.success && res.data && res.data.length > 0 ? res.data[0] : null;
+
+      if (!foundRecord) {
+        // Fallback: search by phone digits alone for legacy records
+        const resPhone = await ScentService.getRecords(rawPhone, false);
+        if (resPhone.success && resPhone.data && resPhone.data.length > 0) {
+          foundRecord = resPhone.data[0];
+        }
+      }
+
       setIsAuthLoading(false);
 
-      if (res.success && res.data && res.data.length > 0) {
-        setFinalRecipe(res.data[0]);
-        setGuestName(res.data[0].guestName || '의뢰인');
+      if (foundRecord) {
+        setFinalRecipe(foundRecord);
+        setGuestName(foundRecord.guestName || '의뢰인');
         setIsLoggedIn(true);
         setStep('submitted');
       } else {
-        setAuthError('입력하신 식별 번호로 등록된 조향 기록이 없습니다. 번호를 확인해 주세요.');
+        setAuthError(`입력하신 정보(뒷자리 ${rawPhone})로 등록된 조향 기록을 찾을 수 없습니다. 휴대폰 번호와 선택 향을 다시 확인해 주세요.`);
       }
     }
   };
@@ -198,6 +224,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     setGuestName('');
     setGuestNameForRecipe('');
     setLoginId('');
+    setPhoneLast4('');
     setSelectedFavScentId(null);
     setFinalRecipe(null);
   };
@@ -221,7 +248,10 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
           <div className="flex border border-forest-800 rounded-xl overflow-hidden bg-forest-950 p-1">
             <button
               type="button"
-              onClick={() => setAuthMode('new')}
+              onClick={() => {
+                setAuthMode('new');
+                setAuthError('');
+              }}
               className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 authMode === 'new' ? 'bg-forest-800 text-luxury-gold shadow-md' : 'text-forest-400 hover:text-white'
               }`}
@@ -230,7 +260,10 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setAuthMode('search')}
+              onClick={() => {
+                setAuthMode('search');
+                setAuthError('');
+              }}
               className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 authMode === 'search' ? 'bg-forest-800 text-luxury-gold shadow-md' : 'text-forest-400 hover:text-white'
               }`}
@@ -242,29 +275,33 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
           <form onSubmit={handleAuthSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-bold text-forest-200 mb-2">
-                본인 식별 번호 (숫자 4자리 + 영문 1자리 조합)
+                {authMode === 'new' ? '휴대폰 번호 뒷자리 4자리' : '조향 접수 시 입력했던 휴대폰 번호 뒷자리 4자리'}
               </label>
               <input
                 type="text"
-                value={loginId}
+                maxLength={10}
+                value={phoneLast4}
                 onChange={(e) => {
-                  setLoginId(e.target.value);
+                  setPhoneLast4(e.target.value);
                   if (authError) setAuthError('');
                 }}
-                placeholder="예: 1234A"
-                className="w-full px-4 py-3 bg-forest-950 border border-forest-800 rounded-xl text-white text-center font-bold tracking-widest focus:outline-none focus:border-luxury-gold"
+                placeholder="휴대폰 번호 뒷자리 4자리 (예: 1234)"
+                className="w-full px-4 py-3 bg-forest-950 border border-forest-800 rounded-xl text-white text-center font-bold tracking-widest text-lg focus:outline-none focus:border-luxury-gold"
               />
             </div>
 
-            {authMode === 'new' && (
-              <Step1NoteSelect
-                selectedFavScentId={selectedFavScentId}
-                onSelectScent={(id) => {
-                  setSelectedFavScentId(id);
-                  if (authError) setAuthError('');
-                }}
-              />
-            )}
+            <Step1NoteSelect
+              selectedFavScentId={selectedFavScentId}
+              onSelectScent={(id) => {
+                setSelectedFavScentId(id);
+                if (authError) setAuthError('');
+              }}
+              customTitle={
+                authMode === 'new'
+                  ? '마음에 드는 향 1가지 선택 (12종 중 택 1)'
+                  : '조향 접수 시 선택하셨던 향 1가지 선택 (12종 중 택 1)'
+              }
+            />
 
             {authError && (
               <p className="text-xs text-red-400 font-semibold text-center bg-red-950/40 p-2 rounded border border-red-900/60">

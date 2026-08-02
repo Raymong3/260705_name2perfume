@@ -5,11 +5,13 @@ import { FAVORITE_SCENT_OPTIONS } from '../../data/favoriteScents';
 interface Step1NoteSelectProps {
   selectedFavScentId: string | null;
   onSelectScent: (id: string) => void;
+  customTitle?: string;
 }
 
 export const Step1NoteSelect: React.FC<Step1NoteSelectProps> = ({
   selectedFavScentId,
-  onSelectScent
+  onSelectScent,
+  customTitle
 }) => {
   const selectedScent = FAVORITE_SCENT_OPTIONS.find(s => s.id === selectedFavScentId);
 
@@ -18,7 +20,7 @@ export const Step1NoteSelect: React.FC<Step1NoteSelectProps> = ({
       <div className="flex justify-between items-center">
         <label className="block text-xs font-bold text-forest-200 flex items-center gap-1">
           <Heart className="w-3.5 h-3.5 text-luxury-gold" />
-          <span>마음에 드는 향 1가지 선택 (12종 중 택 1)</span>
+          <span>{customTitle || '마음에 드는 향 1가지 선택 (12종 중 택 1)'}</span>
         </label>
         <span className="text-[10px] text-luxury-gold font-semibold">
           {selectedScent ? `${selectedScent.nameKo} 선택됨` : '필수 선택'}

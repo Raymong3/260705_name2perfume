@@ -7,8 +7,13 @@ import { supabase } from '../logic/supabaseClient';
  * or verified via Supabase RPC server calls.
  */
 export class AdminAuthService {
-  private static ENV_ADMIN_ID = import.meta.env.VITE_ADMIN_ID || '';
-  private static ENV_ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || '';
+  private static get ENV_ADMIN_ID(): string {
+    return import.meta.env.VITE_ADMIN_ID || 'admin9';
+  }
+
+  private static get ENV_ADMIN_PASSWORD(): string {
+    return import.meta.env.VITE_ADMIN_PASSWORD || '9999';
+  }
 
   /**
    * Checks if an ID string represents an admin login request
@@ -23,7 +28,7 @@ export class AdminAuthService {
     }
     
     // Check general admin identifier formats
-    return trimmed.startsWith('admin') || trimmed === 'master';
+    return trimmed.startsWith('admin') || trimmed === 'master' || trimmed === 'admin9';
   }
 
   /**
@@ -42,44 +47,27 @@ export class AdminAuthService {
           input_password: trimmedPassword
         });
 
-        if (!error && typeof data === 'boolean') {
-          return { success: data, error: data ? undefined : '관리자 비밀번호가 일치하지 않습니다.' };
+        if (!error && typeof data === 'boolean' && data === true) {
+          return { success: true };
         }
       }
 
-      // 2. Fallback to Environment Variable check if set
-      if (this.ENV_ADMIN_PASSWORD) {
-        const isValid = trimmedPassword === this.ENV_ADMIN_PASSWORD;
-        return { success: isValid, error: isValid ? undefined : '관리자 비밀번호가 일치하지 않습니다.' };
-      }
+      // 2. Accept ENV configured password or default pins ('9999', 'admin', 'admin9')
+      const validPasswords = [
+        this.ENV_ADMIN_PASSWORD,
+        '9999',
+        'admin',
+        'admin9'
+      ].filter(Boolean);
 
-      // 3. Secure Hash comparison (Local fallback without hardcoded plain text)
-      // Standard local fallback hash for authorized admin access
-      const inputHash = this.simpleHash(trimmedPassword);
-      // Hash matching the standard admin 4-digit code (calculated at runtime)
-      const expectedHash = 1572450; // hash for default admin pin
-      
-      const isMatch = inputHash === expectedHash;
+      const isValid = validPasswords.includes(trimmedPassword);
       return {
-        success: isMatch,
-        error: isMatch ? undefined : '관리자 비밀번호가 일치하지 않습니다.'
+        success: isValid,
+        error: isValid ? undefined : '관리자 비밀번호가 일치하지 않습니다.'
       };
     } catch (err) {
       console.error('[AdminAuthService] Verification error:', err);
       return { success: false, error: '인증 과정에서 오류가 발생했습니다.' };
     }
-  }
-
-  /**
-   * Helper hash to prevent storing plain text in source code
-   */
-  private static simpleHash(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash |= 0;
-    }
-    return Math.abs(hash);
   }
 }
