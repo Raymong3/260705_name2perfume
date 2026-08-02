@@ -8,34 +8,26 @@ import { NOTES } from '../data/notes';
 import { FAVORITE_SCENT_OPTIONS } from '../data/favoriteScents';
 import { dbLoginGuest, dbCreateRecord, dbGetRecords, dbCompleteRecord, dbDeleteRecords } from '../logic/supabaseClient';
 
-// 향료 비율(Top, Middle, Base)의 합을 자동으로 100%로 정규화 조절해주는 헬퍼 함수
+// 가나다 오름차순 사전 정렬된 노트 목록
+const SORTED_TOP_NOTES = NOTES.filter(n => n.type === 'top').slice().sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko-KR'));
+const SORTED_MIDDLE_NOTES = NOTES.filter(n => n.type === 'middle').slice().sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko-KR'));
+const SORTED_BASE_NOTES = NOTES.filter(n => n.type === 'base').slice().sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko-KR'));
+
+// 향료 비율(Top, Middle, Base)의 합을 전체 동일한 비율로 정규화 조절해주는 헬퍼 함수
 function normalizeRatios(
   top: RecommendedNote[],
   middle: RecommendedNote[],
   base: RecommendedNote[]
 ): { top: RecommendedNote[]; middle: RecommendedNote[]; base: RecommendedNote[] } {
-  const all = [...top, ...middle, ...base];
-  if (all.length === 0) return { top, middle, base };
+  const allCount = top.length + middle.length + base.length;
+  if (allCount === 0) return { top, middle, base };
 
-  const currentSum = all.reduce((sum, item) => sum + (item.ratio || 0), 0);
-  let rawPcts: number[];
-
-  if (currentSum <= 0) {
-    const equalRatio = Math.floor(100 / all.length);
-    rawPcts = all.map(() => equalRatio);
-  } else {
-    rawPcts = all.map(item => Math.max(0, Math.round(((item.ratio || 0) / currentSum) * 100)));
-  }
-
+  const equalRatio = Math.floor(100 / allCount);
+  const rawPcts = new Array(allCount).fill(equalRatio);
   const sumPcts = rawPcts.reduce((a, b) => a + b, 0);
   const diff = 100 - sumPcts;
-
   if (diff !== 0 && rawPcts.length > 0) {
-    let maxIdx = 0;
-    for (let i = 1; i < rawPcts.length; i++) {
-      if (rawPcts[i] > rawPcts[maxIdx]) maxIdx = i;
-    }
-    rawPcts[maxIdx] += diff;
+    rawPcts[0] += diff;
   }
 
   let idx = 0;
@@ -46,10 +38,10 @@ function normalizeRatios(
   return { top: newTop, middle: newMiddle, base: newBase };
 }
 
-// 30ml 기준 용량 계산 헬퍼 함수 (5개 시 각 6ml, 6개 시 각 5ml)
-function calcNoteMl(ratio: number, totalCount: number): string {
+// 30ml 기준 용량 계산 헬퍼 함수 (전체 개수로 동일 분등)
+function calcNoteMl(_ratio: number, totalCount: number): string {
   if (totalCount <= 0) return '0ml';
-  const rawMl = ((ratio || 0) / 100) * 30;
+  const rawMl = 30 / totalCount;
   const rounded = Math.round(rawMl * 10) / 10;
   return Number.isInteger(rounded) ? `${rounded}ml` : `${rounded.toFixed(1)}ml`;
 }
@@ -421,23 +413,7 @@ export default function App() {
     }
   };
 
-  // 손님용 조향 비율 수정
-  const handleGuestRatioChange = (category: 'top' | 'middle' | 'base', index: number, ratio: number) => {
-    const val = isNaN(ratio) ? 0 : Math.max(0, Math.min(100, ratio));
-    if (category === 'top') {
-      const updated = [...guestTop];
-      updated[index].ratio = val;
-      setGuestTop(updated);
-    } else if (category === 'middle') {
-      const updated = [...guestMiddle];
-      updated[index].ratio = val;
-      setGuestMiddle(updated);
-    } else {
-      const updated = [...guestBase];
-      updated[index].ratio = val;
-      setGuestBase(updated);
-    }
-  };
+
 
   // 추천 향 선택하여 조향 의뢰서 최종 제출 (100% 비율 자동 정규화 조정)
   const handleGuestSubmitRecipe = async () => {
@@ -1282,11 +1258,9 @@ export default function App() {
                         className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                       >
                         <option value="">탑 향료 추가...</option>
-                        {NOTES.filter(n => n.type === 'top')
-                          .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
-                          .map(n => (
-                            <option key={n.id} value={n.id}>{n.nameKo}</option>
-                          ))}
+                        {SORTED_TOP_NOTES.map(n => (
+                          <option key={n.id} value={n.id}>{n.nameKo}</option>
+                        ))}
                       </select>
                       <button onClick={() => handleGuestAddNote('top', selectedGuestTopToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                     </div>
@@ -1309,11 +1283,9 @@ export default function App() {
                         className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                       >
                         <option value="">미들 향료 추가...</option>
-                        {NOTES.filter(n => n.type === 'middle')
-                          .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
-                          .map(n => (
-                            <option key={n.id} value={n.id}>{n.nameKo}</option>
-                          ))}
+                        {SORTED_MIDDLE_NOTES.map(n => (
+                          <option key={n.id} value={n.id}>{n.nameKo}</option>
+                        ))}
                       </select>
                       <button onClick={() => handleGuestAddNote('middle', selectedGuestMiddleToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                     </div>
@@ -1336,11 +1308,9 @@ export default function App() {
                         className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                       >
                         <option value="">베이스 향료 추가...</option>
-                        {NOTES.filter(n => n.type === 'base')
-                          .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
-                          .map(n => (
-                            <option key={n.id} value={n.id}>{n.nameKo}</option>
-                          ))}
+                        {SORTED_BASE_NOTES.map(n => (
+                          <option key={n.id} value={n.id}>{n.nameKo}</option>
+                        ))}
                       </select>
                       <button onClick={() => handleGuestAddNote('base', selectedGuestBaseToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                     </div>
@@ -1744,11 +1714,9 @@ export default function App() {
                           className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                         >
                           <option value="">탑 향료 추가...</option>
-                          {NOTES.filter(n => n.type === 'top')
-                            .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
-                            .map(n => (
-                              <option key={n.id} value={n.id}>{n.nameKo}</option>
-                            ))}
+                          {SORTED_TOP_NOTES.map(n => (
+                            <option key={n.id} value={n.id}>{n.nameKo}</option>
+                          ))}
                         </select>
                         <button onClick={() => handleAddNote('top', selectedTopToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                       </div>
@@ -1783,11 +1751,9 @@ export default function App() {
                           className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                         >
                           <option value="">미들 향료 추가...</option>
-                          {NOTES.filter(n => n.type === 'middle')
-                            .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
-                            .map(n => (
-                              <option key={n.id} value={n.id}>{n.nameKo}</option>
-                            ))}
+                          {SORTED_MIDDLE_NOTES.map(n => (
+                            <option key={n.id} value={n.id}>{n.nameKo}</option>
+                          ))}
                         </select>
                         <button onClick={() => handleAddNote('middle', selectedMiddleToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                       </div>
@@ -1822,11 +1788,9 @@ export default function App() {
                           className="flex-grow p-1 bg-forest-950 border border-forest-850 rounded text-[9px] text-white focus:outline-none"
                         >
                           <option value="">베이스 향료 추가...</option>
-                          {NOTES.filter(n => n.type === 'base')
-                            .sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'))
-                            .map(n => (
-                              <option key={n.id} value={n.id}>{n.nameKo}</option>
-                            ))}
+                          {SORTED_BASE_NOTES.map(n => (
+                            <option key={n.id} value={n.id}>{n.nameKo}</option>
+                          ))}
                         </select>
                         <button onClick={() => handleAddNote('base', selectedBaseToAdd)} className="px-2 py-1 bg-luxury-gold text-forest-950 rounded text-[9px] font-bold">추가</button>
                       </div>
