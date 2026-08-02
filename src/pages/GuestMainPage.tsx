@@ -22,12 +22,16 @@ interface GuestMainPageProps {
   onPrintRecipe?: (recipe: FinalRecipe) => void;
   pastRecordsSignal?: number;
   resetSignal?: number;
+  onLoginSuccess?: () => void;
+  onNewRecipe?: (recipe: FinalRecipe) => void;
 }
 
 export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   onAdminLoginTrigger,
   pastRecordsSignal,
-  resetSignal
+  resetSignal,
+  onLoginSuccess,
+  onNewRecipe,
 }) => {
   // existing state definitions ...
 
@@ -185,7 +189,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   };
 
   // Submit Final Custom Recipe
-  const handleFinalSubmit = (
+  const handleFinalSubmit = async (
     recipeType: 'name_only' | 'name_sejong',
     customNotes: { top: RecommendedNote[]; middle: RecommendedNote[]; base: RecommendedNote[] },
     addedNotes: string[],
@@ -196,8 +200,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     setIsAuthLoading(true);
     const chosenOriginal = recipeType === 'name_only' ? recommended1 : recommended2;
 
-    const recipe: FinalRecipe = {
-      id: 'local_' + Date.now(),
+    const recipeData: Partial<FinalRecipe> = {
       guestName,
       loginId,
       status: 'submitted',
@@ -226,14 +229,39 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       surveyAnswers: []
     };
 
-    setTimeout(() => {
-      setFinalRecipe(recipe);
-      setIsAuthLoading(false);
-      setStep('submitted');
-    }, 600);
+    try {
+      const res = await ScentService.createRecipeRecord(guestName, loginId, recipeData);
+      if (res.success && res.data) {
+        const savedRecipe = res.data;
+        setFinalRecipe(savedRecipe);
+        if (onNewRecipe) onNewRecipe(savedRecipe);
+      } else {
+        // fallback to local recipe
+        const localRecipe: FinalRecipe = {
+          id: 'local_' + Date.now(),
+          ...recipeData as FinalRecipe,
+        } as FinalRecipe;
+        setFinalRecipe(localRecipe);
+        if (onNewRecipe) onNewRecipe(localRecipe);
+      }
+    } catch (e) {
+      console.error('[GuestMainPage] create recipe error', e);
+      const localRecipe: FinalRecipe = {
+        id: 'local_' + Date.now(),
+        ...recipeData as FinalRecipe,
+      } as FinalRecipe;
+      setFinalRecipe(localRecipe);
+      if (onNewRecipe) onNewRecipe(localRecipe);
+    }
+
+    setIsAuthLoading(false);
+    setStep('submitted');
   };
 
   const handleResetSession = () => {
+    // Reset to initial state for a fresh session
+    setAuthMode('new');
+    setAuthError('');
     setStep('login');
     setIsLoggedIn(false);
     setGuestName('');
@@ -243,6 +271,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     setSelectedFavScentId(null);
     setFinalRecipe(null);
   };
+
 
   return (
     <div className="w-full flex flex-col items-center">

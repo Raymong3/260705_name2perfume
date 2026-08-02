@@ -52,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({ onGoHome, onOpenPastRecords, sho
               className="flex items-center gap-1.5 px-3.5 py-1.5 bg-forest-900/90 hover:bg-forest-800 text-luxury-gold border border-luxury-gold/40 rounded-full text-xs font-serif font-bold transition-all shadow-md hover:shadow-luxury-gold/20 cursor-pointer active:scale-95"
             >
               <History className="w-3.5 h-3.5 text-luxury-gold" />
-              <span>과거 조향기록 보기</span>
+              <span>조향기록서 보기</span>
             </button>
           )}
         </div>

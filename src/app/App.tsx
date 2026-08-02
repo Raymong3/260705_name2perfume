@@ -12,6 +12,7 @@ export function App() {
   const [pastRecordsSignal, setPastRecordsSignal] = useState(0);
   const [resetSignal, setResetSignal] = useState(0);
   const [showPastRecords, setShowPastRecords] = useState(false);
+  const [adminRefreshTrigger, setAdminRefreshTrigger] = useState(0);
 
   const handleAdminTrigger = (loginId: string) => {
     setAdminLoginId(loginId);
@@ -40,6 +41,12 @@ export function App() {
     setTimeout(() => {
       window.print();
     }, 300);
+  };
+
+  // Triggered when a new recipe is created by the guest flow
+  const handleNewRecipe = (recipe: FinalRecipe) => {
+    // Increment a trigger to force admin dashboard refresh
+    setAdminRefreshTrigger(prev => prev + 1);
   };
 
   const handleLoginSuccess = () => {
