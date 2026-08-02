@@ -21,12 +21,25 @@ interface GuestMainPageProps {
   onAdminLoginTrigger: (loginId: string) => void;
   onPrintRecipe?: (recipe: FinalRecipe) => void;
   pastRecordsSignal?: number;
+  resetSignal?: number;
 }
 
 export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   onAdminLoginTrigger,
-  pastRecordsSignal
+  pastRecordsSignal,
+  resetSignal
 }) => {
+  // existing state definitions ...
+
+  // Reset when Home button triggers
+  useEffect(() => {
+    if (resetSignal !== undefined) {
+      handleResetSession();
+    }
+  }, [resetSignal]);
+
+  // ... rest of component code ...
+
   const [loginId, setLoginId] = useState('');
   const [phoneLast4, setPhoneLast4] = useState('');
   const [guestName, setGuestName] = useState('');
@@ -104,6 +117,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     if (authMode === 'new') {
       setIsLoggedIn(true);
       setStep('step1');
+      onLoginSuccess && onLoginSuccess();
     } else {
       setIsAuthLoading(true);
       const res = await ScentService.getRecords(compoundKey, false);
@@ -124,6 +138,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
         setGuestName(foundRecord.guestName || '의뢰인');
         setIsLoggedIn(true);
         setStep('submitted');
+        onLoginSuccess && onLoginSuccess();
       } else {
         setAuthError(`입력하신 정보(뒷자리 ${rawPhone})로 등록된 조향 기록을 찾을 수 없습니다. 휴대폰 번호와 선택 향을 다시 확인해 주세요.`);
       }
