@@ -46,6 +46,30 @@ function normalizeRatios(
   return { top: newTop, middle: newMiddle, base: newBase };
 }
 
+// 레시피 간 향료 추가/삭제 변경사항 자동 계산 헬퍼
+function calcRecipeDiff(
+  origTop: RecommendedNote[],
+  origMiddle: RecommendedNote[],
+  origBase: RecommendedNote[],
+  currentTop: RecommendedNote[],
+  currentMiddle: RecommendedNote[],
+  currentBase: RecommendedNote[]
+): string {
+  const origNames = [...origTop, ...origMiddle, ...origBase].map(i => i.note.nameKo || i.note.nameEn);
+  const currentNames = [...currentTop, ...currentMiddle, ...currentBase].map(i => i.note.nameKo || i.note.nameEn);
+
+  const added = currentNames.filter(n => !origNames.includes(n));
+  const removed = origNames.filter(n => !currentNames.includes(n));
+
+  let autoMsg = '';
+  if (added.length > 0) autoMsg += `추가: ${added.join(', ')}`;
+  if (removed.length > 0) {
+    if (autoMsg) autoMsg += ' / ';
+    autoMsg += `제거: ${removed.join(', ')}`;
+  }
+  return autoMsg;
+}
+
 // 30ml 기준 용량 계산 헬퍼 함수 (전체 개수로 동일 분등)
 function calcNoteMl(_ratio: number, totalCount: number): string {
   if (totalCount <= 0) return '0ml';
@@ -127,7 +151,6 @@ export default function App() {
   const [selectedTopToAdd, setSelectedTopToAdd] = useState('');
   const [selectedMiddleToAdd, setSelectedMiddleToAdd] = useState('');
   const [selectedBaseToAdd, setSelectedBaseToAdd] = useState('');
-  const [initialAdminNotes, setInitialAdminNotes] = useState<string[]>([]);
 
   // 최종 확정 레시피
   const [finalRecipe, setFinalRecipe] = useState<FinalRecipe | null>(null);
@@ -436,18 +459,11 @@ export default function App() {
     setGuestMiddle(normalized.middle);
     setGuestBase(normalized.base);
 
-    // 원본 테마 레시피 대비 변경된 향료 도출
-    const origNames = [...targetRecipe.top, ...targetRecipe.middle, ...targetRecipe.base].map(i => i.note.nameKo || i.note.nameEn);
-    const currentNames = [...normalized.top, ...normalized.middle, ...normalized.base].map(i => i.note.nameKo || i.note.nameEn);
-    const guestAdded = currentNames.filter(n => !origNames.includes(n));
-    const guestRemoved = origNames.filter(n => !currentNames.includes(n));
-
-    let autoMsg = '';
-    if (guestAdded.length > 0) autoMsg += `추가: ${guestAdded.join(', ')}`;
-    if (guestRemoved.length > 0) {
-      if (autoMsg) autoMsg += ' / ';
-      autoMsg += `제거: ${guestRemoved.join(', ')}`;
-    }
+    // 원본 테마 레시피 대비 변경된 향료 자동 계산
+    const autoMsg = calcRecipeDiff(
+      targetRecipe.top, targetRecipe.middle, targetRecipe.base,
+      normalized.top, normalized.middle, normalized.base
+    );
 
     setIsAuthLoading(true);
     try {
@@ -484,52 +500,30 @@ export default function App() {
   // 관리자 의뢰 클릭 시 폼 정보 로드
   const handleSelectAdminRecord = (record: FinalRecipe) => {
     setSelectedRecordForAdmin(record);
-    setFinalTop(JSON.parse(JSON.stringify(record.top)));
-    setFinalMiddle(JSON.parse(JSON.stringify(record.middle)));
-    setFinalBase(JSON.parse(JSON.stringify(record.base)));
+    const topCopy: RecommendedNote[] = JSON.parse(JSON.stringify(record.top));
+    const middleCopy: RecommendedNote[] = JSON.parse(JSON.stringify(record.middle));
+    const baseCopy: RecommendedNote[] = JSON.parse(JSON.stringify(record.base));
+
+    setFinalTop(topCopy);
+    setFinalMiddle(middleCopy);
+    setFinalBase(baseCopy);
     setFinalPerfumeName(record.perfumeName || record.guestName + '의 향');
     setMakerMemo(record.makerMemo || getDefaultMakerMemo(record.selectedType));
 
-    // 원래 테마 레시피 또는 접수 초기 향료 명칭 스냅샷 저장
-    const origTop = record.originalRecipe?.top || record.top || [];
-    const origMiddle = record.originalRecipe?.middle || record.middle || [];
-    const origBase = record.originalRecipe?.base || record.base || [];
-    const baseNames = [...origTop, ...origMiddle, ...origBase].map(i => i.note.nameKo || i.note.nameEn);
-    setInitialAdminNotes(baseNames);
+    // 추천 테마 원본 대비 변경 사항 자동 계산
+    const origTop = record.originalRecipe?.top || [];
+    const origMiddle = record.originalRecipe?.middle || [];
+    const origBase = record.originalRecipe?.base || [];
 
-    if (record.addedNotes && record.addedNotes.length > 0) {
+    if (origTop.length > 0 || origMiddle.length > 0 || origBase.length > 0) {
+      const diffMsg = calcRecipeDiff(origTop, origMiddle, origBase, topCopy, middleCopy, baseCopy);
+      setAddedNotesText(diffMsg);
+    } else if (record.addedNotes && record.addedNotes.length > 0) {
       setAddedNotesText(record.addedNotes.join(', '));
     } else {
       setAddedNotesText('');
     }
   };
-
-  // 향료 추가/삭제 시 조향 변경 내역 실시간 자동 작성 useEffect
-  useEffect(() => {
-    if (!selectedRecordForAdmin) return;
-
-    const origTop = selectedRecordForAdmin.originalRecipe?.top || selectedRecordForAdmin.top || [];
-    const origMiddle = selectedRecordForAdmin.originalRecipe?.middle || selectedRecordForAdmin.middle || [];
-    const origBase = selectedRecordForAdmin.originalRecipe?.base || selectedRecordForAdmin.base || [];
-
-    const baseNames = initialAdminNotes.length > 0
-      ? initialAdminNotes
-      : [...origTop, ...origMiddle, ...origBase].map(i => i.note.nameKo || i.note.nameEn);
-
-    const currentNames = [...finalTop, ...finalMiddle, ...finalBase].map(i => i.note.nameKo || i.note.nameEn);
-
-    const added = currentNames.filter(n => !baseNames.includes(n));
-    const removed = baseNames.filter(n => !currentNames.includes(n));
-
-    let autoMsg = '';
-    if (added.length > 0) autoMsg += `추가: ${added.join(', ')}`;
-    if (removed.length > 0) {
-      if (autoMsg) autoMsg += ' / ';
-      autoMsg += `제거: ${removed.join(', ')}`;
-    }
-
-    setAddedNotesText(autoMsg);
-  }, [finalTop, finalMiddle, finalBase, selectedRecordForAdmin, initialAdminNotes]);
 
   // 조향사 향료 추가
   const handleAddNote = (category: 'top' | 'middle' | 'base', noteId: string) => {
@@ -544,26 +538,44 @@ export default function App() {
     }
 
     const newItem: RecommendedNote = { note: noteObj, ratio: 10, reason: '조향사 수동 추가' };
+    const nextTop = category === 'top' ? [...finalTop, newItem] : finalTop;
+    const nextMiddle = category === 'middle' ? [...finalMiddle, newItem] : finalMiddle;
+    const nextBase = category === 'base' ? [...finalBase, newItem] : finalBase;
+
     if (category === 'top') {
-      setFinalTop([...finalTop, newItem]);
+      setFinalTop(nextTop);
       setSelectedTopToAdd('');
     } else if (category === 'middle') {
-      setFinalMiddle([...finalMiddle, newItem]);
+      setFinalMiddle(nextMiddle);
       setSelectedMiddleToAdd('');
     } else {
-      setFinalBase([...finalBase, newItem]);
+      setFinalBase(nextBase);
       setSelectedBaseToAdd('');
+    }
+
+    if (selectedRecordForAdmin) {
+      const origTop = selectedRecordForAdmin.originalRecipe?.top || selectedRecordForAdmin.top || [];
+      const origMiddle = selectedRecordForAdmin.originalRecipe?.middle || selectedRecordForAdmin.middle || [];
+      const origBase = selectedRecordForAdmin.originalRecipe?.base || selectedRecordForAdmin.base || [];
+      setAddedNotesText(calcRecipeDiff(origTop, origMiddle, origBase, nextTop, nextMiddle, nextBase));
     }
   };
 
   // 조향사 향료 삭제
   const handleRemoveNote = (category: 'top' | 'middle' | 'base', index: number) => {
-    if (category === 'top') {
-      setFinalTop(finalTop.filter((_, idx) => idx !== index));
-    } else if (category === 'middle') {
-      setFinalMiddle(finalMiddle.filter((_, idx) => idx !== index));
-    } else {
-      setFinalBase(finalBase.filter((_, idx) => idx !== index));
+    const nextTop = category === 'top' ? finalTop.filter((_, idx) => idx !== index) : finalTop;
+    const nextMiddle = category === 'middle' ? finalMiddle.filter((_, idx) => idx !== index) : finalMiddle;
+    const nextBase = category === 'base' ? finalBase.filter((_, idx) => idx !== index) : finalBase;
+
+    if (category === 'top') setFinalTop(nextTop);
+    else if (category === 'middle') setFinalMiddle(nextMiddle);
+    else setFinalBase(nextBase);
+
+    if (selectedRecordForAdmin) {
+      const origTop = selectedRecordForAdmin.originalRecipe?.top || selectedRecordForAdmin.top || [];
+      const origMiddle = selectedRecordForAdmin.originalRecipe?.middle || selectedRecordForAdmin.middle || [];
+      const origBase = selectedRecordForAdmin.originalRecipe?.base || selectedRecordForAdmin.base || [];
+      setAddedNotesText(calcRecipeDiff(origTop, origMiddle, origBase, nextTop, nextMiddle, nextBase));
     }
   };
 
