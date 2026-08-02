@@ -139,15 +139,6 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     setLoginId(compoundKey);
 
     if (authMode === 'new') {
-      setIsAuthLoading(true);
-      const res = await ScentService.getRecords(compoundKey, false);
-      setIsAuthLoading(false);
-      
-      if (res.success && res.data && res.data.length > 0) {
-        setAuthError('이미 사용 중인 접수 정보입니다. 다른 향을 선택하거나 기존 접수 조회를 이용해 주세요.');
-        return;
-      }
-
       setIsLoggedIn(true);
       setStep('step1');
       onLoginSuccess && onLoginSuccess();
@@ -157,7 +148,6 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       let foundRecords = res.success && res.data ? res.data : [];
 
       if (foundRecords.length === 0) {
-        // Fallback: search by phone digits alone for legacy records
         const resPhone = await ScentService.getRecords(rawPhone, false);
         if (resPhone.success && resPhone.data && resPhone.data.length > 0) {
           foundRecords = resPhone.data;
@@ -260,7 +250,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       removedNotes,
       modifiedNotes: [],
       perfumeName: perfumeName || `${guestName}의 향수`,
-      makerMemo: makerMemo,
+      makerMemo: '',
       guestMemo: makerMemo,
       createdDate: new Date().toLocaleDateString('ko-KR'),
       analysis: analysis!,
@@ -270,19 +260,14 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
 
     try {
       const res = await ScentService.createRecipeRecord(guestName, loginId, recipeData);
-      if (res.success && res.data) {
-        const savedRecipe = res.data;
-        setFinalRecipe(savedRecipe);
-        if (onNewRecipe) onNewRecipe(savedRecipe);
-      } else {
-        // fallback to local recipe
-        const localRecipe: FinalRecipe = {
-          ...recipeData as FinalRecipe,
-          id: 'local_' + Date.now(),
-        } as FinalRecipe;
-        setFinalRecipe(localRecipe);
-        if (onNewRecipe) onNewRecipe(localRecipe);
-      }
+      const rec = (res.success && res.data) ? res.data : {
+        ...recipeData as FinalRecipe,
+        id: 'local_' + Date.now(),
+      } as FinalRecipe;
+
+      setFinalRecipe(rec);
+      setGuestRecords(prev => [rec, ...prev.filter(r => r.id !== rec.id)]);
+      if (onNewRecipe) onNewRecipe(rec);
     } catch (e) {
       console.error('[GuestMainPage] create recipe error', e);
       const localRecipe: FinalRecipe = {
@@ -290,6 +275,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
         id: 'local_' + Date.now(),
       } as FinalRecipe;
       setFinalRecipe(localRecipe);
+      setGuestRecords(prev => [localRecipe, ...prev.filter(r => r.id !== localRecipe.id)]);
       if (onNewRecipe) onNewRecipe(localRecipe);
     }
 

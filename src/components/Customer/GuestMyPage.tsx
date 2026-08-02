@@ -55,21 +55,21 @@ export const GuestMyPage: React.FC<GuestMyPageProps> = ({
                         <span>{rec.createdDate}</span>
                         <span>|</span>
                         <span>{rec.selectedType === 'name_only' ? '이름 분석' : '세종의 이야기'}</span>
-                        <span>|</span>
-                        <span className={recordStatus === 'completed' ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
-                          {recordStatus === 'completed' ? '조향 완성' : '접수 대기'}
-                        </span>
                       </div>
                     </div>
-                    
-                    {recordStatus === 'completed' && (
+
+                    <div className="flex items-center gap-2">
+                      <span className={recordStatus === 'completed' ? 'text-emerald-400 font-bold text-[10px]' : 'text-amber-400 font-semibold text-[10px]'}>
+                        {recordStatus === 'completed' ? '조향 제작 완료' : '조향 접수 완료'}
+                      </span>
+                      
                       <button
                         onClick={() => onViewRecord(rec)}
                         className="px-3 py-1.5 bg-forest-800 text-luxury-cream text-[10px] font-bold rounded-lg hover:bg-forest-700 transition-colors flex items-center gap-1 border border-forest-650 cursor-pointer"
                       >
                         <Printer className="w-3 h-3 text-luxury-gold" /> 기록서 보기
                       </button>
-                    )}
+                    </div>
                   </div>
                 );
               })}
