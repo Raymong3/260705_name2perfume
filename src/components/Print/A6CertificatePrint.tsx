@@ -122,7 +122,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
 
           </div>
 
-          {/* 조향 변경 이력 및 조향사 의견 */}
+          {/* 조향 변경 이력, 고객 메모, 조향사 의견 */}
           <div className="space-y-1.5 py-1">
             {((finalRecipe.addedNotes && finalRecipe.addedNotes.length > 0) || (finalRecipe.removedNotes && finalRecipe.removedNotes.length > 0)) && (
               <div className="text-[7px] text-forest-700 space-y-0.5 font-semibold bg-luxury-sand/40 p-1.5 rounded border border-luxury-gold/20">
@@ -133,6 +133,15 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
                 {finalRecipe.removedNotes && finalRecipe.removedNotes.length > 0 && (
                   <div>• 제거 향료: {finalRecipe.removedNotes.join(', ')}</div>
                 )}
+              </div>
+            )}
+
+            {finalRecipe.guestMemo && (
+              <div className="space-y-0.5 bg-forest-900/5 p-1.5 rounded border border-luxury-gold/10">
+                <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider font-mono">Client Memo (고객 메모)</span>
+                <p className="text-[8px] leading-normal text-forest-800 font-serif italic">
+                  "{finalRecipe.guestMemo}"
+                </p>
               </div>
             )}
 

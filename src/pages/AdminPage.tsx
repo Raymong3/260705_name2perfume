@@ -24,6 +24,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     statusFilter,
     setStatusFilter,
     addedNotesText,
+    setAddedNotesText,
     errorMessage,
     verifyPassword,
     fetchRecords,
@@ -60,6 +61,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           addedNotesText={addedNotesText}
+          onAddedNotesTextChange={setAddedNotesText}
           onSelectRecord={handleSelectRecord}
           onAddNote={handleAddNote}
           onRemoveNote={handleRemoveNote}

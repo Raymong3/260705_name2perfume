@@ -66,6 +66,7 @@ class LocalScentDB {
       removed_notes: recipeData.removedNotes || [],
       modified_notes: recipeData.modifiedNotes || [],
       maker_memo: recipeData.makerMemo || '',
+      guest_memo: recipeData.guestMemo || recipeData.makerMemo || '',
       analysis: recipeData.analysis || null,
       selected_story: recipeData.selectedStory || null,
       survey_answers: recipeData.surveyAnswers || [],
@@ -111,6 +112,7 @@ class LocalScentDB {
       modified_notes: updates.modifiedNotes,
       perfume_name: updates.perfumeName,
       maker_memo: updates.makerMemo,
+      guest_memo: updates.guestMemo || data[idx].guest_memo || '',
       selected_type: updates.selectedType,
       updated_at: new Date().toISOString()
     };
@@ -153,6 +155,7 @@ class LocalScentDB {
       modifiedNotes: r.modified_notes,
       perfumeName: r.perfume_name,
       makerMemo: r.maker_memo,
+      guestMemo: r.guest_memo || r.guestMemo || '',
       createdDate: r.createdDate || formattedDate,
       analysis: r.analysis,
       selectedStory: r.selected_story,

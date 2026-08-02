@@ -12,6 +12,7 @@ interface AdminDashboardProps {
   statusFilter: 'all' | 'submitted' | 'completed';
   onStatusFilterChange: (status: 'all' | 'submitted' | 'completed') => void;
   addedNotesText: string;
+  onAddedNotesTextChange?: (text: string) => void;
   onSelectRecord: (record: FinalRecipe) => void;
   onAddNote: (note: PerfumeNote) => void;
   onRemoveNote: (category: 'top' | 'middle' | 'base', noteId: string) => void;
@@ -28,6 +29,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   statusFilter,
   onStatusFilterChange,
   addedNotesText,
+  onAddedNotesTextChange,
   onSelectRecord,
   onAddNote,
   onRemoveNote,
@@ -264,13 +266,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-forest-300 font-serif">
-                    변경 사항 기입 (자동 작성)
+                    변경 사항 기입
                   </label>
                   <input
                     type="text"
-                    value={addedNotesText || '기본 레시피 유지 (비율 정밀 조정)'}
-                    readOnly
-                    className="w-full px-3 py-2 bg-forest-950/80 border border-forest-800/80 rounded-xl text-xs font-medium text-luxury-gold focus:outline-none cursor-default"
+                    value={addedNotesText}
+                    onChange={(e) => onAddedNotesTextChange && onAddedNotesTextChange(e.target.value)}
+                    placeholder="기본 레시피 유지 (비율 정밀 조정)"
+                    className="w-full px-3 py-2 bg-forest-950 border border-forest-800 rounded-xl text-xs font-medium text-luxury-gold focus:outline-none focus:border-luxury-gold"
                   />
                 </div>
               </div>

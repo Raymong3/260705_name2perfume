@@ -122,7 +122,7 @@ export function useAdminDashboard() {
     }
   }, []);
 
-  // 4. Add Note to Selected Record
+  // 4. Add Note to Selected Record (Incremental Cumulative Diff)
   const handleAddNote = useCallback((note: PerfumeNote) => {
     if (!selectedRecord) return;
     const category = note.type;
@@ -136,66 +136,53 @@ export function useAdminDashboard() {
       reason: '관리자 직접 추가'
     };
 
+    const noteName = note.nameKo || note.nameEn;
+    const currentAdded = selectedRecord.addedNotes || [];
+    const currentRemoved = selectedRecord.removedNotes || [];
+
+    const updatedAdded = currentAdded.includes(noteName) ? currentAdded : [...currentAdded, noteName];
+    const updatedRemoved = currentRemoved.filter(n => n !== noteName);
+
     const updated = {
       ...selectedRecord,
-      [category]: [...currentCategoryNotes, newNoteItem]
+      [category]: [...currentCategoryNotes, newNoteItem],
+      addedNotes: updatedAdded,
+      removedNotes: updatedRemoved
     };
 
-    let origRecipe = updated.originalRecipe;
-    if (!origRecipe && updated.analysis) {
-      const selectedStory = updated.selectedStory || SEJONG_STORIES[0];
-      const { recipe1, recipe2 } = recommendPerfumes(updated.analysis, selectedStory);
-      origRecipe = updated.selectedType === 'name_sejong' ? recipe2 : recipe1;
-    }
-
-    if (origRecipe) {
-      const diff = calcRecipeDiff(
-        origRecipe.top || [],
-        origRecipe.middle || [],
-        origRecipe.base || [],
-        updated.top || [],
-        updated.middle || [],
-        updated.base || []
-      );
-      updated.addedNotes = diff.addedNotes;
-      updated.removedNotes = diff.removedNotes;
-      setAddedNotesText(diff.addedNotesText);
-    }
+    const parts: string[] = [];
+    if (updatedAdded.length > 0) parts.push(`추가: ${updatedAdded.join(', ')}`);
+    if (updatedRemoved.length > 0) parts.push(`제거: ${updatedRemoved.join(', ')}`);
+    setAddedNotesText(parts.join(' / '));
 
     setSelectedRecord(updated);
   }, [selectedRecord]);
 
-  // 5. Remove Note from Selected Record
+  // 5. Remove Note from Selected Record (Incremental Cumulative Diff)
   const handleRemoveNote = useCallback((category: 'top' | 'middle' | 'base', noteId: string) => {
     if (!selectedRecord) return;
     const currentCategoryNotes = selectedRecord[category] || [];
+    const removedItem = currentCategoryNotes.find(item => item.note.id === noteId);
     const updatedCategoryNotes = currentCategoryNotes.filter(item => item.note.id !== noteId);
+
+    const noteName = removedItem ? (removedItem.note.nameKo || removedItem.note.nameEn) : '';
+    const currentAdded = selectedRecord.addedNotes || [];
+    const currentRemoved = selectedRecord.removedNotes || [];
+
+    const updatedAdded = noteName ? currentAdded.filter(n => n !== noteName) : currentAdded;
+    const updatedRemoved = (noteName && !currentRemoved.includes(noteName)) ? [...currentRemoved, noteName] : currentRemoved;
 
     const updated = {
       ...selectedRecord,
-      [category]: updatedCategoryNotes
+      [category]: updatedCategoryNotes,
+      addedNotes: updatedAdded,
+      removedNotes: updatedRemoved
     };
 
-    let origRecipe = updated.originalRecipe;
-    if (!origRecipe && updated.analysis) {
-      const selectedStory = updated.selectedStory || SEJONG_STORIES[0];
-      const { recipe1, recipe2 } = recommendPerfumes(updated.analysis, selectedStory);
-      origRecipe = updated.selectedType === 'name_sejong' ? recipe2 : recipe1;
-    }
-
-    if (origRecipe) {
-      const diff = calcRecipeDiff(
-        origRecipe.top || [],
-        origRecipe.middle || [],
-        origRecipe.base || [],
-        updated.top || [],
-        updated.middle || [],
-        updated.base || []
-      );
-      updated.addedNotes = diff.addedNotes;
-      updated.removedNotes = diff.removedNotes;
-      setAddedNotesText(diff.addedNotesText);
-    }
+    const parts: string[] = [];
+    if (updatedAdded.length > 0) parts.push(`추가: ${updatedAdded.join(', ')}`);
+    if (updatedRemoved.length > 0) parts.push(`제거: ${updatedRemoved.join(', ')}`);
+    setAddedNotesText(parts.join(' / '));
 
     setSelectedRecord(updated);
   }, [selectedRecord]);
