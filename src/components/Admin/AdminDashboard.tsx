@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Printer, CheckCircle, Trash2, Plus, Sliders, FileText } from 'lucide-react';
 import { FinalRecipe, PerfumeNote } from '../../types/perfume';
 import { SORTED_TOP_NOTES, SORTED_MIDDLE_NOTES, SORTED_BASE_NOTES } from '../../data/notes';
+import { formatLoginIdDisplay, getDefaultMakerMemo } from '../../utils/formatters';
 
 interface AdminDashboardProps {
   records: FinalRecipe[];
@@ -37,15 +38,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [selectedTopToAdd, setSelectedTopToAdd] = useState('');
   const [selectedMiddleToAdd, setSelectedMiddleToAdd] = useState('');
   const [selectedBaseToAdd, setSelectedBaseToAdd] = useState('');
-  const [adminMemo, setAdminMemo] = useState(selectedRecord?.makerMemo || '');
+  const [adminMemo, setAdminMemo] = useState(selectedRecord?.makerMemo || (selectedRecord ? getDefaultMakerMemo(selectedRecord.selectedType) : ''));
   const [adminPerfumeName, setAdminPerfumeName] = useState(selectedRecord?.perfumeName || '');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  React.useEffect(() => {
+    if (selectedRecord) {
+      setAdminMemo(selectedRecord.makerMemo || getDefaultMakerMemo(selectedRecord.selectedType));
+      setAdminPerfumeName(selectedRecord.perfumeName || '');
+    }
+  }, [selectedRecord?.id]);
 
   // Filter records
   const filteredRecords = records.filter(r => {
     const matchesSearch = !searchQuery || 
       r.guestName.includes(searchQuery) || 
       r.loginId.includes(searchQuery) || 
+      formatLoginIdDisplay(r.loginId).includes(searchQuery) ||
       r.perfumeName.includes(searchQuery);
 
     const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
@@ -54,7 +63,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleRecordClick = (r: FinalRecipe) => {
     onSelectRecord(r);
-    setAdminMemo(r.makerMemo || '');
+    setAdminMemo(r.makerMemo || getDefaultMakerMemo(r.selectedType));
     setAdminPerfumeName(r.perfumeName || '');
   };
 
@@ -183,7 +192,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-[10px] text-forest-400">
-                      <span>ID: {r.loginId}</span>
+                      <span>ID: {formatLoginIdDisplay(r.loginId)}</span>
                       <span>{r.createdDate}</span>
                     </div>
                     <div className="text-xs text-luxury-cream font-medium font-serif truncate mt-1">
@@ -210,7 +219,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-serif text-xl font-bold text-white">{selectedRecord.guestName} 님의 조향 의뢰</h3>
-                    <span className="text-xs text-luxury-gold font-mono font-semibold">({selectedRecord.loginId})</span>
+                    <span className="text-xs text-luxury-gold font-mono font-semibold">({formatLoginIdDisplay(selectedRecord.loginId)})</span>
                   </div>
                   <p className="text-xs text-forest-300 mt-0.5">
                     접수일: {selectedRecord.createdDate} | 테마: {selectedRecord.selectedType === 'name_sejong' ? '이름 + 세종 융합' : '이름 분석'}

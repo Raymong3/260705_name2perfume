@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sparkles, Printer } from 'lucide-react';
 import { FinalRecipe } from '../../types/perfume';
+import { formatLoginIdDisplay } from '../../utils/formatters';
 
 interface GuestMyPageProps {
   loginId: string;
@@ -9,12 +10,6 @@ interface GuestMyPageProps {
   onStartNewJourney: () => void;
   onViewRecord: (recipe: FinalRecipe) => void;
 }
-
-const getDisplayGuestName = (id: string) => {
-  if (!id) return '';
-  const parts = id.split('_');
-  return parts[0]; // phone last 4 digits
-};
 
 export const GuestMyPage: React.FC<GuestMyPageProps> = ({
   loginId,
@@ -31,7 +26,7 @@ export const GuestMyPage: React.FC<GuestMyPageProps> = ({
           <span className="text-[10px] tracking-widest text-luxury-gold font-serif uppercase font-bold">Guest Portal</span>
           <h2 className="font-serif text-2xl font-bold text-white">조향 기록 보관함</h2>
           <p className="text-xs text-forest-300 font-medium">
-            본인 로그인 계정 <span className="font-bold text-luxury-gold">{getDisplayGuestName(loginId)}</span>으로 생성된 향 조향 내역입니다.
+            본인 로그인 계정 <span className="font-bold text-luxury-gold">{formatLoginIdDisplay(loginId)}</span>으로 생성된 향 조향 내역입니다.
           </p>
         </div>
 

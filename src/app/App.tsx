@@ -38,9 +38,6 @@ export function App() {
   const handlePrintRecipe = (recipe: FinalRecipe) => {
     setPrintTargetRecipe(recipe);
     setCurrentMode('print');
-    setTimeout(() => {
-      window.print();
-    }, 300);
   };
 
   // Triggered when a new recipe is created by the guest flow

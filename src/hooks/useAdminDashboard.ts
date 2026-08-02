@@ -97,7 +97,17 @@ export function useAdminDashboard() {
       origRecipe = record.selectedType === 'name_sejong' ? recipe2 : recipe1;
     }
 
-    if (origRecipe) {
+    const customerNotesParts: string[] = [];
+    if (record.addedNotes && record.addedNotes.length > 0) {
+      customerNotesParts.push(`추가: ${record.addedNotes.join(', ')}`);
+    }
+    if (record.removedNotes && record.removedNotes.length > 0) {
+      customerNotesParts.push(`제거: ${record.removedNotes.join(', ')}`);
+    }
+
+    if (customerNotesParts.length > 0) {
+      setAddedNotesText(customerNotesParts.join(' / '));
+    } else if (origRecipe) {
       const diff = calcRecipeDiff(
         origRecipe.top || [],
         origRecipe.middle || [],
