@@ -473,11 +473,7 @@ export default function App() {
         top: normalized.top,
         middle: normalized.middle,
         base: normalized.base,
-        originalRecipe: {
-          top: targetRecipe.top,
-          middle: targetRecipe.middle,
-          base: targetRecipe.base
-        },
+        originalRecipe: targetRecipe,
         addedNotes: autoMsg ? [autoMsg] : [],
         removedNotes: [],
         modifiedNotes: [],
@@ -516,8 +512,8 @@ export default function App() {
     let origBase = record.originalRecipe?.base || [];
 
     if (origTop.length === 0 && origMiddle.length === 0 && origBase.length === 0 && record.analysis) {
-      const recs = recommendPerfumes(record.analysis);
-      const targetTheme = record.selectedType === 'name_only' ? recs.rec1 : recs.rec2;
+      const recs = recommendPerfumes(record.analysis, record.selectedStory || null);
+      const targetTheme = record.selectedType === 'name_only' ? recs.recipe1 : recs.recipe2;
       if (targetTheme) {
         origTop = targetTheme.top;
         origMiddle = targetTheme.middle;
@@ -571,8 +567,8 @@ export default function App() {
       let origMiddle = selectedRecordForAdmin.originalRecipe?.middle || [];
       let origBase = selectedRecordForAdmin.originalRecipe?.base || [];
       if (origTop.length === 0 && origMiddle.length === 0 && origBase.length === 0 && selectedRecordForAdmin.analysis) {
-        const recs = recommendPerfumes(selectedRecordForAdmin.analysis);
-        const targetTheme = selectedRecordForAdmin.selectedType === 'name_only' ? recs.rec1 : recs.rec2;
+        const recs = recommendPerfumes(selectedRecordForAdmin.analysis, selectedRecordForAdmin.selectedStory || null);
+        const targetTheme = selectedRecordForAdmin.selectedType === 'name_only' ? recs.recipe1 : recs.recipe2;
         if (targetTheme) {
           origTop = targetTheme.top;
           origMiddle = targetTheme.middle;
@@ -598,8 +594,8 @@ export default function App() {
       let origMiddle = selectedRecordForAdmin.originalRecipe?.middle || [];
       let origBase = selectedRecordForAdmin.originalRecipe?.base || [];
       if (origTop.length === 0 && origMiddle.length === 0 && origBase.length === 0 && selectedRecordForAdmin.analysis) {
-        const recs = recommendPerfumes(selectedRecordForAdmin.analysis);
-        const targetTheme = selectedRecordForAdmin.selectedType === 'name_only' ? recs.rec1 : recs.rec2;
+        const recs = recommendPerfumes(selectedRecordForAdmin.analysis, selectedRecordForAdmin.selectedStory || null);
+        const targetTheme = selectedRecordForAdmin.selectedType === 'name_only' ? recs.recipe1 : recs.recipe2;
         if (targetTheme) {
           origTop = targetTheme.top;
           origMiddle = targetTheme.middle;
