@@ -94,3 +94,8 @@ export const NOTES: PerfumeNote[] = [
   createNote('base-leather', 'base', 'leather', '레더', '드라이하고 스모키하며 우디 노트와 플로럴은 바이올렛과 잘 어울립니다.', ['dry', 'woody', 'smoky'], 'gold'),
   createNote('base-patchouli', 'base', 'patchouli', '패출리', '얼씨하고 우디한 노트로 과량 사용시 한방 향이 날 수 있고 대부분의 향과 잘 어울립니다.', ['earthy', 'woody'], 'green')
 ];
+
+export const SORTED_TOP_NOTES = NOTES.filter(n => n.type === 'top').sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'));
+export const SORTED_MIDDLE_NOTES = NOTES.filter(n => n.type === 'middle').sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'));
+export const SORTED_BASE_NOTES = NOTES.filter(n => n.type === 'base').sort((a, b) => (a.nameKo || a.nameEn).localeCompare(b.nameKo || b.nameEn, 'ko'));
+

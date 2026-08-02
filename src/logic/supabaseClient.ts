@@ -84,7 +84,7 @@ class LocalScentDB {
     const data = this.getRawData();
     let filtered = data;
 
-    if (loginId && loginId !== 'admin9') {
+    if (loginId && loginId !== 'admin_mode' && !loginId.startsWith('admin')) {
       filtered = data.filter(r => r.password_pin === loginId.trim());
     }
 
@@ -276,7 +276,7 @@ export async function dbGetRecords(loginId?: string): Promise<FinalRecipe[]> {
   try {
     let query = supabase.from('hunmin_scent_records').select('*');
 
-    if (loginId && loginId !== 'admin9') {
+    if (loginId && loginId !== 'admin_mode' && !loginId.startsWith('admin')) {
       query = query.eq('password_pin', loginId.trim()); // query by loginId
     }
 
