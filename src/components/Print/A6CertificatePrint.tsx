@@ -53,7 +53,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
           {/* 의뢰자 및 향수 이름 헤더 */}
           <div className="flex justify-between items-baseline border-b border-luxury-gold/20 pb-1">
             <div className="space-y-0.5">
-              <span className="text-[7px] text-forest-400 font-mono block">CLIENT / PERFUME</span>
+              <span className="text-[7px] text-forest-400 font-mono block">이름 / 향수이름</span>
               <span className="font-serif text-xs font-bold text-forest-900">
                 {finalRecipe.guestName}(향수명: {finalRecipe.perfumeName})
               </span>
@@ -63,7 +63,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
 
           {/* 향 스토리 문구 */}
           <div className="py-1">
-            <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider mb-0.5">Scent Story (향의 이야기)</span>
+            <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider mb-0.5">향의 이야기</span>
             <p className="text-[8px] leading-relaxed text-forest-700 font-serif text-justify">
               {finalRecipe.originalRecipe?.description || finalRecipe.originalRecipe?.concept}
             </p>
@@ -138,7 +138,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
 
             {finalRecipe.guestMemo && (
               <div className="space-y-0.5 bg-forest-900/5 p-1.5 rounded border border-luxury-gold/10">
-                <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider font-mono">Client Memo (고객 메모)</span>
+                <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider font-mono">고객 메모</span>
                 <p className="text-[8px] leading-normal text-forest-800 font-serif italic">
                   "{finalRecipe.guestMemo}"
                 </p>
@@ -146,7 +146,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
             )}
 
             <div className="space-y-0.5">
-              <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider font-mono">Perfumer's Touch (조향사 의견)</span>
+              <span className="text-[7px] text-forest-400 font-bold block uppercase tracking-wider font-mono">조향사 의견</span>
               <p className="text-[8px] leading-normal text-forest-700 text-justify">
                 {(finalRecipe.makerMemo || getDefaultMakerMemo(finalRecipe.selectedType)).replace(/^(조향사 의견:|조향사메모:|조향사 메모:)\s*/, '')}
               </p>

@@ -390,7 +390,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-luxury-gold font-serif">조향사 의견 (Perfumer's Touch)</label>
+                  <label className="block text-xs font-bold text-luxury-gold font-serif">조향사 의견</label>
                   <textarea
                     value={adminMemo}
                     onChange={(e) => setAdminMemo(e.target.value)}
