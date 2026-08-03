@@ -8,7 +8,8 @@ export const SEJONG_STORIES: SejongStory[] = [
     description: '세종시 금강 위를 둥글게 이어주는 이응다리처럼, 사람과 사람, 자연과 사람을 잇는 활기차고 연결성 있는 시원한 분위기를 담아냅니다.',
     imageDesc: '금강 위에 둥근 원 모양으로 빛나는 이응다리의 아름다운 밤풍경과 싱그러운 강바람',
     bonusTags: ['활기찬', '연결되는', '시원한', '맑은', '현대적인'],
-    bonusNotes: ['Bergamot', 'Marine', 'Grapefruit']
+    bonusNotes: ['Bergamot', 'Marine', 'Grapefruit'],
+    imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'sejong_arboretum',
@@ -17,7 +18,8 @@ export const SEJONG_STORIES: SejongStory[] = [
     description: '사계절 온실과 울창한 수목이 어우러진 도심형 수목원처럼, 피톤치드 가득한 녹음과 싱그러운 생동감, 편안한 휴식을 안겨줍니다.',
     imageDesc: '사계절 온실의 은은한 꽃향기와 푸른 숲속 산책로의 피톤치드 그린 이미지',
     bonusTags: ['싱그러운', '네이처', '피톤치드', '상쾌한', '자연스러운'],
-    bonusNotes: ['Eucalyptus', 'Green Tea', 'Cedarwood']
+    bonusNotes: ['Eucalyptus', 'Green Tea', 'Cedarwood'],
+    imageUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'government_park',
@@ -26,7 +28,8 @@ export const SEJONG_STORIES: SejongStory[] = [
     description: '청사 건물들을 하나로 잇는 세계 최대 옥상정원의 산책로처럼, 탁 트인 시야와 조화롭고 품격 있는 정원의 서정적 분위기를 품고 있습니다.',
     imageDesc: '하늘과 맞닿은 옥상정원의 허브와 다양한 야생화가 펼쳐진 조화롭고 서정적인 분위기',
     bonusTags: ['품격있는', '조화로운', '서정적인', '여유로운', '은은한'],
-    bonusNotes: ['Lavender', 'Rosewood', 'Jasmin']
+    bonusNotes: ['Lavender', 'Rosewood', 'Jasmin'],
+    imageUrl: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'lake_park',
@@ -35,7 +38,8 @@ export const SEJONG_STORIES: SejongStory[] = [
     description: '국내 최대 규모의 인공호수로 맑은 물빛과 청량한 바람이 감도는 호수공원처럼, 투명하고 편안하며 마음을 차분하게 가라앉혀 줍니다.',
     imageDesc: '은빛 물결이 출렁이는 호숫가와 은은한 햇살 아래 잔잔한 물빛 잔물결',
     bonusTags: ['청량한', '잔잔한', '투명한', '편안한', '감성적인'],
-    bonusNotes: ['Aquatic', 'White Musk', 'Muguet']
+    bonusNotes: ['Aquatic', 'White Musk', 'Muguet'],
+    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'presidential_archives',
@@ -44,7 +48,8 @@ export const SEJONG_STORIES: SejongStory[] = [
     description: '대한민국 대통령의 역사와 기록이 보존된 상징적인 공간처럼, 무게감 있고 품격 있는 목재와 은은한 향나무의 지혜로운 아우라를 전해줍니다.',
     imageDesc: '고풍스러운 서책과 고요하고 기품 있는 엠버우드 향기의 깊은 아우라',
     bonusTags: ['기품있는', '웅장한', '품격있는', '깊이있는', '지혜로운'],
-    bonusNotes: ['Sandalwood', 'Amber', 'Cedarwood']
+    bonusNotes: ['Sandalwood', 'Amber', 'Cedarwood'],
+    imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'hunmin_studio',
@@ -53,7 +58,7 @@ export const SEJONG_STORIES: SejongStory[] = [
     description: '훈민정음의 독창적인 시그니처 감성과 훈민향음만의 시그니처 향료가 만나 당신만의 독창적이고 섬세한 예술적 향기를 완성합니다.',
     imageDesc: '조향사의 손길과 훈민정음 한글 조형이 어우러진 시그니처 아뜰리에 공간',
     bonusTags: ['시그니처', '예술적인', '감성적인', '독창적인', '섬세한'],
-    bonusNotes: ['Green Tea', 'White Musk', 'Bergamot']
+    bonusNotes: ['Green Tea', 'White Musk', 'Bergamot'],
+    imageUrl: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=80'
   }
 ];
-

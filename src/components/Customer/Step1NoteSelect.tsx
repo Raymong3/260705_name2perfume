@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, Check } from 'lucide-react';
 import { FAVORITE_SCENT_OPTIONS } from '../../data/favoriteScents';
 
 interface Step1NoteSelectProps {
@@ -16,21 +16,22 @@ export const Step1NoteSelect: React.FC<Step1NoteSelectProps> = ({
   const selectedScent = FAVORITE_SCENT_OPTIONS.find(s => s.id === selectedFavScentId);
 
   return (
-    <div className="space-y-2 pt-1">
-      <div className="flex justify-between items-center">
-        <label className="block text-xs font-bold text-forest-200 flex items-center gap-1">
-          <Heart className="w-3.5 h-3.5 text-luxury-gold" />
+    <div className="space-y-3 pt-2">
+      <div className="flex justify-between items-center px-1">
+        <label className="text-xs font-bold text-luxury-cream flex items-center gap-1.5 font-serif">
+          <Heart className="w-3.5 h-3.5 text-luxury-gold fill-luxury-gold/20" />
           <span>{customTitle || '마음에 드는 향 1가지 선택 (12종 중 택 1)'}</span>
         </label>
-        <span className="text-[10px] text-luxury-gold font-semibold">
-          {selectedScent ? `${selectedScent.nameKo} 선택됨` : '필수 선택'}
+        <span className="text-[11px] text-luxury-gold font-mono font-semibold">
+          {selectedScent ? `[ ${selectedScent.nameKo} ]` : '필수 선택'}
         </span>
       </div>
-      <p className="text-[10.5px] text-forest-300/80 font-medium pl-0.5">
-        ※ 아래 선택사항은 향료 추천에 영향을 끼치지 않습니다.
+      <p className="text-[11px] text-forest-300/80 font-medium pl-0.5">
+        ※ 선호하시는 대표 향기를 선택해 주시면 조향 아뜰리에가 취향을 섬세하게 고려합니다.
       </p>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+      {/* 카드 그리드: 테두리를 최소화하고 배경 명암과 호버/선택 인터랙션 강조 */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
         {FAVORITE_SCENT_OPTIONS.map((option) => {
           const isSelected = selectedFavScentId === option.id;
           return (
@@ -38,18 +39,37 @@ export const Step1NoteSelect: React.FC<Step1NoteSelectProps> = ({
               key={option.id}
               type="button"
               onClick={() => onSelectScent(option.id)}
-              className={`p-2.5 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
+              className={`p-3 rounded-2xl text-left flex flex-col justify-between transition-all duration-300 relative overflow-hidden group cursor-pointer ${
                 isSelected 
-                  ? 'bg-forest-800 border-luxury-gold ring-2 ring-luxury-gold/40 shadow-lg text-white' 
-                  : 'bg-forest-950/80 border-forest-800 text-forest-300 hover:border-forest-700 hover:bg-forest-900/60'
+                  ? 'bg-forest-800 text-white shadow-xl ring-2 ring-luxury-gold scale-[1.03] -translate-y-0.5' 
+                  : 'bg-forest-950/70 text-forest-200 hover:bg-forest-900 hover:text-white hover:scale-[1.01] hover:shadow-lg focus:ring-1 focus:ring-luxury-gold/50'
               }`}
             >
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[9px] font-bold text-luxury-gold font-mono uppercase">{option.tag}</span>
-                {isSelected && <span className="text-[10px] text-luxury-gold font-bold">✓</span>}
+              {/* 선택 시 은은한 골드 인광 배경 효과 */}
+              {isSelected && (
+                <div className="absolute inset-0 bg-gradient-to-br from-luxury-gold/15 to-transparent pointer-events-none"></div>
+              )}
+
+              <div className="flex justify-between items-center mb-1 relative z-10">
+                <span className={`text-[9.5px] font-bold font-mono tracking-wider uppercase ${
+                  isSelected ? 'text-luxury-gold' : 'text-forest-400 group-hover:text-luxury-gold/80'
+                }`}>
+                  {option.tag}
+                </span>
+                {isSelected && (
+                  <span className="w-4 h-4 rounded-full bg-luxury-gold text-forest-950 flex items-center justify-center text-[9px] font-bold shadow-md animate-scale-in">
+                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                  </span>
+                )}
               </div>
-              <div className="font-serif text-xs font-bold text-white leading-tight">{option.nameKo}</div>
-              <div className="text-[9px] text-forest-400 font-mono tracking-tight mt-0.5 truncate">{option.nameEn}</div>
+
+              <div className="font-serif text-xs font-bold leading-tight relative z-10">
+                {option.nameKo}
+              </div>
+              
+              <div className="text-[9px] text-forest-400 font-mono tracking-tight mt-0.5 truncate relative z-10 group-hover:text-forest-300">
+                {option.nameEn}
+              </div>
             </button>
           );
         })}

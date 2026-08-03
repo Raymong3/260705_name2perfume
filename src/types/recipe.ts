@@ -40,6 +40,7 @@ export type SejongStory = {
   imageDesc: string;
   bonusTags: string[];
   bonusNotes: string[];
+  imageUrl?: string;
 };
 
 export type FinalRecipe = {
