@@ -39,6 +39,7 @@
 ---
 
 ## 3. Render 빌드 오류 수정
-- `tsconfig.json`의 `noUnusedLocals: true` 옵션으로 인해 미사용 처리되었던 `Sparkles` 아이콘 import 문 정리 완료 (`Step2StorySelect.tsx`, `AdminDashboard.tsx`).
+- `src/components/Admin/AdminDashboard.tsx`의 미사용 `FileText` import 제거 (TS6133 에러 해결 완료).
+- `tsconfig.json`의 `noUnusedLocals: true` 옵션 준수를 위한 미사용 변수 정리 완료.
 - Render 환경용 `package.json` 의 `"build"` 명령어를 표준 `"tsc && vite build"`로 최적화.
 
