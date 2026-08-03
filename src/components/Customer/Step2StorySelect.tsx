@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ArrowRight, Check, ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronLeft, ArrowRight, Check, ChevronDown } from 'lucide-react';
 import { SEJONG_STORIES } from '../../data/sejongStories';
 import { SejongStory, NameAnalysis } from '../../types/perfume';
 

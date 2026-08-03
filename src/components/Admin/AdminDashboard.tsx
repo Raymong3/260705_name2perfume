@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Printer, CheckCircle, Trash2, Plus, Sliders, FileText, FlaskConical, Clock, Sparkles, Activity } from 'lucide-react';
+import { Search, Printer, CheckCircle, Trash2, Plus, Sliders, FileText, FlaskConical, Clock, Activity } from 'lucide-react';
 import { FinalRecipe, PerfumeNote } from '../../types/perfume';
 import { SORTED_TOP_NOTES, SORTED_MIDDLE_NOTES, SORTED_BASE_NOTES } from '../../data/notes';
 import { formatLoginIdDisplay, getDefaultMakerMemo } from '../../utils/formatters';

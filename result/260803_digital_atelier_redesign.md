@@ -38,7 +38,7 @@
 
 ---
 
-## 2. GitHub 커밋 & 푸시 내역
+## 3. Render 빌드 오류 수정
+- `tsconfig.json`의 `noUnusedLocals: true` 옵션으로 인해 미사용 처리되었던 `Sparkles` 아이콘 import 문 정리 완료 (`Step2StorySelect.tsx`, `AdminDashboard.tsx`).
+- Render 환경용 `package.json` 의 `"build"` 명령어를 표준 `"tsc && vite build"`로 최적화.
 
-- **커밋 메시지**: `feat: 훈민향음 디지털 조향 공간(Digital Atelier) 및 조향사 작업실 전면 UX/UI 리디자인`
-- **관련 파일**: `Header.tsx`, `GuestMainPage.tsx`, `Step1NoteSelect.tsx`, `Step2StorySelect.tsx`, `AdminDashboard.tsx`, `sejongStories.ts`, `recipe.ts`
