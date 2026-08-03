@@ -302,7 +302,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
                   향료 상세 스토리와 세종시 명소 서사를 확인하실 수 있습니다.
                 </p>
                 <div className="text-[7px] font-mono text-stone-400 pt-0.5">
-                  www.hunminscent.com
+                  @hunminhyangeum
                 </div>
               </div>
 
