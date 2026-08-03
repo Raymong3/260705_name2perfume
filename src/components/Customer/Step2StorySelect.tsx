@@ -36,11 +36,11 @@ export const Step2StorySelect: React.FC<Step2StorySelectProps> = ({
           세종시의 시그니처 감성을 선택하세요
         </h2>
         <p className="text-sm text-forest-200/90 max-w-xl mx-auto font-serif leading-relaxed">
-          이름 <span className="text-luxury-gold font-bold">'{analysis?.normalizedName}'</span>에 조화롭게 결합될 세종의 장소 서사를 하나 선택해 주세요.
+          이름 <span className="text-luxury-gold font-bold">'{analysis?.normalizedName}'</span>에 조화롭게 결합될 세종의 명소 서사를 하나 선택해 주세요.
         </p>
       </div>
 
-      {/* 갤러리 카드 그리드 (감성 비주얼 중심) */}
+      {/* 갤러리 카드 그리드 (모바일 호환 로컬 고화질 실사 이미지) */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {SEJONG_STORIES.map((story) => {
           const isSelected = selectedStory?.id === story.id;
@@ -56,39 +56,40 @@ export const Step2StorySelect: React.FC<Step2StorySelectProps> = ({
                   : 'bg-forest-950/80 hover:bg-forest-900/90 hover:shadow-xl hover:scale-[1.01]'
               }`}
             >
-              {/* 이미지 썸네일 히어로 영역 */}
-              <div className="relative h-44 w-full overflow-hidden">
-                <img 
-                  src={story.imageUrl} 
-                  alt={story.title} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-85 group-hover:opacity-100"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-forest-950 via-forest-950/40 to-transparent"></div>
+              {/* 실제 명소 사진 영역 (모바일에서도 100% 서빙) */}
+              <div className="relative h-52 sm:h-44 w-full overflow-hidden bg-forest-950">
+                {story.imageUrl && (
+                  <img 
+                    src={story.imageUrl} 
+                    alt={story.title} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-forest-950 via-forest-950/30 to-transparent"></div>
 
                 {/* 선택 체크 마크 */}
                 {isSelected && (
-                  <div className="absolute top-3 right-3 bg-luxury-gold text-forest-950 px-2.5 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 font-serif">
+                  <div className="absolute top-3 right-3 bg-luxury-gold text-forest-950 px-2.5 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 font-serif z-10">
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                     <span>선택됨</span>
                   </div>
                 )}
 
                 {/* 장소 이름 & 한 줄 서사 */}
-                <div className="absolute bottom-3 left-4 right-4 space-y-0.5">
-                  <span className="text-[10px] font-mono font-bold tracking-widest text-luxury-gold uppercase">
-                    SEJONG ATELIER STORY
+                <div className="absolute bottom-3 left-4 right-4 space-y-0.5 z-10">
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-luxury-gold uppercase drop-shadow">
+                    SEJONG LANDMARK REAL PHOTO
                   </span>
-                  <h3 className="font-serif text-xl font-bold text-white group-hover:text-luxury-cream transition-colors">
+                  <h3 className="font-serif text-xl font-bold text-white group-hover:text-luxury-cream transition-colors drop-shadow-md">
                     {story.title}
                   </h3>
-                  <p className="text-xs text-forest-200 font-serif line-clamp-1 italic">
+                  <p className="text-xs text-forest-100 font-serif line-clamp-1 italic drop-shadow">
                     {story.subtitle}
                   </p>
                 </div>
               </div>
 
-              {/* 본문 콘텐츠 & 펼치기 릴리즈 */}
+              {/* 본문 콘텐츠 */}
               <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                 
                 {/* 펼쳤을 때 또는 선택 상태 시 노출되는 상세 설명 */}
