@@ -6,10 +6,10 @@ export const SEJONG_STORIES: SejongStory[] = [
     title: '세종 이응다리',
     subtitle: '금강 위를 아름답게 이어주는 원형 보행교',
     description: '세종시 금강 위를 둥글게 이어주는 이응다리처럼, 사람과 사람, 자연과 사람을 잇는 활기차고 연결성 있는 시원한 분위기를 담아냅니다.',
-    imageDesc: '금강 위에 둥근 원 모양으로 빛나는 이응다리의 아름다운 밤풍경과 싱그러운 강바람',
+    imageDesc: '금강 위에 둥근 원 모양으로 빛나는 이응다리의 아름다운 야경과 싱그러운 강바람',
     bonusTags: ['활기찬', '연결되는', '시원한', '맑은', '현대적인'],
     bonusNotes: ['Bergamot', 'Marine', 'Grapefruit'],
-    imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1000&q=80'
   },
   {
     id: 'sejong_arboretum',
@@ -19,7 +19,7 @@ export const SEJONG_STORIES: SejongStory[] = [
     imageDesc: '사계절 온실의 은은한 꽃향기와 푸른 숲속 산책로의 피톤치드 그린 이미지',
     bonusTags: ['싱그러운', '네이처', '피톤치드', '상쾌한', '자연스러운'],
     bonusNotes: ['Eucalyptus', 'Green Tea', 'Cedarwood'],
-    imageUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/%EA%B5%AD%EB%A6%BD%EC%84%B8%EC%A2%85%EC%88%98%EB%AA%A9%EC%9B%901.jpg/1200px-%EA%B5%AD%EB%A6%BD%EC%84%B8%EC%A2%85%EC%88%98%EB%AA%A9%EC%9B%901.jpg'
   },
   {
     id: 'government_park',
@@ -29,7 +29,7 @@ export const SEJONG_STORIES: SejongStory[] = [
     imageDesc: '하늘과 맞닿은 옥상정원의 허브와 다양한 야생화가 펼쳐진 조화롭고 서정적인 분위기',
     bonusTags: ['품격있는', '조화로운', '서정적인', '여유로운', '은은한'],
     bonusNotes: ['Lavender', 'Rosewood', 'Jasmin'],
-    imageUrl: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Sejong_Government_Complex_Building_1.jpg/1200px-Sejong_Government_Complex_Building_1.jpg'
   },
   {
     id: 'lake_park',
@@ -39,7 +39,7 @@ export const SEJONG_STORIES: SejongStory[] = [
     imageDesc: '은빛 물결이 출렁이는 호숫가와 은은한 햇살 아래 잔잔한 물빛 잔물결',
     bonusTags: ['청량한', '잔잔한', '투명한', '편안한', '감성적인'],
     bonusNotes: ['Aquatic', 'White Musk', 'Muguet'],
-    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Sejong_Lake_Park_20210926_001.jpg/1200px-Sejong_Lake_Park_20210926_001.jpg'
   },
   {
     id: 'presidential_archives',
@@ -49,7 +49,7 @@ export const SEJONG_STORIES: SejongStory[] = [
     imageDesc: '고풍스러운 서책과 고요하고 기품 있는 엠버우드 향기의 깊은 아우라',
     bonusTags: ['기품있는', '웅장한', '품격있는', '깊이있는', '지혜로운'],
     bonusNotes: ['Sandalwood', 'Amber', 'Cedarwood'],
-    imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Presidential_Archives_of_Korea_20210926_001.jpg/1200px-Presidential_Archives_of_Korea_20210926_001.jpg'
   },
   {
     id: 'hunmin_studio',
@@ -59,6 +59,6 @@ export const SEJONG_STORIES: SejongStory[] = [
     imageDesc: '조향사의 손길과 훈민정음 한글 조형이 어우러진 시그니처 아뜰리에 공간',
     bonusTags: ['시그니처', '예술적인', '감성적인', '독창적인', '섬세한'],
     bonusNotes: ['Green Tea', 'White Musk', 'Bergamot'],
-    imageUrl: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1000&q=80'
   }
 ];

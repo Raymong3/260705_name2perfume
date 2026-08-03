@@ -61,7 +61,8 @@ export const Step2StorySelect: React.FC<Step2StorySelectProps> = ({
                 <img 
                   src={story.imageUrl} 
                   alt={story.title} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-90"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-85 group-hover:opacity-100"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-forest-950 via-forest-950/40 to-transparent"></div>
 
