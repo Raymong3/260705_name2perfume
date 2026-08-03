@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, ArrowRight, CheckCircle2, Circle } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle2, Circle, ChevronLeft, Search, FileText, AlertTriangle } from 'lucide-react';
 import { StepType, FinalRecipe, SejongStory, NameAnalysis, PerfumeRecipe, RecommendedNote } from '../types/perfume';
 import { Step1NoteSelect } from '../components/Customer/Step1NoteSelect';
 import { Step2StorySelect } from '../components/Customer/Step2StorySelect';
@@ -35,6 +35,9 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   onLoginSuccess,
   onNewRecipe,
 }) => {
+  // Phase 1 (Hero) vs Phase 2 (Auth) inside login step
+  const [homePhase, setHomePhase] = useState<'hero' | 'auth'>('hero');
+  
   const [loginId, setLoginId] = useState('');
   const [phoneLast4, setPhoneLast4] = useState('');
   const [guestName, setGuestName] = useState('');
@@ -74,6 +77,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
         handleLoadRecords(loginId);
       } else {
         setAuthMode('search');
+        setHomePhase('auth');
         setStep('login');
         setIsLoggedIn(false);
         setAuthError('');
@@ -109,7 +113,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     }
   }, [step]);
 
-  // Initial Login / Identifier submit
+  // Initial Login / Identifier submit with Duplicate Combination Check!
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const rawPhone = phoneLast4.trim();
@@ -141,12 +145,37 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     const compoundKey = `${rawPhone}_${selectedFavScentId}`;
     setLoginId(compoundKey);
 
+    setIsAuthLoading(true);
+
     if (authMode === 'new') {
+      // ⚠️ 중복 식별키 검증: 이미 존재하는 4자리+대표향 조합인지 DB/로컬스토리지 확인!
+      const existingCheck = await ScentService.getRecords(compoundKey, false);
+      let existingRecords = existingCheck.success && existingCheck.data ? existingCheck.data : [];
+
+      if (existingRecords.length === 0) {
+        const phoneCheck = await ScentService.getRecords(rawPhone, false);
+        if (phoneCheck.success && phoneCheck.data && phoneCheck.data.length > 0) {
+          // 해당 전화번호 뒷자리로 등록된 기록이 이미 있는지 확인
+          existingRecords = phoneCheck.data;
+        }
+      }
+
+      setIsAuthLoading(false);
+
+      if (existingRecords.length > 0) {
+        // 이미 해당 번호/향 조합으로 작성된 기록서가 존재하는 경우 ⚠️ 안내 멘트 출력 및 조회 유도
+        setAuthError(
+          `⚠️ 입력하신 정보(뒷자리 ${rawPhone}번)로 이미 접수된 조향 기록이 존재합니다. 본인의 기존 기록을 보시려면 '조향기록서 조회하기' 버튼을 눌러주시고, 새로 조향을 진행하시려면 대표 향이나 번호를 확인해 주세요.`
+        );
+        return;
+      }
+
+      // 중복이 없으면 정상적으로 신규 조향 여정 시작!
       setIsLoggedIn(true);
       setStep('step1');
       onLoginSuccess && onLoginSuccess();
     } else {
-      setIsAuthLoading(true);
+      // 기존 조향기록서 조회 모드
       const res = await ScentService.getRecords(compoundKey, false);
       let foundRecords = res.success && res.data ? res.data : [];
 
@@ -287,6 +316,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   };
 
   const handleResetSession = () => {
+    setHomePhase('hero');
     setAuthMode('new');
     setAuthError('');
     setStep('login');
@@ -302,37 +332,97 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   return (
     <div className="w-full flex flex-col items-center justify-center min-h-[calc(100vh-140px)] py-4 transition-colors duration-700">
       
-      {/* 0단계: 메인 웰컴 히어로 & 식별 번호 입력 (디지털 조향 아뜰리에 첫 화면) */}
-      {step === 'login' && !isLoggedIn && (
-        <div className="max-w-3xl w-full flex flex-col items-center text-center space-y-8 animate-fade-in print-exclude my-auto">
+      {/* 0단계 (페이즈 1): 메인 웰컴 브랜드 웅장 히어로 페이지 */}
+      {step === 'login' && !isLoggedIn && homePhase === 'hero' && (
+        <div className="max-w-3xl w-full flex flex-col items-center text-center space-y-10 animate-fade-in print-exclude my-auto py-8">
           
-          {/* 브랜드 철학 히어로 헤더 (크고 당당한 브랜드 메세지) */}
-          <div className="space-y-4 max-w-2xl mx-auto pt-4">
-            <span className="text-[11px] font-mono tracking-[0.3em] text-luxury-gold uppercase bg-forest-950/80 px-4 py-1.5 rounded-full border border-luxury-gold/30 inline-block shadow-md">
+          {/* 브랜드 철학 타이틀 */}
+          <div className="space-y-6 max-w-2xl mx-auto">
+            <span className="text-[11px] font-mono tracking-[0.35em] text-luxury-gold uppercase bg-forest-950/90 px-5 py-2 rounded-full border border-luxury-gold/30 inline-block shadow-lg">
               HUNMIN SCENT DIGITAL ATELIER
             </span>
 
-            <h1 className="font-serif text-4xl md:text-5xl font-bold text-white tracking-wide leading-tight drop-shadow-lg">
+            <h1 className="font-serif text-5xl md:text-6xl font-bold text-white tracking-wider leading-tight drop-shadow-xl">
               훈민향음
             </h1>
 
-            <div className="py-2 space-y-1.5 font-serif text-xl md:text-2xl text-luxury-cream leading-relaxed font-medium">
+            <div className="py-3 space-y-2 font-serif text-2xl md:text-3xl text-luxury-cream leading-relaxed font-medium">
               <p>당신의 이름과</p>
               <p>세종의 이야기가 만나</p>
-              <p className="text-luxury-gold font-bold text-2xl md:text-3xl pt-1">
+              <p className="text-luxury-gold font-bold text-3xl md:text-4xl pt-2 tracking-wide drop-shadow-md">
                 세상에 하나뿐인 향이 됩니다.
               </p>
             </div>
 
-            <p className="text-xs text-forest-300 font-serif italic max-w-md mx-auto pt-1">
-              "한글의 소리 파동과 세종시의 고유한 공간 서사가 교차하는 나만의 프리미엄 시그니처 향수 조향 공간"
+            <p className="text-sm md:text-base text-forest-200/90 font-serif italic max-w-lg mx-auto pt-2 leading-relaxed">
+              "한글 소리 파동의 기운과 세종시의 공간 서사가 교차하는 나만의 시그니처 훈민정음 조향 아뜰리에 공간"
             </p>
           </div>
 
-          {/* 접수 세션 선택 카드 (테두리 최소화 & 딥 포레스트 클래스) */}
-          <div className="w-full max-w-xl bg-forest-900/90 border border-luxury-gold/20 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 backdrop-blur-xl">
+          {/* 메인 액션 버튼 그룹 (독립된 웰컴 페이즈) */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md pt-4">
+            {/* 조향 시작하기 버튼 (페이즈 2로 이동) */}
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode('new');
+                setAuthError('');
+                setHomePhase('auth');
+              }}
+              className="w-full sm:w-auto flex-1 py-4 px-8 bg-luxury-gold hover:bg-luxury-cream text-forest-950 font-serif font-bold text-base md:text-lg rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-luxury-gold/40 flex items-center justify-center gap-3 cursor-pointer active:scale-98"
+            >
+              <Sparkles className="w-5 h-5 text-forest-950" />
+              <span>조향 시작하기</span>
+              <ArrowRight className="w-5 h-5 text-forest-950" />
+            </button>
+
+            {/* 기존 조향기록서 조회 버튼 */}
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode('search');
+                setAuthError('');
+                setHomePhase('auth');
+              }}
+              className="w-full sm:w-auto py-4 px-6 bg-forest-900/90 hover:bg-forest-850 text-luxury-cream font-serif font-bold text-sm rounded-2xl transition-all border border-luxury-gold/30 hover:border-luxury-gold shadow-xl flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <FileText className="w-4 h-4 text-luxury-gold" />
+              <span>기존 조향기록서 조회</span>
+            </button>
+          </div>
+
+        </div>
+      )}
+
+      {/* 0단계 (페이즈 2): 식별 번호 & 선호 향 선택 로그인 페이지 */}
+      {step === 'login' && !isLoggedIn && homePhase === 'auth' && (
+        <div className="max-w-xl w-full flex flex-col items-center space-y-6 animate-fade-in print-exclude my-auto">
+          
+          {/* 이전 메인으로 돌아가기 버튼 */}
+          <button
+            type="button"
+            onClick={() => {
+              setHomePhase('hero');
+              setAuthError('');
+            }}
+            className="self-start flex items-center gap-1.5 text-xs font-serif font-bold text-forest-300 hover:text-white transition-colors cursor-pointer px-3 py-1.5 rounded-lg bg-forest-950/60 border border-forest-850"
+          >
+            <ChevronLeft className="w-4 h-4" /> 브랜드 소개 메인으로
+          </button>
+
+          {/* 식별 카드 패널 */}
+          <div className="w-full bg-forest-900/95 border border-luxury-gold/30 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 backdrop-blur-xl">
             
-            {/* 세션 탭 (신규 접수 / 기존 조회) */}
+            <div className="text-center space-y-1 border-b border-forest-800 pb-4">
+              <span className="text-[10px] font-mono tracking-widest text-luxury-gold uppercase">
+                DIGITAL SCENT IDENTIFIER
+              </span>
+              <h2 className="font-serif text-2xl font-bold text-white">
+                {authMode === 'new' ? '조향 식별 번호 및 선호 향 선택' : '기존 조향기록서 조회'}
+              </h2>
+            </div>
+
+            {/* 세션 모드 탭 (신규 접수 vs 기존 조회) */}
             <div className="flex border border-forest-800 rounded-2xl overflow-hidden bg-forest-950 p-1">
               <button
                 type="button"
@@ -391,21 +481,46 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
                 }
               />
 
+              {/* 중복 및 검증 에러 멘트 (명확한 경고 박스) */}
               {authError && (
-                <p className="text-xs text-red-400 font-semibold text-center bg-red-950/40 p-2.5 rounded-xl border border-red-900/60">
-                  {authError}
-                </p>
+                <div className="space-y-2 bg-amber-950/60 p-4 rounded-2xl border border-amber-800/80 text-amber-200 text-xs font-serif leading-relaxed animate-shake">
+                  <div className="flex items-center gap-2 font-bold text-luxury-gold text-sm">
+                    <AlertTriangle className="w-4 h-4 text-luxury-gold flex-shrink-0" />
+                    <span>조향 식별 중복 안내</span>
+                  </div>
+                  <p>{authError}</p>
+
+                  {authMode === 'new' && authError.includes('이미 접수된 조향 기록') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('search');
+                        setAuthError('');
+                      }}
+                      className="mt-2 w-full py-2.5 bg-luxury-gold text-forest-950 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 hover:bg-luxury-cream cursor-pointer"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      <span>내 조향기록서 바로 조회하기</span>
+                    </button>
+                  )}
+                </div>
               )}
 
-              {/* 주인공 메인 CTA 버튼 (조향 시작하기) - 시선 집중 골드 샤인 버튼 */}
+              {/* 제출 CTA 버튼 */}
               <button
                 type="submit"
                 disabled={isAuthLoading}
                 className="w-full py-4 bg-luxury-gold hover:bg-luxury-cream text-forest-950 font-serif font-bold text-base rounded-2xl transition-all shadow-xl hover:shadow-luxury-gold/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2 active:scale-98"
               >
-                <Sparkles className="w-5 h-5 text-forest-950" />
-                <span>{authMode === 'new' ? '조향 시작하기' : '조향기록서 조회하기'}</span>
-                <ArrowRight className="w-4 h-4 text-forest-950" />
+                {isAuthLoading ? (
+                  <div className="w-5 h-5 border-2 border-forest-950 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 text-forest-950" />
+                    <span>{authMode === 'new' ? '조향 시작하기' : '조향기록서 조회하기'}</span>
+                    <ArrowRight className="w-4 h-4 text-forest-950" />
+                  </>
+                )}
               </button>
             </form>
 
