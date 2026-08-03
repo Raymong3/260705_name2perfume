@@ -20,7 +20,7 @@
 
 ### 3) 모바일 100% 지원 세종 명소 실사 이미지 번들링 (`public/images/stories/`)
 - 외부 인터넷 링크(Wikimedia/Unsplash) 연결 방식에서 발생하는 모바일 브라우저(카카오톡/Safari/네이버 앱)의 엑스박스 및 핫링크 차단 현상을 완벽 해결하기 위해 **고화질 명소 실사 사진 6종을 프로젝트 번들(`public/images/stories/`)로 직접 내장**.
-  - `eung_bridge.png` (세종 이응다리 금강보행교 실사)
+- **세종 이응다리(금강보행교)**: 사용자가 직접 제공한 실제 이응다리 야경 조망 실사 사진 적용 (`/images/stories/eung_bridge.png`)
   - `sejong_arboretum.png` (국립세종수목원 온실 전경 실사)
   - `government_park.png` (정부세종청사 옥상정원 실사)
   - `lake_park.png` (세종 호수공원 실사)
