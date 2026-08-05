@@ -535,7 +535,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
             <span className="text-xs font-bold tracking-widest text-luxury-gold uppercase bg-forest-950 px-3.5 py-1.5 rounded-full border border-luxury-gold/30 inline-block font-mono">
               STEP 1 · NAME ATELIER
             </span>
-            <h2 className="font-serif text-3xl font-bold text-white">의뢰 대상자 성함 입력</h2>
+            <h2 className="font-serif text-3xl font-bold text-white">이름을 담다</h2>
             <p className="text-xs text-forest-300 font-serif">
               소유하실 분의 성함을 입력하시면 훈민정음 원리에 따른 음가 파동을 분석합니다.
             </p>

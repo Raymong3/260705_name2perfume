@@ -283,25 +283,20 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
             {/* 하단 QR 코드 & 브랜드 굿즈 안내 */}
             <div className="pb-2 space-y-3 w-full flex flex-col items-center">
               
-              {/* QR 코드 그래픽 렌더링 */}
-              <div className="w-16 h-16 bg-white p-1.5 border border-stone-300 rounded shadow-sm flex items-center justify-center relative">
-                <svg className="w-full h-full text-stone-900" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm9-2h9v8h-9V2zm2 2v4h5V4h-5zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm13-2h3v3h-3v-3zm0 5h5v3h-5v-3zm-4-5h3v8h-3v-8z" />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-stone-900 text-white text-[5px] px-1 py-0.5 rounded font-mono font-bold">
-                    訓
-                  </span>
-                </div>
-              </div>
+              {/* 더알(DEORAL) QR 코드 이미지 렌더링 */}
+              <img 
+                src="/images/qrcode.png" 
+                alt="더알 QR 코드" 
+                className="w-16 h-16 bg-white p-1 border border-stone-300 rounded shadow-sm object-contain" 
+              />
 
               <div className="space-y-1">
                 <div className="text-[7.5px] font-mono font-bold tracking-widest text-stone-700 uppercase">
-                  HUNMINHYANGEUM SCENT ARCHIVE
+                  DEORAL SHOP & ARCHIVE
                 </div>
                 <p className="text-[7px] text-stone-500 font-serif leading-tight">
                   스마트폰 카메라로 QR 코드를 스캔하시면<br />
-                  향료 상세 스토리와 세종시 명소 서사를 확인하실 수 있습니다.
+                  훈민향음과 더알(DEORAL)의 브랜드 소식을 확인하실 수 있습니다.
                 </p>
                 <div className="text-[7px] font-mono text-stone-400 pt-0.5">
                   @ther_nagyeong
