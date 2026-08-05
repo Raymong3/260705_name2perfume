@@ -258,9 +258,11 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
           >
             {/* 상단 엠블럼 워터마크 */}
             <div className="pt-4 space-y-2">
-              <div className="w-10 h-10 rounded-full border border-amber-900/30 flex items-center justify-center mx-auto text-amber-900/80 font-serif font-bold text-xs tracking-widest">
-                訓
-              </div>
+              <img 
+                src="/images/stamp.png" 
+                alt="훈민향음 직인" 
+                className="w-11 h-auto mx-auto object-contain"
+              />
               <div className="text-[8px] font-mono tracking-[0.3em] text-stone-400 uppercase">
                 HUNMINHYANGEUM
               </div>
