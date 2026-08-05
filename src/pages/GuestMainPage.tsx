@@ -218,15 +218,10 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       return;
     }
 
-    // 한글 검증: 오직 완성형 한글 자모음(가-힣)만 허용
+    // 한글 검증: 오직 완성형 한글(가-힣)만 허용 (글자 수 제한 없음)
     const isKoreanOnly = /^[가-힣]+$/.test(inputName);
     if (!isKoreanOnly) {
       setNameError('이름은 한글(예: 홍길동)로만 입력해 주세요. (영문, 숫자, 특수문자 사용 불가)');
-      return;
-    }
-
-    if (inputName.length < 2 || inputName.length > 10) {
-      setNameError('한글 이름은 2자 이상 10자 이하로 입력해 주세요.');
       return;
     }
 
