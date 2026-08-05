@@ -48,7 +48,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (selectedRecord) {
       const rawMakerMemo = selectedRecord.makerMemo ? selectedRecord.makerMemo.replace(/^(조향사 의견:|조향사메모:|조향사 메모:)\s*/, '') : '';
       setAdminMemo(rawMakerMemo || getDefaultMakerMemo(selectedRecord.selectedType));
-      setAdminPerfumeName(selectedRecord.perfumeName || `${selectedRecord.guestName}의 향수`);
+      setAdminPerfumeName(selectedRecord.perfumeName || `${selectedRecord.guestName}, 향이 되다`);
     }
   }, [selectedRecord?.id]);
 

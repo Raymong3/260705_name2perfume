@@ -276,7 +276,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       originalRecipe: chosenOriginal || {
         name: guestName,
         analysis: analysis!,
-        concept: `${guestName}의 향수`,
+        concept: `${guestName}, 향이 되다`,
         top: customNotes.top,
         middle: customNotes.middle,
         base: customNotes.base,
@@ -289,7 +289,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       addedNotes,
       removedNotes,
       modifiedNotes: [],
-      perfumeName: perfumeName || `${guestName}의 향수`,
+      perfumeName: perfumeName || `${guestName}, 향이 되다`,
       makerMemo: '',
       guestMemo: makerMemo,
       createdDate: new Date().toLocaleDateString('ko-KR'),

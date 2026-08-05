@@ -279,7 +279,7 @@ export const Step3Customizer: React.FC<Step3CustomizerProps> = ({
               type="text"
               value={perfumeName}
               onChange={(e) => setPerfumeName(e.target.value)}
-              placeholder="나만의 향수 이름을 입력해 주세요"
+              placeholder="나만의 향수 이름을 입력해 주세요 (예: 홍길동, 향이 되다)"
               className="w-full px-4 py-2.5 bg-forest-950 border border-forest-800 rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-luxury-gold focus:ring-1 focus:ring-luxury-gold/30"
             />
           </div>
