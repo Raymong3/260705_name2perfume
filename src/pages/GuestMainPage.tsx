@@ -212,13 +212,26 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   // Name submit -> Go to Step 2 (Sejong story)
   const handleNameNext = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!guestNameForRecipe.trim()) {
-      setNameError('의뢰하실 분의 이름을 입력해 주세요.');
+    const inputName = guestNameForRecipe.trim();
+    if (!inputName) {
+      setNameError('당신의 한글 이름을 입력해 주세요.');
+      return;
+    }
+
+    // 한글 검증: 오직 완성형 한글 자모음(가-힣)만 허용
+    const isKoreanOnly = /^[가-힣]+$/.test(inputName);
+    if (!isKoreanOnly) {
+      setNameError('이름은 한글(예: 홍길동)로만 입력해 주세요. (영문, 숫자, 특수문자 사용 불가)');
+      return;
+    }
+
+    if (inputName.length < 2 || inputName.length > 10) {
+      setNameError('한글 이름은 2자 이상 10자 이하로 입력해 주세요.');
       return;
     }
 
     try {
-      const analyzed = analyzeName(guestNameForRecipe.trim());
+      const analyzed = analyzeName(inputName);
       setAnalysis(analyzed);
 
       const defaultStory = SEJONG_STORIES[0];
@@ -228,7 +241,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       setRecommended1(recipe1);
       setRecommended2(recipe2);
 
-      setGuestName(guestNameForRecipe.trim());
+      setGuestName(inputName);
       setStep('step2');
     } catch (err: any) {
       setNameError(err.message || '이름 분석 중 오류가 발생했습니다.');
@@ -528,16 +541,16 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
         </div>
       )}
 
-      {/* 1단계: 의뢰인 성함 입력 */}
+      {/* 1단계: 이름을 담다 / 당신의 이름을 넣어주세요 */}
       {step === 'step1' && isLoggedIn && (
         <div className="max-w-xl w-full bg-forest-900/90 border border-luxury-gold/20 rounded-3xl p-8 md:p-10 shadow-2xl space-y-6 animate-fade-in print-exclude backdrop-blur-xl my-auto">
           <div className="text-center space-y-2">
             <span className="text-xs font-bold tracking-widest text-luxury-gold uppercase bg-forest-950 px-3.5 py-1.5 rounded-full border border-luxury-gold/30 inline-block font-mono">
-              STEP 1 · NAME ATELIER
+              1단계: 이름을 담다
             </span>
-            <h2 className="font-serif text-3xl font-bold text-white">이름을 담다</h2>
+            <h2 className="font-serif text-3xl font-bold text-white">당신의 이름을 넣어주세요</h2>
             <p className="text-xs text-forest-300 font-serif">
-              소유하실 분의 성함을 입력하시면 훈민정음 원리에 따른 음가 파동을 분석합니다.
+              소유하실 분의 성함을 한글로 입력하시면 훈민정음 원리에 따른 음가 파동을 분석합니다.
             </p>
           </div>
 

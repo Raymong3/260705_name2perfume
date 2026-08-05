@@ -292,11 +292,11 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
 
               <div className="space-y-1">
                 <div className="text-[7.5px] font-mono font-bold tracking-widest text-stone-700 uppercase">
-                  DEORAL SHOP & ARCHIVE
+                  TheR SHOP & ARCHIVE
                 </div>
                 <p className="text-[7px] text-stone-500 font-serif leading-tight">
                   스마트폰 카메라로 QR 코드를 스캔하시면<br />
-                  훈민향음과 더알(DEORAL)의 브랜드 소식을 확인하실 수 있습니다.
+                  훈민향음과 더알(TheR)의 브랜드 소식을 확인하실 수 있습니다.
                 </p>
                 <div className="text-[7px] font-mono text-stone-400 pt-0.5">
                   @ther_nagyeong
