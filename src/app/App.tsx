@@ -112,13 +112,13 @@ export function App() {
       <footer className="border-t border-luxury-gold/10 bg-forest-950 text-forest-300 py-6 text-center text-xs print-exclude">
         <div className="max-w-6xl mx-auto px-4 space-y-2">
           <div className="font-serif text-sm font-bold text-luxury-cream">
-            훈민향음 (訓民香音)
+            Re:세종
           </div>
           <p className="text-[11px] text-forest-400 font-light">
-            세종의 한글과 향기로 전하는 당신만의 고유한 시그니처 향수
+            세종의 장소와 향기로 전하는 당신만의 고유한 시그니처 향수
           </p>
           <div className="text-[10px] text-forest-500 font-mono pt-1">
-            © 2026 훈민향음. All rights reserved.
+            © 2026 Re:세종. All rights reserved.
           </div>
         </div>
       </footer>

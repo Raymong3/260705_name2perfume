@@ -53,9 +53,9 @@ export function useScentSession() {
       const defaultStory = SEJONG_STORIES[0];
       setSelectedStoryId(defaultStory.id);
 
-      const { recipe1, recipe2 } = recommendPerfumes(nameAnalysis, defaultStory);
+      const recipe1 = recommendPerfumes(nameAnalysis, defaultStory);
       setRecommended1(recipe1);
-      setRecommended2(recipe2);
+      setRecommended2(null);
 
       // Load existing records if any
       const recordRes = await ScentService.getRecords(idPin, false);
@@ -79,27 +79,25 @@ export function useScentSession() {
 
     const story = SEJONG_STORIES.find(s => s.id === storyId);
     if (story) {
-      const { recipe2 } = recommendPerfumes(analysis, story);
+      const recipe2 = recommendPerfumes(analysis, story);
       setRecommended2(recipe2);
     }
   }, [analysis]);
 
   // 3. Submit Recipe
   const handleSubmitRecipe = useCallback(async (
-    recipeType: 'name_only' | 'name_sejong',
+    recipeType: 'name_only' | 'name_sejong' | 'combined',
     customNotes: { top: any[]; middle: any[]; base: any[] },
     addedNotes: string[],
     removedNotes: string[],
     perfumeName: string,
     makerMemo: string
   ) => {
-    if (!analysis || !recommended1 || !recommended2) return null;
+    if (!analysis || !recommended1) return null;
 
     setIsLoading(true);
-    const chosenOriginal = recipeType === 'name_only' ? recommended1 : recommended2;
-    const selectedStory = recipeType === 'name_sejong' 
-      ? SEJONG_STORIES.find(s => s.id === selectedStoryId) || null 
-      : null;
+    const chosenOriginal = recommended1;
+    const selectedStory = SEJONG_STORIES.find(s => s.id === selectedStoryId) || null;
 
     const recipeData: Partial<FinalRecipe> = {
       selectedType: recipeType,

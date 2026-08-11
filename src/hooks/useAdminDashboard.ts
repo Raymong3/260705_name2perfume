@@ -93,8 +93,8 @@ export function useAdminDashboard() {
     let origRecipe = record.originalRecipe;
     if (!origRecipe && record.analysis) {
       const selectedStory = record.selectedStory || SEJONG_STORIES[0];
-      const { recipe1, recipe2 } = recommendPerfumes(record.analysis, selectedStory);
-      origRecipe = record.selectedType === 'name_sejong' ? recipe2 : recipe1;
+      const recipe = recommendPerfumes(record.analysis, selectedStory);
+      origRecipe = recipe;
     }
 
     const customerNotesParts: string[] = [];

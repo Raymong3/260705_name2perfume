@@ -1,64 +1,72 @@
 import { SejongStory } from '../types/perfume';
 
 export const SEJONG_STORIES: SejongStory[] = [
+  // 현대 세종
   {
-    id: 'eung_bridge',
-    title: '세종 이응다리',
-    subtitle: '금강 위를 아름답게 이어주는 원형 보행교',
-    description: '세종시 금강 위를 둥글게 이어주는 이응다리처럼, 사람과 사람, 자연과 사람을 잇는 활기차고 연결성 있는 시원한 분위기를 담아냅니다.',
-    imageDesc: '금강 위에 둥근 원 모양으로 빛나는 이응다리의 아름다운 야경과 싱그러운 강바람',
-    bonusTags: ['활기찬', '연결되는', '시원한', '맑은', '현대적인'],
-    bonusNotes: ['Bergamot', 'Marine', 'Grapefruit'],
-    imageUrl: '/images/stories/eung_bridge.png'
+    id: 'yung_bridge',
+    category: 'modern',
+    title: '이응다리',
+    subtitle: '금강 위를 수놓은 원형의 아름다움',
+    description: '금강의 물결 위로 펼쳐진 국내 최초의 원형 보행교, 이응다리입니다. 금강의 맑은 물빛과 현대적인 도시의 빛이 조화를 이루며 시원하고 깨끗한 이미지를 선사합니다.',
+    imageDesc: '금강 위로 둥글게 빛나는 이응다리의 곡선과 푸른 강물의 조화',
+    imageUrl: '/images/stories/eung_bridge.png',
+    bonusTags: ['맑은', '시원한', '세련된', '도시적인', '깨끗한'],
+    bonusNotes: ['Marine', 'Lime', 'Bergamot']
+  },
+  {
+    id: 'sejong_lake',
+    category: 'modern',
+    title: '세종호수공원',
+    subtitle: '도심 속 잔잔한 물결과 여유',
+    description: '국내 최대 규모의 도심 호수공원으로, 넓게 트인 호숫바람과 따뜻한 햇살 아래 산책을 즐기며 여유를 느끼는 공간입니다. 싱그럽고 평온하며 상쾌한 바람의 느낌을 담았습니다.',
+    imageDesc: '은빛 물결이 반짝이는 호수공원의 잔디밭과 맑은 하늘',
+    imageUrl: '/images/stories/lake_park.png',
+    bonusTags: ['편안한', '산뜻한', '맑은', '자연스러운', '시원한'],
+    bonusNotes: ['Muguet', 'Eucalyptus', 'Green']
   },
   {
     id: 'sejong_arboretum',
+    category: 'modern',
     title: '국립세종수목원',
-    subtitle: '도심 속에 펼쳐진 사계절 싱그러운 녹음',
-    description: '사계절 온실과 울창한 수목이 어우러진 도심형 수목원처럼, 피톤치드 가득한 녹음과 싱그러운 생동감, 편안한 휴식을 안겨줍니다.',
-    imageDesc: '사계절 온실의 은은한 꽃향기와 푸른 숲속 산책로의 피톤치드 그린 이미지',
-    bonusTags: ['싱그러운', '네이처', '피톤치드', '상쾌한', '자연스러운'],
-    bonusNotes: ['Eucalyptus', 'Green Tea', 'Cedarwood'],
-    imageUrl: '/images/stories/sejong_arboretum.png'
+    subtitle: '도심 속 초록빛 유리 온실의 싱그러움',
+    description: '한국 전통 정원과 웅장한 사계절 전시온실이 어우러져 싱그러운 반려식물들의 숨결이 가득한 수목원입니다. 숲속을 걷는 듯한 풍성한 초록빛 그리너리 향과 화사한 꽃 향을 품고 있습니다.',
+    imageDesc: '유리 온실 사이로 쏟아지는 햇살과 푸른 열대 식물들',
+    imageUrl: '/images/stories/sejong_arboretum.png',
+    bonusTags: ['숲', '그린', '신선한', '풍성한', '따뜻한'],
+    bonusNotes: ['cypress', 'Peony', 'leaf']
+  },
+  // 시간이 쌓인 세종
+  {
+    id: 'jochiwon',
+    category: 'historical',
+    title: '조치원',
+    subtitle: '조치원 전통시장과 복숭아꽃의 정겨운 향수',
+    description: '백년의 역사를 가진 전통시장과 싱그러운 조치원 복숭아꽃이 피어나는 정겨운 고장입니다. 따뜻한 정이 느껴지는 포근함과 향긋하고 달콤한 복숭아 향이 가득합니다.',
+    imageDesc: '따스한 햇살 아래 분홍빛으로 탐스럽게 열린 조치원 복숭아밭',
+    imageUrl: '/images/stories/hunmin_studio.png',
+    bonusTags: ['달콤한', '포근한', '따뜻한', '친근한', '로맨틱한'],
+    bonusNotes: ['Pink Peach', 'white musk', 'Strawberry']
   },
   {
-    id: 'government_park',
-    title: '정부청사 옥상정원',
-    subtitle: '세계 최대 규모의 하늘 위 커다란 정원',
-    description: '청사 건물들을 하나로 잇는 세계 최대 옥상정원의 산책로처럼, 탁 트인 시야와 조화롭고 품격 있는 정원의 서정적 분위기를 품고 있습니다.',
-    imageDesc: '하늘과 맞닿은 옥상정원의 허브와 다양한 야생화가 펼쳐진 조화롭고 서정적인 분위기',
-    bonusTags: ['품격있는', '조화로운', '서정적인', '여유로운', '은은한'],
-    bonusNotes: ['Lavender', 'Rosewood', 'Jasmin'],
-    imageUrl: '/images/stories/government_park.png'
+    id: 'jeoni',
+    category: 'historical',
+    title: '전의',
+    subtitle: '왕의 물, 전의초수와 전통의 지혜',
+    description: '세종대왕의 안질을 치료했다는 전설적인 탄산 천수 \'전의초수\'와 정갈한 묘목들이 자라나는 역사와 생명의 터전입니다. 차분하고 깨끗하며 깊이 있는 지적인 무드를 선사합니다.',
+    imageDesc: '이끼 낀 돌 틈 사이로 용솟음치는 맑고 차가운 탄산 약수터',
+    imageUrl: '/images/stories/government_park.png',
+    bonusTags: ['지적인', '차분한', '정갈한', '깊이감', '안정감'],
+    bonusNotes: ['Black Tea', 'cedar wood', 'Spearmint']
   },
   {
-    id: 'lake_park',
-    title: '세종 호수공원',
-    subtitle: '도심 한가운데 잔잔히 물빛을 품은 청량한 휴식처',
-    description: '국내 최대 규모의 인공호수로 맑은 물빛과 청량한 바람이 감도는 호수공원처럼, 투명하고 편안하며 마음을 차분하게 가라앉혀 줍니다.',
-    imageDesc: '은빛 물결이 출렁이는 호숫가와 은은한 햇살 아래 잔잔한 물빛 잔물결',
-    bonusTags: ['청량한', '잔잔한', '투명한', '편안한', '감성적인'],
-    bonusNotes: ['Aquatic', 'White Musk', 'Muguet'],
-    imageUrl: '/images/stories/lake_park.png'
-  },
-  {
-    id: 'presidential_archives',
-    title: '대통령기록관',
-    subtitle: '역사의 기품과 웅장한 지혜를 간직한 공간',
-    description: '대한민국 대통령의 역사와 기록이 보존된 상징적인 공간처럼, 무게감 있고 품격 있는 목재와 은은한 향나무의 지혜로운 아우라를 전해줍니다.',
-    imageDesc: '고풍스러운 서책과 고요하고 기품 있는 엠버우드 향기의 깊은 아우라',
-    bonusTags: ['기품있는', '웅장한', '품격있는', '깊이있는', '지혜로운'],
-    bonusNotes: ['Sandalwood', 'Amber', 'Cedarwood'],
-    imageUrl: '/images/stories/presidential_archives.png'
-  },
-  {
-    id: 'hunmin_studio',
-    title: '훈민향음공방',
-    subtitle: '한글의 원리와 향기의 예술이 교차하는 창작 아뜰리에',
-    description: '훈민정음의 독창적인 시그니처 감성과 훈민향음만의 시그니처 향료가 만나 당신만의 독창적이고 섬세한 예술적 향기를 완성합니다.',
-    imageDesc: '조향사의 손길과 훈민정음 한글 조형이 어우러진 시그니처 아뜰리에 공간',
-    bonusTags: ['시그니처', '예술적인', '감성적인', '독창적인', '섬세한'],
-    bonusNotes: ['Green Tea', 'White Musk', 'Bergamot'],
-    imageUrl: '/images/stories/hunmin_studio.png'
+    id: 'geumnam',
+    category: 'historical',
+    title: '금남',
+    subtitle: '유구한 역사와 금강 나루터의 깊은 숲 향기',
+    description: '유유히 흐르는 금강 나루터의 옛 정취와 금남면 비학산의 고요한 산자락을 품은 전통적인 고장입니다. 세월의 흐름을 견뎌낸 단단하고 묵직한 우디 향과 대지의 흙 향이 감싸 안아줍니다.',
+    imageDesc: '오래된 나무들과 흙바닥 위로 내려앉은 깊고 고요한 숲의 그늘',
+    imageUrl: '/images/stories/presidential_archives.png',
+    bonusTags: ['우디', '깊이감', '차분한', '고급스러운', '안정감'],
+    bonusNotes: ['sandal wood', 'oud', 'patchouli']
   }
 ];

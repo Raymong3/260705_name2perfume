@@ -34,10 +34,7 @@ export const Header: React.FC<HeaderProps> = ({ onGoHome, onOpenPastRecords, sho
           <div className="flex flex-col justify-center">
             <div className="flex items-center gap-2">
               <span className="font-serif text-xl md:text-2xl font-bold tracking-[0.15em] text-white group-hover:text-luxury-gold transition-colors">
-                훈민향음
-              </span>
-              <span className="text-[10px] font-mono tracking-widest text-luxury-goldDark uppercase hidden sm:inline-block">
-                訓民香音
+                Re:세종
               </span>
             </div>
             
@@ -45,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ onGoHome, onOpenPastRecords, sho
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-luxury-gold animate-pulse"></span>
               <span className="text-xs md:text-[13px] tracking-[0.18em] text-luxury-cream font-serif font-medium leading-none drop-shadow">
-                이름을 향기로 읽다
+                Re:세종 · 세종이라는 도시를 향기로 다시 떠올리는 경험
               </span>
             </div>
           </div>

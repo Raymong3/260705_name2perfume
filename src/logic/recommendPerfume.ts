@@ -194,25 +194,15 @@ export function recommendSingleRecipe(
   return rawRecipe;
 }
 
-// Recommends two recipes: recipe1 (Name Only) and recipe2 (Name + Sejong City Landmark)
+// Recommends a combined single recipe (Name + Sejong City Landmark)
 export function recommendPerfumes(
   nameAnalysis: NameAnalysis,
   sejongStory: SejongStory | null
-): { recipe1: PerfumeRecipe; recipe2: PerfumeRecipe } {
-  // 1안: 나의 이름을 담은 향 (이름 구조 및 감성 분석 기반)
-  const recipe1 = recommendSingleRecipe(
-    nameAnalysis,
-    0,
-    [],
-    []
-  );
-  recipe1.concept = `당신의 이름 '${nameAnalysis.normalizedName}'의 한글 결성과 무드가 자아내는 온전한 당신만의 시그니처 향`;
-
-  // 2안: 이름과 세종시가 만난 향 (이름 분석 + 세종시 랜드마크 키워드)
+): PerfumeRecipe {
   const sejongBonusTags = sejongStory ? sejongStory.bonusTags : [];
   const sejongBonusNotes = sejongStory ? sejongStory.bonusNotes : [];
 
-  const recipe2 = recommendSingleRecipe(
+  const combinedRecipe = recommendSingleRecipe(
     nameAnalysis,
     100,
     sejongBonusTags,
@@ -220,12 +210,12 @@ export function recommendPerfumes(
   );
 
   if (sejongStory) {
-    recipe2.concept = `'${nameAnalysis.normalizedName}'의 이름과 세종시의 '${sejongStory.title}' 풍경 및 감성이 어우러져 만들어진 깊이 있는 조화의 향`;
-    recipe2.description = `'${nameAnalysis.normalizedName}'님의 이름 분석 결과에 따른 이미지와, 선택하신 세종시 명소 '${sejongStory.title}'의 감성을 조화롭게 융합하여 선정된 결과입니다.`;
+    combinedRecipe.concept = `'${nameAnalysis.normalizedName}'의 이름과 세종시의 '${sejongStory.title}' 풍경 및 감성이 어우러져 만들어진 깊이 있는 조화의 향`;
+    combinedRecipe.description = `'${nameAnalysis.normalizedName}'님의 이름 분석 결과에 따른 이미지와, 선택하신 세종시 명소 '${sejongStory.title}'의 감성을 조화롭게 융합하여 선정된 결과입니다.`;
   } else {
-    recipe2.description = `'${nameAnalysis.normalizedName}'님의 이름 분석 결과에 따른 이미지와 세종시 명소의 감성을 조화롭게 융합하여 선정된 결과입니다.`;
+    combinedRecipe.description = `'${nameAnalysis.normalizedName}'님의 이름 분석 결과에 따른 이미지와 세종시 명소의 감성을 조화롭게 융합하여 선정된 결과입니다.`;
   }
 
-  return { recipe1, recipe2 };
+  return combinedRecipe;
 }
 

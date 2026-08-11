@@ -15,7 +15,7 @@ const ANALYSIS_STAGES = [
   '이름 한글 음가 및 획수 파동 분석 완료',
   '세종의 명소 공간 서사 감성 매칭 완료',
   '탑 · 미들 · 베이스 향료 황금 성향 계산 완료',
-  '나만의 훈민향음 시그니처 레시피 생성 중',
+  '나만의 Re:세종 시그니처 레시피 생성 중',
   '디지털 조향 아뜰리에 맞춤 포뮬러 완성'
 ];
 
@@ -54,7 +54,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
   const [selectedStory, setSelectedStory] = useState<SejongStory | null>(SEJONG_STORIES[0]);
   const [recommended1, setRecommended1] = useState<PerfumeRecipe | null>(null);
   const [recommended2, setRecommended2] = useState<PerfumeRecipe | null>(null);
-  const [selectedRecipeType, setSelectedRecipeType] = useState<'name_only' | 'name_sejong'>('name_only');
+  const [selectedRecipeType, setSelectedRecipeType] = useState<'name_only' | 'name_sejong' | 'combined'>('combined');
 
   const [finalRecipe, setFinalRecipe] = useState<FinalRecipe | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
@@ -170,9 +170,9 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
         return;
       }
 
-      // 중복이 없으면 정상적으로 신규 조향 여정 시작!
+      // 중복이 없으면 정상적으로 신규 조향 여정 시작 (장소 선택부터!)
       setIsLoggedIn(true);
-      setStep('step1');
+      setStep('step2');
       onLoginSuccess && onLoginSuccess();
     } else {
       // 기존 조향기록서 조회 모드
@@ -206,10 +206,10 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     setRecommended2(null);
     setGuestNameForRecipe('');
     setNameError('');
-    setStep('step1');
+    setStep('step2');
   };
 
-  // Name submit -> Go to Step 2 (Sejong story)
+  // Name submit -> Recommend and Go to Analyzing
   const handleNameNext = (e: React.FormEvent) => {
     e.preventDefault();
     const inputName = guestNameForRecipe.trim();
@@ -229,36 +229,31 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       const analyzed = analyzeName(inputName);
       setAnalysis(analyzed);
 
-      const defaultStory = SEJONG_STORIES[0];
-      setSelectedStory(defaultStory);
-
-      const { recipe1, recipe2 } = recommendPerfumes(analyzed, defaultStory);
-      setRecommended1(recipe1);
-      setRecommended2(recipe2);
+      // 이미 장소 선택(selectedStory)이 완료되어 있으므로 여기서 추천을 받음!
+      const recipe = recommendPerfumes(analyzed, selectedStory);
+      setRecommended1(recipe);
+      setRecommended2(null);
+      setSelectedRecipeType('name_sejong'); // 호환을 위한 고정
 
       setGuestName(inputName);
-      setStep('step2');
+      setStep('analyzing');
+      setTimeout(() => {
+        setStep('result');
+      }, 5200);
     } catch (err: any) {
       setNameError(err.message || '이름 분석 중 오류가 발생했습니다.');
     }
   };
 
-  // Story submit -> Analyzing -> Step 3
+  // Story submit -> Go to Step 1 (Name Input)
   const handleSejongSubmit = () => {
-    if (!analysis || !selectedStory) return;
-
-    const { recipe2 } = recommendPerfumes(analysis, selectedStory);
-    setRecommended2(recipe2);
-
-    setStep('analyzing');
-    setTimeout(() => {
-      setStep('result');
-    }, 5200);
+    if (!selectedStory) return;
+    setStep('step1');
   };
 
   // Submit Final Custom Recipe
   const handleFinalSubmit = async (
-    recipeType: 'name_only' | 'name_sejong',
+    recipeType: 'name_only' | 'name_sejong' | 'combined',
     customNotes: { top: RecommendedNote[]; middle: RecommendedNote[]; base: RecommendedNote[] },
     addedNotes: string[],
     removedNotes: string[],
@@ -266,7 +261,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
     makerMemo: string
   ) => {
     setIsAuthLoading(true);
-    const chosenOriginal = recipeType === 'name_only' ? recommended1 : recommended2;
+    const chosenOriginal = recommended1;
 
     const recipeData: Partial<FinalRecipe> = {
       guestName,
@@ -351,19 +346,19 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
             </span>
 
             <h1 className="font-serif text-5xl md:text-6xl font-bold text-white tracking-wider leading-tight drop-shadow-xl">
-              훈민향음
+              Re:세종
             </h1>
 
             <div className="py-3 space-y-2 font-serif text-2xl md:text-3xl text-luxury-cream leading-relaxed font-medium">
-              <p>당신의 이름과</p>
-              <p>세종의 이야기가 만나</p>
+              <p>세종이라는 도시와</p>
+              <p>당신의 이야기가 만나</p>
               <p className="text-luxury-gold font-bold text-3xl md:text-4xl pt-2 tracking-wide drop-shadow-md">
-                세상에 하나뿐인 향이 됩니다.
+                하나의 특별한 향이 됩니다.
               </p>
             </div>
 
             <p className="text-sm md:text-base text-forest-200/90 font-serif italic max-w-lg mx-auto pt-2 leading-relaxed">
-              "한글 소리 파동의 기운과 세종시의 공간 서사가 교차하는 나만의 시그니처 훈민정음 조향 아뜰리에 공간"
+              "세종의 장소와 당신의 이름이 만나 향기가 되는 디지털 조향 아뜰리에"
             </p>
           </div>
 
@@ -541,9 +536,9 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
         <div className="max-w-xl w-full bg-forest-900/90 border border-luxury-gold/20 rounded-3xl p-8 md:p-10 shadow-2xl space-y-6 animate-fade-in print-exclude backdrop-blur-xl my-auto">
           <div className="text-center space-y-2">
             <span className="text-xs font-bold tracking-widest text-luxury-gold uppercase bg-forest-950 px-3.5 py-1.5 rounded-full border border-luxury-gold/30 inline-block font-mono">
-              1단계: 이름을 담다
+              2단계: 이름을 담다
             </span>
-            <h2 className="font-serif text-3xl font-bold text-white">당신의 이름을 넣어주세요</h2>
+            <h2 className="font-serif text-3xl font-bold text-white">이름을 입력해 주세요</h2>
             <p className="text-xs text-forest-300 font-serif">
               소유하실 분의 성함을 한글로 입력하시면 훈민정음 원리에 따른 음가 파동을 분석합니다.
             </p>
@@ -570,13 +565,22 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
               )}
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-4 bg-luxury-gold hover:bg-luxury-cream text-forest-950 font-serif font-bold text-base rounded-2xl transition-all shadow-xl hover:shadow-luxury-gold/30 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Sparkles className="w-5 h-5 text-forest-950" />
-              <span>이름 음가 분석 및 서사 연결</span>
-            </button>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setStep('step2')}
+                className="flex-1 py-4 border border-forest-800 text-forest-300 font-serif font-bold rounded-2xl hover:bg-forest-950/40 transition-colors shadow-sm active:scale-98 cursor-pointer"
+              >
+                이전 단계로
+              </button>
+              <button
+                type="submit"
+                className="flex-[2] py-4 bg-luxury-gold hover:bg-luxury-cream text-forest-950 font-serif font-bold text-base rounded-2xl transition-all shadow-xl hover:shadow-luxury-gold/30 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Sparkles className="w-5 h-5 text-forest-950" />
+                <span>이름 음가 분석 및 조향</span>
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -584,10 +588,9 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       {/* 2단계: 세종 이야기 선택 */}
       {step === 'step2' && isLoggedIn && (
         <Step2StorySelect
-          analysis={analysis}
           selectedStory={selectedStory}
           onSelectStory={(story) => setSelectedStory(story)}
-          onBack={() => setStep('step1')}
+          onBack={handleResetSession}
           onNext={handleSejongSubmit}
         />
       )}

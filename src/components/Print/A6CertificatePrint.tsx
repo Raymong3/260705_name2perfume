@@ -43,7 +43,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-luxury-gold" />
-            <span className="text-xs font-serif font-bold text-white">HUNMINHYANGEUM BRAND CARD</span>
+            <span className="text-xs font-serif font-bold text-white">RE:SEJONG BRAND CARD</span>
           </div>
 
           <div className="flex items-center bg-forest-950 p-1 rounded-xl border border-forest-800">
@@ -102,10 +102,10 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
               <div className="flex justify-between items-start">
                 <div className="space-y-0.5 text-left">
                   <div className="text-[7.5px] font-mono tracking-[0.25em] text-stone-500 uppercase font-semibold">
-                    HUNMINHYANGEUM
+                    RE:SEJONG
                   </div>
                   <div className="font-serif text-base font-bold text-stone-900 tracking-tight leading-none">
-                    훈민향음 <span className="text-[9px] font-mono font-normal text-stone-500">訓民香音</span>
+                    Re:세종
                   </div>
                 </div>
                 <div className="text-right space-y-0.5">
@@ -116,7 +116,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
                 </div>
               </div>
               <p className="text-[6.5px] text-stone-400 font-serif italic tracking-tight text-left">
-                "세종의 이야기와 당신의 이름이 향으로 이어지다"
+                "세종의 장소와 당신의 이름이 향으로 이어지다"
               </p>
             </div>
 
@@ -235,7 +235,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
             <div className="pt-2 border-t border-stone-300/60 flex justify-between items-end text-[6.5px] text-stone-400 font-mono">
               <div className="space-y-0.5 text-left">
                 <div className="font-serif font-bold text-stone-600">Crafted in Sejong</div>
-                <div className="text-[6px] tracking-wider text-stone-400">© 訓民香音 2026. ALL RIGHTS RESERVED.</div>
+                <div className="text-[6px] tracking-wider text-stone-400">© Re:세종 2026. ALL RIGHTS RESERVED.</div>
               </div>
 
               <div className="text-right flex items-center gap-1.5">
@@ -260,11 +260,11 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
             <div className="pt-4 space-y-2">
               <img 
                 src="/images/stamp.png" 
-                alt="훈민향음 직인" 
+                alt="Re:세종 직인" 
                 className="w-11 h-auto mx-auto object-contain"
               />
               <div className="text-[8px] font-mono tracking-[0.3em] text-stone-400 uppercase">
-                HUNMINHYANGEUM
+                RE:SEJONG
               </div>
             </div>
 
@@ -296,7 +296,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
                 </div>
                 <p className="text-[7px] text-stone-500 font-serif leading-tight">
                   스마트폰 카메라로 QR 코드를 스캔하시면<br />
-                  훈민향음과 더알(TheR)의 브랜드 소식을 확인하실 수 있습니다.
+                  Re:세종과 더알(TheR)의 브랜드 소식을 확인하실 수 있습니다.
                 </p>
                 <div className="text-[7px] font-mono text-stone-400 pt-0.5">
                   @ther_nagyeong
