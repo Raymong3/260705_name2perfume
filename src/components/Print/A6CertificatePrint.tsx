@@ -261,7 +261,7 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
               <img 
                 src="/images/stamp2.png" 
                 alt="Re:세종 스탬프" 
-                className="w-16 h-auto mx-auto object-contain"
+                className="w-24 h-auto mx-auto object-contain"
               />
               <div className="text-[8px] font-mono tracking-[0.3em] text-stone-400 uppercase">
                 RE:SEJONG
