@@ -259,8 +259,8 @@ export const A6CertificatePrint: React.FC<A6CertificatePrintProps> = ({ finalRec
             {/* 상단 엠블럼 워터마크 */}
             <div className="pt-4 space-y-2">
               <img 
-                src="/images/re_sejong_logo.png" 
-                alt="Re:세종 로고" 
+                src="/images/stamp2.png" 
+                alt="Re:세종 스탬프" 
                 className="w-16 h-auto mx-auto object-contain"
               />
               <div className="text-[8px] font-mono tracking-[0.3em] text-stone-400 uppercase">
