@@ -421,7 +421,7 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
                 DIGITAL SCENT IDENTIFIER
               </span>
               <h2 className="font-serif text-2xl font-bold text-white">
-                {authMode === 'new' ? '조향 식별 번호 및 선호 향 선택' : '기존 조향기록서 조회'}
+                {authMode === 'new' ? '조향 식별 번호 입력' : '기존 조향기록서 조회'}
               </h2>
             </div>
 
