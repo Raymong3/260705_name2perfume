@@ -26,8 +26,8 @@ export const Step1NoteSelect: React.FC<Step1NoteSelectProps> = ({
           {selectedScent ? `[ ${selectedScent.nameKo} ]` : '필수 선택'}
         </span>
       </div>
-      <p className="text-[11px] text-forest-300/80 font-medium pl-0.5">
-        ※ 선호하시는 대표 향기를 선택해 주시면 조향 아뜰리에가 취향을 섬세하게 고려합니다.
+      <p className="text-[11px] text-forest-400 font-medium pl-0.5">
+        ※ 고객 식별 및 보관함 조회를 위한 대표 선호향을 선택해 주세요.
       </p>
 
       {/* 카드 그리드: 테두리를 최소화하고 배경 명암과 호버/선택 인터랙션 강조 */}
