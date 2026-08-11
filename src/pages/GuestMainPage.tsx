@@ -535,8 +535,8 @@ export const GuestMainPage: React.FC<GuestMainPageProps> = ({
       {step === 'step1' && isLoggedIn && (
         <div className="max-w-xl w-full bg-forest-900/90 border border-luxury-gold/20 rounded-3xl p-8 md:p-10 shadow-2xl space-y-6 animate-fade-in print-exclude backdrop-blur-xl my-auto">
           <div className="text-center space-y-2">
-            <span className="text-xs font-bold tracking-widest text-luxury-gold uppercase bg-forest-950 px-3.5 py-1.5 rounded-full border border-luxury-gold/30 inline-block font-mono">
-              2단계: 이름을 담다
+            <span className="text-[10px] font-bold tracking-[0.25em] text-luxury-gold uppercase bg-forest-950 px-5 py-2 rounded-full border border-luxury-gold/30 inline-block font-mono shadow-md">
+              STEP 02 / IDENTITY
             </span>
             <h2 className="font-serif text-3xl font-bold text-white">이름을 입력해 주세요</h2>
             <p className="text-xs text-forest-300 font-serif">

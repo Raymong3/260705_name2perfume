@@ -209,12 +209,16 @@ export function recommendPerfumes(
     sejongBonusNotes
   );
 
-  if (sejongStory) {
-    combinedRecipe.concept = `'${nameAnalysis.normalizedName}'의 이름과 세종시의 '${sejongStory.title}' 풍경 및 감성이 어우러져 만들어진 깊이 있는 조화의 향`;
-    combinedRecipe.description = `'${nameAnalysis.normalizedName}'님의 이름 분석 결과에 따른 이미지와, 선택하신 세종시 명소 '${sejongStory.title}'의 감성을 조화롭게 융합하여 선정된 결과입니다.`;
-  } else {
-    combinedRecipe.description = `'${nameAnalysis.normalizedName}'님의 이름 분석 결과에 따른 이미지와 세종시 명소의 감성을 조화롭게 융합하여 선정된 결과입니다.`;
-  }
+  const placeTitle = sejongStory ? sejongStory.title : '세종';
+  const placeSubtitle = sejongStory ? sejongStory.subtitle : '세종의 잔잔한 정취';
+  const nameMood = nameAnalysis.moodTags && nameAnalysis.moodTags.length > 0
+    ? nameAnalysis.moodTags.slice(0, 3).join(' · ')
+    : '맑고 단정한 한글 음가 에너지';
+
+  combinedRecipe.name = `${nameAnalysis.normalizedName} in ${placeTitle}`;
+  combinedRecipe.concept = `'${nameAnalysis.normalizedName}'의 이름과 세종시 '${placeTitle}'의 정취가 만나 완성된 단 하나의 시그니처 향`;
+  
+  combinedRecipe.description = `'${nameAnalysis.normalizedName}'님의 이름 음가 분석에서 발현되는 [${nameMood}] 무드와, 선택하신 명소 [${placeTitle}]의 [${placeSubtitle}] 공간 서사가 조화롭게 교차된 조향입니다. 한글 이름의 고유한 에너지 주파수 위에 세종시 랜드마크의 감성 어코드 가중치가 정교하게 융합되어, 오직 당신만을 위해 설계된 조화로운 시그니처 향조를 자아냅니다.`;
 
   return combinedRecipe;
 }

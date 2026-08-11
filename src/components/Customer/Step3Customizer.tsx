@@ -104,8 +104,8 @@ export const Step3Customizer: React.FC<Step3CustomizerProps> = ({
   return (
     <div className="max-w-4xl w-full space-y-8 animate-slide-up print-exclude text-left">
       <div className="text-center space-y-2">
-        <span className="text-xs font-bold tracking-widest text-luxury-gold uppercase bg-forest-900/80 px-3.5 py-1.5 rounded-full border border-forest-750 inline-block font-mono">
-          3단계: 향을 잇다
+        <span className="text-[10px] font-bold tracking-[0.25em] text-luxury-gold uppercase bg-forest-900/80 px-5 py-2 rounded-full border border-forest-750 inline-block font-mono shadow-md">
+          STEP 03 / ATELIER
         </span>
         <h2 className="font-serif text-3xl font-bold text-white">나만의 시그니처 향</h2>
         <p className="text-xs text-forest-200">

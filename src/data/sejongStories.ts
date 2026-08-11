@@ -43,7 +43,7 @@ export const SEJONG_STORIES: SejongStory[] = [
     subtitle: '조치원 전통시장과 복숭아꽃의 정겨운 향수',
     description: '백년의 역사를 가진 전통시장과 싱그러운 조치원 복숭아꽃이 피어나는 정겨운 고장입니다. 따뜻한 정이 느껴지는 포근함과 향긋하고 달콤한 복숭아 향이 가득합니다.',
     imageDesc: '따스한 햇살 아래 분홍빛으로 탐스럽게 열린 조치원 복숭아밭',
-    imageUrl: '/images/stories/hunmin_studio.png',
+    imageUrl: '/images/stories/jochiwon_peach.png',
     bonusTags: ['달콤한', '포근한', '따뜻한', '친근한', '로맨틱한'],
     bonusNotes: ['Pink Peach', 'white musk', 'Strawberry']
   },
@@ -54,7 +54,7 @@ export const SEJONG_STORIES: SejongStory[] = [
     subtitle: '왕의 물, 전의초수와 전통의 지혜',
     description: '세종대왕의 안질을 치료했다는 전설적인 탄산 천수 \'전의초수\'와 정갈한 묘목들이 자라나는 역사와 생명의 터전입니다. 차분하고 깨끗하며 깊이 있는 지적인 무드를 선사합니다.',
     imageDesc: '이끼 낀 돌 틈 사이로 용솟음치는 맑고 차가운 탄산 약수터',
-    imageUrl: '/images/stories/government_park.png',
+    imageUrl: '/images/stories/jeoni_water.png',
     bonusTags: ['지적인', '차분한', '정갈한', '깊이감', '안정감'],
     bonusNotes: ['Black Tea', 'cedar wood', 'Spearmint']
   },
@@ -65,7 +65,7 @@ export const SEJONG_STORIES: SejongStory[] = [
     subtitle: '유구한 역사와 금강 나루터의 깊은 숲 향기',
     description: '유유히 흐르는 금강 나루터의 옛 정취와 금남면 비학산의 고요한 산자락을 품은 전통적인 고장입니다. 세월의 흐름을 견뎌낸 단단하고 묵직한 우디 향과 대지의 흙 향이 감싸 안아줍니다.',
     imageDesc: '오래된 나무들과 흙바닥 위로 내려앉은 깊고 고요한 숲의 그늘',
-    imageUrl: '/images/stories/presidential_archives.png',
+    imageUrl: '/images/stories/geumnam_forest.png',
     bonusTags: ['우디', '깊이감', '차분한', '고급스러운', '안정감'],
     bonusNotes: ['sandal wood', 'oud', 'patchouli']
   }

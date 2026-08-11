@@ -113,11 +113,11 @@ export const Step2StorySelect: React.FC<Step2StorySelectProps> = ({
     <div className="max-w-6xl w-full space-y-8 animate-slide-up print-exclude py-4">
       {/* Step Header */}
       <div className="text-center space-y-3">
-        <span className="text-xs font-bold tracking-[0.2em] text-luxury-gold uppercase bg-forest-950/90 px-4 py-1.5 rounded-full border border-luxury-gold/30 inline-block shadow-md">
-          1단계: 세종의 장소를 담다
+        <span className="text-[10px] font-bold tracking-[0.25em] text-luxury-gold uppercase bg-forest-950/90 px-5 py-2 rounded-full border border-luxury-gold/30 inline-block shadow-md font-mono">
+          STEP 01 / LANDMARK
         </span>
         <h2 className="font-serif text-3xl md:text-4xl font-bold text-white tracking-wide">
-          세종시의 시그니처 감성을 선택하세요
+          세종시의 장소 서사를 선택하세요
         </h2>
         <p className="text-sm text-forest-200/90 max-w-xl mx-auto font-serif leading-relaxed">
           세종의 아름다운 풍경과 이야기가 담긴 장소를 하나 선택해 주세요.
