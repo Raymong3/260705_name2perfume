@@ -24,7 +24,7 @@ export const Step4SubmitCard: React.FC<Step4SubmitCardProps> = ({
           {finalRecipe.guestName}님의 조향 의뢰가 정상 접수되었습니다
         </h2>
         <p className="text-xs text-forest-300 font-medium">
-          훈민향음 조향사가 접수된 포뮬러를 바탕으로 나만의 훈민향음을 정성껏 제작합니다.
+          Re:세종 조향사가 접수된 포뮬러를 바탕으로 나만의 시그니처 향수를 정성껏 제작합니다.
         </p>
       </div>
 
@@ -40,7 +40,7 @@ export const Step4SubmitCard: React.FC<Step4SubmitCardProps> = ({
         <div className="flex justify-between items-center">
           <span className="text-xs text-forest-400 font-serif">선택 테마</span>
           <span className="text-xs text-forest-200 font-medium">
-            {finalRecipe.selectedType === 'name_sejong' ? '이름 + 세종시 융합 테마' : '이름 분석 전용 테마'}
+            {finalRecipe.selectedType === 'combined' || finalRecipe.selectedType === 'name_sejong' ? 'Re:세종 시그니처 융합 테마' : '이름 분석 전용 테마'}
           </span>
         </div>
       </div>
